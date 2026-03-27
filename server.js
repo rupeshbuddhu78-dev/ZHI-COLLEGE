@@ -71,7 +71,7 @@ app.post('/api/login', async (req, res) => {
     try {
         if (role === 'Student' || role === 'student') {
             const student = await Student.findOne({ email: email, password: password });
-   if (student) {
+if (student) {
     return res.status(200).json({ 
         success: true, 
         message: "Welcome Student!", 
@@ -83,15 +83,16 @@ app.post('/api/login', async (req, res) => {
         semester: student.semester || "N/A",  
         email: student.email,
 
-        // Profile Details (Jo humne abhi Android mein add kiya)
-        registrationNo: student.registrationNo || "N/A",
-        regDate: student.regDate || "N/A", // Maan lo "10/06/2025"
-        dob: student.dob || "N/A",         // Maan lo "22/11/2007"
+        // 🔴 YAHAN FIX KIYA HAI (Database keys se match kar diya)
+        registrationNo: student.collegeRegNo || "N/A",   // DB mein 'collegeRegNo' hai
+        regDate: student.registrationDate || "N/A",      // DB mein 'registrationDate' hai
+        dob: student.dob || "N/A",
         gender: student.gender || "N/A",
-        bloodGroup: student.bloodGroup || "N/A",
+        bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
         category: student.category || "N/A",
         religion: student.religion || "N/A"
     });
+
 
 
             } else {
