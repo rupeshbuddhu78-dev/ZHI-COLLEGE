@@ -71,16 +71,28 @@ app.post('/api/login', async (req, res) => {
     try {
         if (role === 'Student' || role === 'student') {
             const student = await Student.findOne({ email: email, password: password });
-         if (student) {
+   if (student) {
     return res.status(200).json({ 
         success: true, 
         message: "Welcome Student!", 
         role: "Student", 
+        
+        // Basic Info
         studentName: student.studentName,
-        course: student.course || "N/A",      // Agar course khali ho toh N/A dikhaye
-        semester: student.semester || "N/A",  // Agar semester khali ho toh N/A dikhaye
-        email: student.email
+        course: student.course || "N/A",      
+        semester: student.semester || "N/A",  
+        email: student.email,
+
+        // Profile Details (Jo humne abhi Android mein add kiya)
+        registrationNo: student.registrationNo || "N/A",
+        regDate: student.regDate || "N/A", // Maan lo "10/06/2025"
+        dob: student.dob || "N/A",         // Maan lo "22/11/2007"
+        gender: student.gender || "N/A",
+        bloodGroup: student.bloodGroup || "N/A",
+        category: student.category || "N/A",
+        religion: student.religion || "N/A"
     });
+}
 
             } else {
                 return res.status(401).json({ success: false, message: "Invalid Email or Password!" });
