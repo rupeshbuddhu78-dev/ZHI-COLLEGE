@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'tumhara.email@gmail.com', // 🔴 APNA GMAIL YAHA DALE
+        user: 'rupesh.c.0828@zhi.org.in', // 🔴 APNA GMAIL YAHA DALE
         pass: 'abcd efgh ijkl mnop' // 🔴 APNA GMAIL APP PASSWORD YAHA DALE (Normal password kaam nahi karega)
     }
 });
