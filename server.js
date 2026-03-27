@@ -4,7 +4,8 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = 5000;
+// Render ke liye process.env.PORT set karna bahut zaroori hai
+const PORT = process.env.PORT || 5000;
 
 // --- MIDDLEWARE ---
 app.use(cors());
@@ -12,10 +13,10 @@ app.use(express.json());
 // Isse tumhari saari HTML, CSS, Images 'public' folder se load hongi
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 1. DATABASE CONNECTION ---
-mongoose.connect('mongodb://127.0.0.1:27017/schoolDB')
+// --- 1. DATABASE CONNECTION (Updated for MongoDB Atlas) ---
+mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
 .then(() => {
-    console.log("✅ MongoDB Connected Successfully!");
+    console.log("✅ Cloud MongoDB Connected Successfully! 🔥");
 }).catch((err) => {
     console.log("❌ MongoDB Connection Error:", err);
 });
@@ -154,5 +155,5 @@ seedAdmin();
 
 // --- 5. SERVER START ---
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
 });
