@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI Director Panel | Global Notice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bg: #f8fafc;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 1001; transition: 0.3s; flex-shrink: 0;}
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+        .logo-container { display: flex; align-items: center; gap: 12px; }
+        .logo-circle { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-dark); font-size: 20px; font-weight: bold; border: 2px solid #ef4444;}
+        .sidebar-header h2 { font-size: 18px; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--danger); font-weight: 700; letter-spacing: 0.5px; margin-top: 2px; text-transform: uppercase;}
+        
+        .sidebar-menu { list-style: none; padding: 10px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a i { font-size: 16px; width: 20px; text-align: center; color: #94a3b8; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 16px;}
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: #fff; }
+
+        /* MAIN CONTENT & TOPBAR */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+        .topbar { height: 65px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; }
+        .menu-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
+        
+        .content { padding: 25px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; align-items: start;}
+
+        /* CARDS */
+        .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 20px; }
+        .card-header { font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-dark); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; transition: 0.2s; font-family: 'Inter', sans-serif;}
+        .form-control:focus { border-color: var(--primary); }
+        textarea.form-control { resize: vertical; min-height: 120px; }
+
+        .checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; }
+        .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); transition: 0.2s;}
+        .checkbox-label:hover { background: #e2e8f0; }
+        .checkbox-label input { cursor: pointer; }
+
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-primary:hover { background: #2563eb; }
+
+        /* NOTICE HISTORY LIST */
+        .notice-list { display: flex; flex-direction: column; gap: 15px; }
+        .notice-item { border: 1px solid var(--border); border-radius: 8px; padding: 15px; transition: 0.2s; position: relative; overflow: hidden; }
+        .notice-item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        
+        .notice-urgent { border-left: 4px solid var(--danger); }
+        .notice-info { border-left: 4px solid var(--primary); }
+
+        .notice-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; color: var(--text-light); font-weight: 600; text-transform: uppercase;}
+        .notice-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text-dark); }
+        .notice-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-student { background: #e0f2fe; color: #0369a1; }
+        .badge-faculty { background: #ede9fe; color: #6d28d9; }
+        .badge-staff { background: #fef3c7; color: #b45309; }
+        .badge-urgent { background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            .content { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 18px;"></i>
+                </div>
+                <div>
+                    <h2>ZHI College</h2>
+                    <p>DIRECTOR PANEL</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:24px; display:none;" class="menu-btn">×</button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a></li>
+            <li><a href="users_roles.html"><i class="fa-solid fa-user-group"></i> Users & Roles</a></li>
+            <li><a href="students.html"><i class="fa-regular fa-user"></i> Students</a></li>
+            <li><a href="Finance.html"><i class="fa-solid fa-dollar-sign"></i> Finance</a></li>
+            <li><a href="Reports&Analytics.html"><i class="fa-solid fa-chart-simple"></i> Reports & Analytics</a></li>
+            <li><a href="Exams&Results.html"><i class="fa-regular fa-file-lines"></i> Exams & Results</a></li>
+            <li class="active"><a href="#"><i class="fa-regular fa-message"></i> Global Notices</a></li>
+            <li><a href="SystemSettings.html"><i class="fa-solid fa-gear"></i> System Settings</a></li>
+            <li><a href="AuditLogs.html"><i class="fa-solid fa-arrows-rotate"></i> Audit Logs</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+                <h2>Global Announcements</h2>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="card" style="align-self: start;">
+                <div class="card-header">
+                    <span>✍️ Compose New Notice</span>
+                </div>
+                
+                <form id="noticeForm">
+                    <div class="form-group">
+                        <label>Notice Title</label>
+                        <input type="text" id="noticeTitle" class="form-control" placeholder="e.g., Holi Holidays Announcement" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Send To (Select Audience)</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sendStudents" checked> 👨‍🎓 All Students
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sendFaculty" checked> 👨‍🏫 All Faculty
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sendStaff"> 👨‍💼 Non-Teaching Staff
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Priority Level</label>
+                        <select id="noticePriority" class="form-control">
+                            <option value="info">🔵 Normal / Information</option>
+                            <option value="urgent">🔴 High Priority / Urgent</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Message Content</label>
+                        <textarea id="noticeBody" class="form-control" placeholder="Write your official message here..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attach File (Optional)</label>
+                        <input type="file" class="form-control" style="padding: 7px 10px;">
+                        <p style="font-size: 11px; color: var(--text-light); margin-top: 4px;">Accepted formats: PDF, JPG, PNG (Max: 5MB)</p>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="sendNotice()" style="margin-top: 25px;">
+                        🚀 Broadcast Notice Now
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>📜 Previously Sent Notices</span>
+                    <span style="font-size: 12px; color: var(--text-light); font-weight: 500;">Last 30 Days</span>
+                </div>
+
+                <div class="notice-list">
+                    <div class="notice-item notice-urgent">
+                        <div class="notice-meta">
+                            <span>📅 26 Mar 2026, 09:30 AM</span>
+                            <span class="badge-urgent">Urgent</span>
+                        </div>
+                        <h3 class="notice-title">Important: Change in Mid-Semester Exam Dates</h3>
+                        <p class="notice-desc">Dear students and faculty, please note that the upcoming mid-semester examinations scheduled for next week have been postponed by two days due to unavoidable administrative reasons. Check the updated timetable attached.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <span class="badge badge-student">Students</span>
+                            <span class="badge badge-faculty">Faculty</span>
+                        </div>
+                    </div>
+
+                    <div class="notice-item notice-info">
+                        <div class="notice-meta">
+                            <span>📅 20 Mar 2026, 02:15 PM</span>
+                            <span>By: Director Office</span>
+                        </div>
+                        <h3 class="notice-title">Reminder: Final Date for Fee Submission</h3>
+                        <p class="notice-desc">All students are hereby reminded that the last date to clear the pending dues for the current semester without a late fine is 31st March 2026. Please ensure timely payments via the student portal or accounts office.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <span class="badge badge-student">Students</span>
+                        </div>
+                    </div>
+
+                    <div class="notice-item notice-info">
+                        <div class="notice-meta">
+                            <span>📅 15 Mar 2026, 11:00 AM</span>
+                            <span>By: HR / Admin</span>
+                        </div>
+                        <h3 class="notice-title">Monthly Staff Meeting Scheduled</h3>
+                        <p class="notice-desc">There will be a mandatory staff meeting in the main conference hall on Friday at 4:00 PM. We will be discussing the upcoming tech fest responsibilities and general administrative updates. Attendance is compulsory.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <span class="badge badge-faculty">Faculty</span>
+                            <span class="badge badge-staff">Staff</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button style="background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px;">View Older Notices ↓</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Send Notice Functionality (Simulation)
+        function sendNotice() {
+            const title = document.getElementById('noticeTitle').value;
+            const body = document.getElementById('noticeBody').value;
+            
+            const toStudents = document.getElementById('sendStudents').checked;
+            const toFaculty = document.getElementById('sendFaculty').checked;
+            const toStaff = document.getElementById('sendStaff').checked;
+
+            if(!title || !body) {
+                alert("Please fill in the Notice Title and Message Content!");
+                return;
+            }
+
+            if(!toStudents && !toFaculty && !toStaff) {
+                alert("Please select at least one audience group (Students, Faculty, or Staff)!");
+                return;
+            }
+
+            alert("✅ Notice Broadcasted Successfully!\n\nTitle: " + title + "\nIt has been sent to the selected groups. The app will now notify them.");
+            
+            // Reset form after sending
+            document.getElementById('noticeForm').reset();
+            document.getElementById('sendStudents').checked = true;
+            document.getElementById('sendFaculty').checked = true;
+        }
+    </script>
+</body>
+</html>

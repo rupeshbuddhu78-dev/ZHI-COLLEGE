@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal | ZHI College</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Base & Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        body { background-color: #f3f4f6; display: flex; height: 100vh; overflow: hidden; color: #1f2937; font-size: 13px; }
+
+        /* ------------------ SIDEBAR (Desktop defaults) ------------------ */
+        .sidebar {
+            width: 240px; 
+            background-color: #1e3a8a; /* Blue theme for Teachers */
+            color: #bfdbfe;
+            display: flex; flex-direction: column; flex-shrink: 0;
+            z-index: 1000; border-right: 1px solid #1e40af;
+            transition: transform 0.3s ease-in-out; /* Smooth slide for mobile */
+        }
+
+        .sidebar-header {
+            padding: 20px 15px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid #1e40af; background: #172554;
+        }
+
+        .sidebar-header .logo-box {
+            background: transparent; padding: 0; width: 35px; height: 35px;
+            display: flex; justify-content: center; align-items: center; border-radius: 50%;
+        }
+
+        .sidebar-header h2 { color: #f9fafb; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+        .sidebar-header span { display: block; font-size: 10px; color: #93c5fd; font-weight: bold; text-transform: uppercase; margin-top: 2px;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li { margin-bottom: 2px; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+            color: #dbeafe; text-decoration: none; font-size: 13px; font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .sidebar-menu a:hover, .sidebar-menu li.active a { background-color: #1d4ed8; color: #ffffff; }
+        .sidebar-menu li.active a { border-left: 3px solid #60a5fa; }
+        .sidebar-menu a svg { width: 16px; height: 16px; opacity: 0.9; }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* ------------------ MAIN CONTENT ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+
+        /* TOPBAR */
+        .topbar {
+            height: 60px; background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 25px;
+            position: sticky; top: 0; z-index: 998;
+        }
+        
+        .breadcrumb { display: flex; align-items: center; gap: 10px; }
+        
+        /* Hamburger menu button (hidden on desktop) */
+        .menu-toggle {
+            display: none;
+            background: none; border: none;
+            cursor: pointer; color: #111827; padding: 5px;
+        }
+
+        .breadcrumb-text h1 { font-size: 18px; font-weight: 700; color: #111827; }
+        .breadcrumb-text p { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        
+        .topbar-profile { display: flex; align-items: center; gap: 10px; padding-left: 20px; border-left: 1px solid #e5e7eb;}
+        .topbar-profile .user-info h4 { font-size: 13px; color: #111827; }
+        .topbar-profile .user-info p { font-size: 11px; color: #2563eb; font-weight: 700; text-align: right; }
+        .topbar-profile img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #2563eb; }
+
+        /* DASHBOARD CONTENT */
+        .content { padding: 20px 25px; flex: 1; }
+
+        /* KPI STATS (4 Columns for Teachers) */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+        .kpi-info h3 { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+        .kpi-info h2 { font-size: 20px; color: #111827; font-weight: 700; }
+        .kpi-info p { font-size: 11px; color: #4b5563; margin-top: 4px; }
+        .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
+        
+        .bg-blue { background: #eff6ff; color: #3b82f6; }
+        .bg-green { background: #ecfdf5; color: #10b981; }
+        .bg-orange { background: #fff7ed; color: #f97316; }
+        .bg-purple { background: #faf5ff; color: #a855f7; }
+
+        /* PANELS */
+        .bottom-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .panel { background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb; padding: 15px; overflow-x: auto; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f3f4f6; }
+        .panel-header h3 { font-size: 14px; font-weight: 600; color: #111827; }
+        .btn-primary { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        /* TIMETABLE TABLE */
+        .dense-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .dense-table th, .dense-table td { padding: 10px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+        .dense-table th { color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 10px; background: #f9fafb; }
+        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .status-done { background: #d1fae5; color: #065f46; }
+        .status-upcoming { background: #dbeafe; color: #1e40af; }
+
+        /* TASKS LIST */
+        .task-list { list-style: none; }
+        .task-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
+        .task-list li input[type="checkbox"] { margin-top: 3px; cursor: pointer; }
+        .task-list p { font-size: 12px; color: #1f2937; font-weight: 500;}
+        .task-list span { font-size: 10px; color: #ef4444; font-weight: bold;}
+
+        /* =========================================
+           RESPONSIVE MEDIA QUERIES
+           ========================================= */
+
+        /* Tablet Screens */
+        @media screen and (max-width: 1024px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .bottom-grid { grid-template-columns: 1fr; }
+        }
+
+        /* 🔥 Mobile Styles with Slide-in Menu 🔥 */
+        @media screen and (max-width: 768px) {
+            /* Show hamburger button */
+            .menu-toggle { display: block; }
+
+            /* Position sidebar off-screen by default */
+            .sidebar {
+                position: fixed;
+                top: 0; left: 0;
+                height: 100vh;
+                transform: translateX(-100%); /* Hide menu */
+            }
+
+            /* State when sidebar is open */
+            .sidebar.active {
+                transform: translateX(0); /* Slide menu in */
+            }
+
+            /* Show overlay when sidebar is open */
+            .sidebar.active + .main-wrapper .sidebar-overlay {
+                display: block;
+            }
+
+            /* Topbar adjustments */
+            .topbar { padding: 0 15px; }
+            .breadcrumb-text h1 { font-size: 16px; }
+            .breadcrumb-text p { display: none; } /* Hide CS Dept on phone */
+
+            .topbar-right { gap: 10px; }
+            .topbar-profile { padding-left: 0; border-left: none; }
+            .topbar-profile .user-info { display: none; } /* Show only photo on phone */
+            
+            /* Add close button to sidebar phone */
+            .sidebar-header { justify-content: space-between; }
+            .close-sidebar { display: block !important; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        }
+
+        /* Desktop-only elements hidden on mobile */
+        .close-sidebar { display: none; }
+
+        /* Small Mobile Screens */
+        @media screen and (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .content { padding: 15px; }
+            .btn-primary { padding: 5px 10px; font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-box">
+                    <img src="zhi_logo.png" alt="ZHI Logo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                </div>
+                <div>
+                    <h2>ZHI College</h2>
+                    <span>Teacher Portal</span>
+                </div>
+            </div>
+            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="active"><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> My Dashboard</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> My Classes</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg> Mark Attendance</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Assignments</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Upload Marks</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> My Leave Requests</a></li>
+        </ul>
+    </nav>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="breadcrumb">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="breadcrumb-text">
+                    <h1>Welcome, Prof. Sharma</h1>
+                    <p>Department of Computer Science</p>
+                </div>
+            </div>
+            
+            <div class="topbar-right">
+              
+                <div class="topbar-profile">
+                    <div class="user-info">
+                        <h4>A. Sharma</h4>
+                        <p>Senior Faculty</p>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Amit+Sharma&background=2563eb&color=fff" alt="Profile">
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Classes Today</h3>
+                        <h2>4</h2>
+                        <p>2 Completed, 2 Remaining</p>
+                    </div>
+                    <div class="kpi-icon bg-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Pending Assignments</h3>
+                        <h2>18</h2>
+                        <p>BCA 1st Year (C++)</p>
+                    </div>
+                    <div class="kpi-icon bg-orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Avg. Attendance</h3>
+                        <h2>86%</h2>
+                        <p>Across all your subjects</p>
+                    </div>
+                    <div class="kpi-icon bg-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Next Lecture</h3>
+                        <h2>11:30 AM</h2>
+                        <p>Room 302 - Java Prog.</p>
+                    </div>
+                    <div class="kpi-icon bg-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
+                </div>
+            </div>
+
+            <div class="bottom-grid">
+                
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>📅 Today's Schedule</h3>
+                    </div>
+                    <table class="dense-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Course & Year</th>
+                                <th>Subject</th>
+                                <th>Room</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>09:00 AM - 10:00 AM</td>
+                                <td><strong>BCA - 1st Year</strong></td>
+                                <td>C++ Programming</td>
+                                <td>Lab 1</td>
+                                <td><span class="status-badge status-done">Completed</span></td>
+                                <td><a href="#" style="color: #10b981; font-weight: bold; text-decoration: none; font-size: 11px;">View Attd.</a></td>
+                            </tr>
+                            <tr>
+                                <td>10:15 AM - 11:15 AM</td>
+                                <td><strong>MCA - 2nd Year</strong></td>
+                                <td>Data Structures</td>
+                                <td>Room 204</td>
+                                <td><span class="status-badge status-done">Completed</span></td>
+                                <td><a href="#" style="color: #10b981; font-weight: bold; text-decoration: none; font-size: 11px;">View Attd.</a></td>
+                            </tr>
+                            <tr style="background: #eff6ff;">
+                                <td>11:30 AM - 12:30 PM</td>
+                                <td><strong>BCA - 3rd Year</strong></td>
+                                <td>Java Advanced</td>
+                                <td>Room 302</td>
+                                <td><span class="status-badge status-upcoming">Upcoming</span></td>
+                                <td><button class="btn-primary" style="padding: 4px 8px;">Mark Attd.</button></td>
+                            </tr>
+                            <tr>
+                                <td>02:00 PM - 03:00 PM</td>
+                                <td><strong>B.Sc IT - 1st Year</strong></td>
+                                <td>Web Technologies</td>
+                                <td>Lab 3</td>
+                                <td><span class="status-badge status-upcoming">Scheduled</span></td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>✅ To-Do & Reminders</h3>
+                    </div>
+                    <ul class="task-list">
+                        <li>
+                            <input type="checkbox">
+                            <div>
+                                <p>Grade Mid-Term Papers for MCA</p>
+                                <span>Due: Today, 5:00 PM</span>
+                            </div>
+                        </li>
+                        <li>
+                            <input type="checkbox">
+                            <div>
+                                <p>Upload Final Internal Marks (BCA)</p>
+                                <span>Due: Tomorrow</span>
+                            </div>
+                        </li>
+                        <li>
+                            <input type="checkbox">
+                            <div>
+                                <p>Prepare Question Paper for Unit Test</p>
+                                <span style="color: #6b7280;">Due: 30 Mar 2026</span>
+                            </div>
+                        </li>
+                        <li>
+                            <input type="checkbox" checked>
+                            <div>
+                                <p style="text-decoration: line-through; color: #9ca3af;">Submit Monthly Leave Report</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI Director Panel | Users & Roles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); -webkit-font-smoothing: antialiased; }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--danger); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        
+        /* Logo Image Style */
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; object-fit: contain; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a i { font-size: 20px; } /* Icon Size */
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+
+        .topbar { height: 65px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; }
+        .menu-btn, .close-sidebar-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
+        
+        /* SMART SEARCH BAR */
+        .search-bar { display: flex; align-items: center; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; width: 350px; border: 1px solid transparent; transition: 0.3s;}
+        .search-bar i { color: var(--text-light); font-size: 18px; }
+        .search-bar:focus-within { border-color: var(--primary); background: white;}
+        .search-bar input { background: none; border: none; outline: none; width: 100%; font-size: 13px; margin-left: 8px;}
+
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
+        .btn-primary:hover { background: #2563eb; }
+
+        .content { padding: 25px; flex: 1; }
+
+        /* PANEL & TABLE */
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .panel-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
+        .panel-header h3 { font-size: 16px; font-weight: 600; }
+        
+        .table-res { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { text-align: left; padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600;}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge-admin { background: #f3e8ff; color: #7e22ce; }
+        .badge-teacher { background: #e0f2fe; color: #0369a1; }
+        .badge-staff { background: #ffedd5; color: #c2410c; }
+        
+        .status-active { color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .status-active::before { content: ""; width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;}
+        .status-disabled { color: var(--text-light); font-weight: 600; display: flex; align-items: center; gap: 5px;}
+        .status-disabled::before { content: ""; width: 8px; height: 8px; background: var(--text-light); border-radius: 50%; display: inline-block;}
+
+        .action-btns { display: flex; gap: 10px; }
+        .action-btns button { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-dark); transition: 0.2s; display: flex; align-items: center; gap: 4px;}
+        .action-btns button i { font-size: 14px; }
+        .action-btns button:hover { background: #f1f5f9; }
+        .action-btns .btn-danger { color: var(--danger); border-color: #fca5a5; }
+        .action-btns .btn-danger:hover { background: #fef2f2; }
+
+        /* ------------------ SMART MODAL (Add/Edit User) ------------------ */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 2000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(2px); }
+        .modal-box { background: white; width: 100%; max-width: 700px; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px 12px 0 0; }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+        /* Password Gen Box */
+        .password-box { display: flex; gap: 10px; }
+        .password-box input { flex: 1; background: #f8fafc;}
+        .password-box button { background: var(--text-dark); color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s;}
+        .password-box button:hover { background: #334155; }
+
+        /* Dynamic Sections */
+        .dynamic-section { display: none; background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 5px; border: 1px dashed #cbd5e1; }
+        .dynamic-section h4 { font-size: 13px; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; }
+
+        /* Permissions Checkboxes */
+        .permissions-box { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border); margin-top: 15px;}
+        .perm-title { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 10px;}
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; cursor: pointer; font-weight: 500;}
+        .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
+
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-radius: 0 0 12px 12px;}
+
+        /* Mobile Adjustments */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn, .close-sidebar-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .content { padding: 15px; }
+            .topbar { padding: 0 15px; }
+            .search-bar { width: 200px; } 
+            .form-grid { grid-template-columns: 1fr; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="https://via.placeholder.com/150/ffffff/ff0000?text=Logo" alt="ZHI Logo" class="logo-img">
+                <div>
+                    <h2>ZHI College</h2>
+                    <p>DIRECTOR PANEL</p>
+                </div>
+            </div>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()" style="color:white;"><i class='bx bx-x'></i></button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="admin_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
+            <li class="active"><a href="#"><i class='bx bx-user-pin'></i> Users & Roles</a></li>
+            <li><a href="students.html"><i class='bx bx-user'></i> Students</a></li>
+            <li><a href="Finance.html"><i class='bx bx-dollar'></i> Finance</a></li>
+            <li><a href="Reports&Analytics.html"><i class='bx bx-bar-chart-alt-2'></i> Reports & Analytics</a></li>
+            <li><a href="Exams&Results.html"><i class='bx bx-file'></i> Exams & Results</a></li>
+            <li><a href="GlobalNotice.html"><i class='bx bx-message-square-detail'></i> Global Notices</a></li>
+            <li><a href="SystemSettings.html"><i class='bx bx-cog'></i> System Settings</a></li>
+            <li><a href="AuditLogs.html"><i class='bx bx-refresh'></i> Audit Logs</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div class="search-bar">
+                    <i class='bx bx-search'></i> <input type="text" placeholder="Search user by name or email...">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="openModal()"><i class='bx bx-plus'></i> Add New User</button>
+        </header>
+
+        <main class="content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>System Access Directory</h3>
+                </div>
+                <div class="table-res">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name & Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <b>Ravi Kumar</b><br>
+                                    <span style="font-size: 12px; color: var(--text-light);">ravi.admin@zhi.edu</span>
+                                </td>
+                                <td><span class="badge badge-admin">Admin</span></td>
+                                <td><span class="status-active">Active</span></td>
+                                <td><span style="color: var(--text-light); font-size: 13px;">10 mins ago</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button title="Reset Password"><i class='bx bx-key'></i> Reset</button>
+                                        <button class="btn-danger" title="Disable User"><i class='bx bx-block'></i> Disable</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Sneha Sharma</b><br>
+                                    <span style="font-size: 12px; color: var(--text-light);">sneha.staff@zhi.edu</span>
+                                </td>
+                                <td><span class="badge badge-staff">Admission Staff</span></td>
+                                <td><span class="status-active">Active</span></td>
+                                <td><span style="color: var(--text-light); font-size: 13px;">Yesterday, 2:30 PM</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button><i class='bx bx-key'></i> Reset</button>
+                                        <button class="btn-danger"><i class='bx bx-block'></i> Disable</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Amit Singh</b><br>
+                                    <span style="font-size: 12px; color: var(--text-light);">amit.bca@zhi.edu</span>
+                                </td>
+                                <td><span class="badge badge-teacher">Teacher</span></td>
+                                <td><span class="status-disabled">Disabled</span></td>
+                                <td><span style="color: var(--text-light); font-size: 13px;">25 Mar 2026</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button><i class='bx bx-key'></i> Reset</button>
+                                        <button style="color: var(--success); border-color: #86efac;"><i class='bx bx-check-circle'></i> Enable</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add New System User</h3>
+                <button onclick="closeModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Assign Primary Role *</label>
+                        <select id="userRole" onchange="toggleDynamicFields()">
+                            <option value="">-- Select Role --</option>
+                            <option value="admin">System Admin / Director</option>
+                            <option value="staff">Admission / Office Staff</option>
+                            <option value="teacher">Teaching Faculty (Teacher)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" placeholder="e.g. Rahul Verma">
+                    </div>
+                    <div class="form-group">
+                        <label>Official Email ID (Login ID)</label>
+                        <input type="email" placeholder="name@zhi.edu">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="text" placeholder="+91">
+                    </div>
+                    <div class="form-group">
+                        <label>Aadhar Number</label>
+                        <input type="text" placeholder="XXXX XXXX XXXX">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Initial Login Password (Sent to Email)</label>
+                        <div class="password-box">
+                            <input type="text" id="genPassword" placeholder="Click generate to create password" readonly>
+                            <button type="button" onclick="generateRandomPassword()">🎲 Generate Password</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="teacherModule" class="dynamic-section form-grid">
+                    <div class="form-group full-width">
+                        <h4>🎓 Teaching Profile Details</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>Teaching Subject(s)</label>
+                        <input type="text" placeholder="e.g. Java, Python">
+                    </div>
+                    <div class="form-group">
+                        <label>Highest Qualification</label>
+                        <select>
+                            <option>Ph.D.</option>
+                            <option>MCA / M.Tech</option>
+                            <option>BCA / B.Tech</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="staffModule" class="dynamic-section form-grid">
+                    <div class="form-group full-width">
+                        <h4>🏢 Office Assignment Details</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select>
+                            <option>Directorate (Admin)</option>
+                            <option>Admission Cell</option>
+                            <option>Accounts & Finance</option>
+                            <option>IT Support</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duty Shift</label>
+                        <select>
+                            <option>Morning (8 AM - 2 PM)</option>
+                            <option>General (10 AM - 5 PM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="permissions-box">
+                    <div class="perm-title">Software Module Access (Permissions)</div>
+                    <div class="form-grid" style="gap: 5px;">
+                        <label class="checkbox-label"><input type="checkbox" id="perm_students" checked> <span>Students Directory</span></label>
+                        <label class="checkbox-label"><input type="checkbox" id="perm_attendance"> <span>Attendance Management</span></label>
+                        <label class="checkbox-label"><input type="checkbox" id="perm_finance"> <span>Fees & Finance Access</span></label>
+                        <label class="checkbox-label"><input type="checkbox" id="perm_faculty"> <span>Faculty & Staff View</span></label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeModal()" style="padding: 9px 15px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
+                <button class="btn-primary" onclick="alert('User Created Successfully & Credentials Sent!')">Save & Register User</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function openModal() { document.getElementById('userModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+
+        function generateRandomPassword() {
+            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
+            let pwd = "Zhi@"; 
+            for (let i = 0; i < 5; i++) {
+                pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('genPassword').value = pwd;
+        }
+
+        function toggleDynamicFields() {
+            const role = document.getElementById('userRole').value;
+            const teacherMod = document.getElementById('teacherModule');
+            const staffMod = document.getElementById('staffModule');
+            
+            const pStudents = document.getElementById('perm_students');
+            const pAttendance = document.getElementById('perm_attendance');
+            const pFinance = document.getElementById('perm_finance');
+            const pFaculty = document.getElementById('perm_faculty');
+
+            teacherMod.style.display = 'none';
+            staffMod.style.display = 'none';
+            pStudents.checked = false; pAttendance.checked = false; pFinance.checked = false; pFaculty.checked = false;
+
+            if (role === 'teacher') {
+                teacherMod.style.display = 'grid'; 
+                pStudents.checked = true;          
+                pAttendance.checked = true;        
+            } 
+            else if (role === 'staff') {
+                staffMod.style.display = 'grid';   
+                pStudents.checked = true;          
+            }
+            else if (role === 'admin') {
+                staffMod.style.display = 'grid';   
+                pStudents.checked = true; pAttendance.checked = true; pFinance.checked = true; pFaculty.checked = true;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI Admission Portal | Premium Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #312e81; /* Indigo */
+            --secondary: #4338ca;
+            --success: #10b981; /* Emerald */
+            --warning: #f59e0b; /* Amber */
+            --danger: #ef4444; /* Red */
+            --bg: #f3f4f6;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); -webkit-font-smoothing: antialiased;}
+
+        /* ------------------ SIDEBAR (Standard Desktop) ------------------ */
+        .sidebar {
+            width: 260px; background: var(--primary); color: #fff;
+            display: flex; flex-direction: column; flex-shrink: 0;
+            z-index: 1001; position: relative; border-right: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px; background: #1e1b4b; display: flex; 
+            justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .sidebar-header img { width: 30px; height: 30px; border-radius: 5px; }
+        .sidebar-header h3 { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+            color: #c7d2fe; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s;
+        }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            background: rgba(255,255,255,0.1); color: #fff; border-left: 4px solid #818cf8;
+        }
+
+        /* ------------------ MAIN CONTENT & TOPBAR (Desktop Default) ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+
+        .topbar {
+            height: 65px; background: var(--white); border-bottom: 1px solid #e5e7eb;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; position: sticky; top: 0; z-index: 1000;
+        }
+
+        /* Mobile specific buttons */
+        .menu-btn, .close-sidebar-btn { display: none; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-dark); padding: 5px;}
+
+        .breadcrumb h1 { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+        .breadcrumb p { font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
+
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        
+        /* New Student Button */
+        .btn-add {
+            background: var(--success); color: white; border: none; padding: 9px 16px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            text-decoration: none; font-size: 13px; transition: 0.2s;
+        }
+        .btn-add:hover { background: #059669; }
+
+        .topbar-profile img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--success); }
+
+        /* DASHBOARD CONTENT */
+        .content { padding: 25px; flex: 1; }
+
+        /* KPI Cards - GRID (Responsive) */
+        .kpi-grid {
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--white); padding: 18px; border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .kpi-card h3 { font-size: 11px; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px;}
+        .kpi-card h2 { font-size: 22px; font-weight: 700; color: var(--text-dark); }
+        .kpi-card .trend { font-size: 10px; font-weight: bold; margin-top: 4px; }
+
+        /* Dashboard Tables/Lists */
+        .db-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .panel { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; }
+        .panel-header { margin-bottom: 15px; font-size: 15px; font-weight: 700;}
+
+        /* Table responsiveness */
+        .table-res { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;}
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th { text-align: left; padding: 10px; background: #f9fafb; font-size: 10px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid #e5e7eb;}
+        td { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+
+        /* Status colors */
+        .status-verified { color: var(--success); font-weight: 600; }
+        .status-pending { color: var(--warning); font-weight: 600; }
+        .status-rejected { color: var(--danger); font-weight: 600; }
+
+        /* Overlay */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(2px);}
+
+        /* =========================================================================
+           🔥🔥 PREMIUM MOBILE RESPONSIVE MEDIA QUERIES 🔥🔥
+           ========================================================================= */
+
+        /* Laptop/Tablet (adjusting grid only) */
+        @media (max-width: 1024px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .db-layout { grid-template-columns: 1fr; }
+        }
+
+        /* 📱 Mobile Optimized (Native App Feel) */
+        @media (max-width: 768px) {
+            /* 1. Sidebar becomes slide-out drawer */
+            .sidebar {
+                position: fixed; left: -260px; height: 100vh;
+                box-shadow: 5px 0 20px rgba(0,0,0,0.2);
+            }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; } /* Show Hamburger */
+            .close-sidebar-btn { display: block; color: #a5b4fc; } /* Show close × in menu */
+            .sidebar-overlay.active { display: block; }
+
+            /* 2. Topbar tweaks for mobile (Clean look) */
+            .topbar { height: 60px; padding: 0 15px; }
+            .breadcrumb { gap: 5px; }
+            .breadcrumb h1 { font-size: 16px; margin-left: 10px;}
+            .breadcrumb p { display: none; } /* Hide CS Dept to save space */
+            
+            .topbar-right { gap: 10px; }
+            .btn-add { padding: 8px 12px; font-size: 12px; }
+            .btn-text { display: none; } /* Hide 'Add Student' text, keep icon */
+            .topbar-profile img { width: 32px; height: 32px; border-width: 1.5px;}
+
+            /* 3. Dashboard content tweaks */
+            .content { padding: 15px; }
+            
+            /* Compact KPI Grid - 2 per row is best for mobile data view */
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;}
+            .kpi-card { padding: 15px; }
+            .kpi-card h3 { font-size: 10px; margin-bottom: 5px;}
+            .kpi-card h2 { font-size: 19px; }
+
+            /* Panel spacing */
+            .panel { padding: 15px; }
+            
+            /* Fix recent app table scroll feel */
+            .table-res { border-radius: 8px; border: 1px solid #f3f4f6; }
+        }
+
+        /* 📱 Smaller Mobile Screens */
+        @media (max-width: 480px) {
+            /* KPI grid goes full width for very small screens */
+            .kpi-grid { grid-template-columns: 1fr; }
+            .kpi-card:last-child { grid-column: span 1; } /* Reset Emerald card */
+            
+            .breadcrumb h1 { font-size: 15px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="https://ui-avatars.com/api/?name=Z+H+I&background=fff&color=312e81" alt="Logo">
+                <h3>ZHI ADMISSION</h3>
+            </div>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="#"><span>📊</span> Dashboard</a></li>
+            <li><a href="AdmissionForm.html"><span>📝</span> New Admission</a></li>
+            <li><a href="#"><span>📞</span> Enquiry Leads</a></li>
+            <li><a href="#"><span>💰</span> Fees & Receipts</a></li>
+            <li><a href="#"><span>📂</span> Documents</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="breadcrumb" style="display: flex; align-items: center;">
+                <button class="menu-btn" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <h1>ZHI Admission Portal</h1>
+                <p style="margin-left: 10px;">Admin Center</p>
+            </div>
+            <div class="topbar-right">
+                <button class="btn-add">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span class="btn-text">Add Student</span>
+                </button>
+                <div class="topbar-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admission+Staff&background=1e1b4b&color=fff" alt="User Avatar">
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="kpi-grid">
+                <div class="kpi-card"><h3>Today's Enquiries</h3><h2>38</h2><p class="trend up" style="color:var(--success)">↑ 12% vs yest.</p></div>
+                <div class="kpi-card"><h3>Confirmations</h3><h2>12</h2><p class="trend" style="color:var(--text-light)">Daily Target: 20</p></div>
+                <div class="kpi-card"><h3>Pending Docs</h3><h2>09</h2><p class="trend down" style="color:var(--danger)">Action required</p></div>
+                <div class="kpi-card" style="background: #ecfdf5; border-color: var(--success);">
+                    <h3 style="color: #065f46;">Fees Recieved Today</h3>
+                    <h2 style="color: #065f46;">₹85k</h2>
+                    <p class="trend" style="color: #059669;">Total Collection</p>
+                </div>
+            </div>
+
+            <div class="db-layout">
+                <div class="panel">
+                    <div class="panel-header" style="display: flex; justify-content: space-between;">
+                        Recent Applications
+                        <a href="#" style="color: var(--secondary); font-size: 11px; text-decoration: none; font-weight: 600;">View All Leads</a>
+                    </div>
+                    <div class="table-res">
+                        <table>
+                            <thead>
+                                <tr><th>Name</th><th>Course</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><b>Aryan Khan</b></td><td>BCA (Comp. App.)</td><td><span class="status-verified">Verified</span></td></tr>
+                                <tr><td><b>Simran Kaur</b></td><td>B.Sc IT</td><td><span class="status-pending">Pending Doc</span></td></tr>
+                                <tr><td><b>Rahul Gupta</b></td><td>BBA (Mgmt.)</td><td><span class="status-pending">Waitlist</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3 class="panel-header">To-Do Followups</h3>
+                    <p style="font-size: 12px; color: var(--text-light); margin-top: 10px;">No calls scheduled for the next hour.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Smooth JavaScript for sidebar toggle on mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
