@@ -2,36 +2,42 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const nodemailer = require('nodemailer'); // 🔴 NAYA PACKAGE EMAIL KE LIYE
 
 const app = express();
-// Render ke liye process.env.PORT set karna bahut zaroori hai
 const PORT = process.env.PORT || 5000;
 
 // --- MIDDLEWARE ---
 app.use(cors());
 app.use(express.json()); 
-// Isse tumhari saari HTML, CSS, Images 'public' folder se load hongi
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 1. DATABASE CONNECTION (Updated for MongoDB Atlas) ---
+// --- 1. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
-.then(() => {
-    console.log("✅ Cloud MongoDB Connected Successfully! 🔥");
-}).catch((err) => {
-    console.log("❌ MongoDB Connection Error:", err);
+.then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
+.catch((err) => console.log("❌ MongoDB Connection Error:", err));
+
+// --- EMAIL TRANSPORTER SETUP (OTP Bhejne ke liye) ---
+// ⚠️ DHYAN DE: Yahan apna asli college/app ka email aur "App Password" dalna hoga
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'tumhara.email@gmail.com', // 🔴 APNA GMAIL YAHA DALE
+        pass: 'abcd efgh ijkl mnop' // 🔴 APNA GMAIL APP PASSWORD YAHA DALE (Normal password kaam nahi karega)
+    }
 });
 
 // --- 2. SCHEMAS & MODELS ---
 
-// A. User Schema (Admin/Staff Login ke liye)
 const userSchema = new mongoose.Schema({
-    role: { type: String, required: true }, // director, accounts, faculty
+    role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    resetOtp: { type: String },       // 🔴 OTP save karne ke liye
+    otpExpiry: { type: Date }         // 🔴 OTP kab expire hoga uske liye
 });
 const User = mongoose.model('User', userSchema);
 
-// B. Student Schema (Tumhara original schema saare fields ke saath)
 const studentSchema = new mongoose.Schema({
     course: String, semester: String, sessionBatch: String,
     registrationDate: String, collegeRegNo: String, univRegNo: String,
@@ -47,99 +53,171 @@ const studentSchema = new mongoose.Schema({
     motherMobile: String, guardianName: String, guardianRelation: String,
     guardianMobile: String, guardianAddress: String,
     amountCollected: Number, paymentMode: String, transactionId: String,
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    resetOtp: { type: String },       // 🔴 OTP save karne ke liye
+    otpExpiry: { type: Date }         // 🔴 OTP expiry ke liye
 }, { timestamps: true });
-
 const Student = mongoose.model('Student', studentSchema);
 
 // --- 3. API ROUTES ---
 
-// Default Route: Login Page dikhane ke liye
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Login API: Authenticate Admin/Staff
+// Login API
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
     try {
-        const user = await User.findOne({ email, role, password });
-        if (user) {
-            res.status(200).json({ success: true, message: "Welcome to ZHI Portal!", role: user.role });
+        if (role === 'Student' || role === 'student') {
+            const student = await Student.findOne({ email: email, password: password });
+            if (student) {
+                return res.status(200).json({ success: true, message: "Welcome Student!", role: "Student", name: student.studentName });
+            } else {
+                return res.status(401).json({ success: false, message: "Invalid Email or Password!" });
+            }
         } else {
-            res.status(401).json({ success: false, message: "Invalid Credentials or Role!" });
+            const user = await User.findOne({ email: email, role: role, password: password });
+            if (user) {
+                return res.status(200).json({ success: true, message: "Welcome Admin!", role: user.role });
+            } else {
+                return res.status(401).json({ success: false, message: "Invalid Admin Credentials or Role!" });
+            }
         }
     } catch (err) {
+        console.error("Login Error:", err);
         res.status(500).json({ success: false, message: "Server Error!" });
     }
 });
 
-// Student Registration API (Data save karne ke liye)
+// Add Student
 app.post('/api/add-student', async (req, res) => {
     try {
         const newStudent = new Student({
             ...req.body,
             password: req.body.studentMobile 
         });
-
         await newStudent.save();
         res.status(201).json({ success: true, message: 'Student admitted successfully!' });
-
     } catch (error) {
-        console.error("Error:", error);
-        if (error.code === 11000) {
-            return res.status(400).json({ success: false, message: 'Ye Email pehle se register hai!' });
-        }
+        if (error.code === 11000) return res.status(400).json({ success: false, message: 'Ye Email pehle se register hai!' });
         res.status(500).json({ success: false, message: 'Server error!' });
     }
 });
 
-// GET ALL STUDENTS (Database se data lakar table mein dikhane ke liye)
 app.get('/api/students', async (req, res) => {
     try {
         const students = await Student.find().sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: students });
     } catch (error) {
-        console.error("Error fetching students:", error);
-        res.status(500).json({ success: false, message: 'Server error fetching students!' });
+        res.status(500).json({ success: false, message: 'Server error!' });
     }
 });
 
-// 🔥 NAYA API: UPDATE (EDIT) STUDENT 🔥
 app.put('/api/students/:id', async (req, res) => {
     try {
-        // ID se student find karega aur update kar dega
         const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        
-        if (!updatedStudent) {
-            return res.status(404).json({ success: false, message: 'Student not found!' });
-        }
-        
+        if (!updatedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
         res.status(200).json({ success: true, message: 'Student details updated!', data: updatedStudent });
     } catch (error) {
-        console.error("Edit Error:", error);
-        res.status(500).json({ success: false, message: 'Server error updating student!' });
+        res.status(500).json({ success: false, message: 'Server error!' });
     }
 });
 
-// 🔥 NAYA API: DELETE STUDENT 🔥
 app.delete('/api/students/:id', async (req, res) => {
     try {
-        // ID se student dhoondh kar delete kar dega
         const deletedStudent = await Student.findByIdAndDelete(req.params.id);
-        
-        if (!deletedStudent) {
-            return res.status(404).json({ success: false, message: 'Student not found!' });
-        }
-
+        if (!deletedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
         res.status(200).json({ success: true, message: 'Student deleted successfully!' });
     } catch (error) {
-        console.error("Delete Error:", error);
-        res.status(500).json({ success: false, message: 'Server error deleting student!' });
+        res.status(500).json({ success: false, message: 'Server error!' });
     }
 });
 
-// --- 4. DEFAULT ADMIN CREATION (Initial Seed) ---
+// 🔥 NAYA API 1: FORGOT PASSWORD (OTP Bhejne ke liye) 🔥
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        // Pehle Student dhoondho, agar nahi mila toh Admin dhoondho
+        let user = await Student.findOne({ email });
+        let isStudent = true;
+
+        if (!user) {
+            user = await User.findOne({ email });
+            isStudent = false;
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Is email se koi account nahi mila!" });
+        }
+
+        // 6-digit ka random OTP banao
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // OTP ko database mein save karo (10 minute ki expiry ke sath)
+        user.resetOtp = otp;
+        user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 Minutes
+        await user.save();
+
+        // Email bhejne ka setup
+        const mailOptions = {
+            from: 'tumhara.email@gmail.com', // 🔴 Apna same email yaha dalo
+            to: user.email,
+            subject: 'ZHI App - Password Reset OTP',
+            text: `Aapka Password Reset OTP hai: ${otp}\n\nYeh OTP 10 minute tak valid rahega. Agar aapne request nahi ki hai toh is message ko ignore karein.`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error("Email bhejney mein error:", error);
+                return res.status(500).json({ success: false, message: "OTP bhejne mein error aayi. Please baad mein try karein." });
+            }
+            res.status(200).json({ success: true, message: "OTP aapke registered email par bhej diya gaya hai!" });
+        });
+
+    } catch (err) {
+        console.error("Forgot Password Error:", err);
+        res.status(500).json({ success: false, message: "Server Error!" });
+    }
+});
+
+// 🔥 NAYA API 2: RESET PASSWORD (OTP verify karke naya password set karna) 🔥
+app.post('/api/reset-password', async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    try {
+        let user = await Student.findOne({ email });
+        if (!user) {
+            user = await User.findOne({ email });
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Check karo OTP sahi hai ya nahi, aur expiry time check karo
+        if (user.resetOtp !== otp) {
+            return res.status(400).json({ success: false, message: "Galat OTP!" });
+        }
+
+        if (user.otpExpiry < Date.now()) {
+            return res.status(400).json({ success: false, message: "OTP expire ho gaya hai! Naya OTP bhejein." });
+        }
+
+        // Agar sab sahi hai, toh naya password set karo aur OTP delete kar do
+        user.password = newPassword;
+        user.resetOtp = undefined;
+        user.otpExpiry = undefined;
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password successfully change ho gaya hai! Ab aap naye password se login kar sakte hain." });
+
+    } catch (err) {
+        console.error("Reset Password Error:", err);
+        res.status(500).json({ success: false, message: "Server Error!" });
+    }
+});
+
+// --- 4. DEFAULT ADMIN CREATION ---
 const seedAdmin = async () => {
     const adminExists = await User.findOne({ email: 'admin@zhi.edu.in' });
     if (!adminExists) {
