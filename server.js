@@ -92,7 +92,7 @@ app.post('/api/login', async (req, res) => {
         category: student.category || "N/A",
         religion: student.religion || "N/A"
     });
-}
+
 
             } else {
                 return res.status(401).json({ success: false, message: "Invalid Email or Password!" });
