@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const nodemailer = require('nodemailer'); // 🔴 NAYA PACKAGE EMAIL KE LIYE
+const nodemailer = require('nodemailer'); // 🔴 NAYA PACKAGE EMAIL KE LIYe
 
 const app = express();
 const PORT = process.env.PORT || 5000;
