@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'rupesh.c.0828@zhi.org.in', // 🔴 APNA GMAIL YAHA DALE
-        pass: 'abcd efgh ijkl mnop' // 🔴 APNA GMAIL APP PASSWORD YAHA DALE (Normal password kaam nahi karega)
+        pass: 'dyju pxba misf qfuk' // 🔴 APNA GMAIL APP PASSWORD YAHA DALE (Normal password kaam nahi karega)
     }
 });
 
