@@ -114,7 +114,7 @@
         .badge-staff { background: #fef3c7; color: #b45309; }
         .badge-urgent { background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
         
-        .attachment-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600; background: #eff6ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 10px; transition: 0.2s;}
+        .attachment-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600; background: #eff6ff; padding: 8px 14px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 10px; transition: 0.2s;}
         .attachment-link:hover { background: #dbeafe; }
 
         /* RESPONSIVE */
@@ -229,7 +229,7 @@
     </div>
 
     <script>
-        const BASE_URL = '/api'; // Backend se linked
+        const BASE_URL = '/api'; // Backend connected
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -263,9 +263,21 @@
                             return '';
                         }).join('');
 
-                        let attachmentHtml = notice.fileUrl 
-                            ? `<a href="${notice.fileUrl}" target="_blank" class="attachment-link"><i class="fa-solid fa-paperclip"></i> View Attachment</a><br>` 
-                            : '';
+                        // 🔴 MORE ROBUST ATTACHMENT LOGIC
+                        let attachmentHtml = '';
+                        if (notice.fileUrl && notice.fileUrl.trim() !== "" && notice.fileUrl !== "undefined" && notice.fileUrl !== "null") {
+                            // Check file type to show different icon/text
+                            let isPdf = notice.fileUrl.toLowerCase().includes('.pdf');
+                            let icon = isPdf ? 'fa-file-pdf' : 'fa-image';
+                            let text = isPdf ? 'View PDF' : 'View Image';
+
+                            attachmentHtml = `
+                                <div style="margin-top: 10px; margin-bottom: 10px;">
+                                    <a href="${notice.fileUrl}" target="_blank" class="attachment-link">
+                                        <i class="fa-solid ${icon}"></i> ${text}
+                                    </a>
+                                </div>`;
+                        }
 
                         let html = `
                         <div class="notice-item ${priorityClass}">
@@ -275,7 +287,9 @@
                             </div>
                             <h3 class="notice-title">${notice.title}</h3>
                             <p class="notice-desc">${notice.message}</p>
+                            
                             ${attachmentHtml}
+                            
                             <div style="display: flex; gap: 8px; margin-top: 5px;">
                                 ${audienceHtml}
                             </div>
@@ -324,7 +338,10 @@
             formData.append('message', body);
             formData.append('priority', priority);
             formData.append('audience', JSON.stringify(audienceArray));
-            if (fileInput) formData.append('attachment', fileInput);
+            
+            if (fileInput) {
+                formData.append('attachment', fileInput);
+            }
 
             try {
                 let response = await fetch(`${BASE_URL}/notices`, {
@@ -336,9 +353,14 @@
                 
                 if(result.success) {
                     alert("✅ Notice Broadcasted Successfully!");
+                    
+                    // Reset form and file input properly
                     document.getElementById('noticeForm').reset();
                     document.getElementById('sendStudents').checked = true;
                     document.getElementById('sendFaculty').checked = true;
+                    document.getElementById('noticeFile').value = ''; 
+                    
+                    // Reload list
                     loadNotices();
                 } else {
                     alert("❌ Failed: " + result.message);
