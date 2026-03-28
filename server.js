@@ -165,6 +165,7 @@ app.post('/api/login', async (req, res) => {
                     success: true, 
                     message: "Welcome Student!", 
                     role: "Student", 
+                    studentId: student._id,
                     studentName: student.studentName,
                     course: student.course || "N/A",      
                     semester: student.semester || "N/A",  
