@@ -280,7 +280,7 @@ const keepAlive = () => {
 };
 
 // Har 14 minute (14 * 60 * 1000 ms) mein server khud ko ping karega
-setInterval(keepAlive, 14 * 60 * 1000);
+setInterval(keepAlive, 5 * 60 * 1000);
 
 // --- 9. START SERVER ---
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
