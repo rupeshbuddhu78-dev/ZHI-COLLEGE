@@ -89,6 +89,64 @@ const studentSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
 
+// 🟢 NEW ADDITION: FINANCE SCHEMAS 🟢
+const feeHeadSchema = new mongoose.Schema({
+    headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 }, 
+    fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 }, 
+    due: Number, status: { type: String, default: "Due" }
+});
+
+const studentFeeSchema = new mongoose.Schema({
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
+    feeHeads: [feeHeadSchema]
+});
+const StudentFee = mongoose.model('StudentFee', studentFeeSchema);
+
+const transactionSchema = new mongoose.Schema({
+    receiptNo: { type: String, unique: true }, studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+    date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String
+}, { timestamps: true });
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
+const expenseSchema = new mongoose.Schema({
+    voucherNo: { type: String, unique: true }, category: String, date: Date, 
+    mode: String, amount: Number, description: String
+}, { timestamps: true });
+const Expense = mongoose.model('Expense', expenseSchema);
+
+// 🟢 NEW ADDITION: FEE GENERATOR HELPER FUNCTION 🟢
+const generateFeeStructure = (courseName) => {
+    let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880; 
+    let heads = [
+        { headName: "Admission Fee (Non Refundable)", amount: 30000, dueDate: "01-08-2025" },
+        { headName: "University Reg. Fees", amount: 2100, dueDate: "30-08-2025" },
+        { headName: "1st Sem Tuition Fees - 1st Installment", amount: 12130, dueDate: "30-08-2025" },
+        { headName: "1st Sem Tuition Fees - 2nd Installment", amount: 10530, dueDate: "30-11-2025" },
+        { headName: "Examination Fees (Sem 1)", amount: 3700, dueDate: "30-11-2025" },
+        { headName: "2nd Sem Tuition Fees - 1st Installment", amount: baseTuition, dueDate: "15-02-2026" },
+        { headName: "2nd Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "20-05-2026" },
+        { headName: "Examination Fees (Sem 2)", amount: 3700, dueDate: "20-05-2026" },
+        { headName: "3rd Sem Tuition Fees - 1st Installment", amount: baseTuition, dueDate: "01-09-2026" },
+        { headName: "3rd Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "01-12-2026" },
+        { headName: "Examination Fees (Sem 3)", amount: 3700, dueDate: "01-12-2026" },
+        { headName: "4th Sem Tuition Fees - 1st Installment", amount: baseTuition, dueDate: "15-02-2027" },
+        { headName: "4th Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "20-05-2027" },
+        { headName: "Examination Fees (Sem 4)", amount: 3700, dueDate: "20-05-2027" },
+        { headName: "5th Sem Tuition Fees - 1st Installment", amount: baseTuition, dueDate: "01-09-2027" },
+        { headName: "5th Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "01-12-2027" },
+        { headName: "Examination Fees (Sem 5)", amount: 3700, dueDate: "01-12-2027" },
+        { headName: "6th Sem Tuition Fees - 1st Installment", amount: baseTuition, dueDate: "15-02-2028" },
+        { headName: "Provisional Certificate Fees", amount: 500, dueDate: "20-05-2028" },
+        { headName: "6th Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "20-05-2028" },
+        { headName: "Examination Fees (Sem 6)", amount: 3700, dueDate: "20-05-2028" }
+    ];
+
+    let processedHeads = heads.map(h => ({ ...h, discount: 0, fine: 0, paid: 0, due: h.amount, status: "Due" }));
+    let total = processedHeads.reduce((sum, h) => sum + h.amount, 0);
+    return { feeHeads: processedHeads, totalAmount: total, totalDue: total, totalPaid: 0, totalDiscount: 0 };
+};
+
 // --- 6. API ROUTES ---
 
 app.get('/', (req, res) => {
@@ -252,6 +310,110 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
+// 🟢 NEW ADDITION: FINANCE API ROUTES 🟢
+
+// Advanced Search Student for Fee Modal & Ledger
+app.get('/api/finance/search-student', async (req, res) => {
+    try {
+        const { q, course, sem, batch } = req.query;
+        let filterQuery = {};
+        
+        if (q && q.trim() !== "") {
+            filterQuery.$or = [
+                { studentName: new RegExp(q, 'i') }, 
+                { collegeRegNo: new RegExp(q, 'i') }, 
+                { studentMobile: new RegExp(q, 'i') }
+            ];
+        }
+        if (course && course !== "") filterQuery.course = new RegExp(course, 'i');
+        if (sem && sem !== "") filterQuery.semester = sem;
+        if (batch && batch !== "") filterQuery.sessionBatch = new RegExp(batch, 'i');
+
+        const students = await Student.find(filterQuery).select('_id studentName collegeRegNo course sessionBatch');
+        res.status(200).json({ success: true, data: students });
+    } catch (err) { 
+        res.status(500).json({ success: false, message: "Error searching students" }); 
+    }
+});
+
+// Get/Generate Student Fee Record
+app.get('/api/finance/student-fee/:studentId', async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.studentId);
+        if(!student) return res.status(404).json({ success: false, message: "Student not found!" });
+
+        let feeRecord = await StudentFee.findOne({ studentId: student._id }).populate('studentId', 'studentName collegeRegNo course semester sessionBatch');
+        
+        if (!feeRecord) {
+            const structure = generateFeeStructure(student.course || "BCA");
+            feeRecord = new StudentFee({ studentId: student._id, ...structure });
+            await feeRecord.save();
+            feeRecord = await StudentFee.findOne({ studentId: student._id }).populate('studentId', 'studentName collegeRegNo course semester sessionBatch');
+        }
+        res.status(200).json({ success: true, data: feeRecord });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+// Collect Fee
+app.post('/api/finance/collect-fee', async (req, res) => {
+    const { studentId, headId, amount, mode, remarks, date } = req.body;
+    try {
+        let feeRecord = await StudentFee.findOne({ studentId });
+        if(!feeRecord) return res.status(404).json({ success: false, message: "Ledger not found!" });
+
+        const headIndex = feeRecord.feeHeads.findIndex(h => h._id.toString() === headId);
+        if(headIndex === -1) return res.status(400).json({ success: false, message: "Fee head not found!" });
+
+        feeRecord.feeHeads[headIndex].paid += Number(amount);
+        feeRecord.feeHeads[headIndex].due -= Number(amount);
+        if(feeRecord.feeHeads[headIndex].due <= 0) feeRecord.feeHeads[headIndex].status = "Paid";
+
+        feeRecord.totalPaid += Number(amount);
+        feeRecord.totalDue -= Number(amount);
+        await feeRecord.save();
+
+        const receiptNo = "REC" + Math.floor(100000 + Math.random() * 900000);
+        const newTrans = new Transaction({
+            receiptNo, studentId, amount, mode, date: date || new Date(), 
+            feeHeadName: feeRecord.feeHeads[headIndex].headName, remarks
+        });
+        await newTrans.save();
+
+        res.status(200).json({ success: true, message: "Fee Collected Successfully!", receipt: newTrans });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+// Get Dashboard Stats & Lists
+app.get('/api/finance/dashboard', async (req, res) => {
+    try {
+        const transactions = await Transaction.find().populate('studentId', 'studentName collegeRegNo course').sort({createdAt: -1}).limit(20);
+        const expenses = await Expense.find().sort({createdAt: -1}).limit(20);
+        
+        const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
+        const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+        
+        const allFees = await StudentFee.find();
+        const totalDue = allFees.reduce((sum, f) => sum + f.totalDue, 0);
+
+        res.status(200).json({
+            success: true, 
+            stats: { income: totalIncome, expense: totalExpense, due: totalDue, balance: totalIncome - totalExpense },
+            transactions, expenses
+        });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// Add Expense
+app.post('/api/finance/expense', async (req, res) => {
+    try {
+        const voucherNo = "EXP" + Math.floor(1000 + Math.random() * 9000);
+        const exp = new Expense({ voucherNo, ...req.body });
+        await exp.save();
+        res.status(201).json({ success: true, message: "Expense Recorded!" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+
 // --- 7. SEED ADMIN ---
 const seedAdmin = async () => {
     const adminExists = await User.findOne({ email: 'admin@zhi.edu.in' });
@@ -279,7 +441,7 @@ const keepAlive = () => {
     });
 };
 
-// Har 14 minute (14 * 60 * 1000 ms) mein server khud ko ping karega
+// Har 5 minute (5 * 60 * 1000 ms) mein server khud ko ping karega
 setInterval(keepAlive, 5 * 60 * 1000);
 
 // --- 9. START SERVER ---
