@@ -37,12 +37,23 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
 .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
 .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// --- 4. EMAIL SETUP ---
+// --- 4. EMAIL SETUP (🔴 UPDATED FOR SECURITY & LOGGING) ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: 'rupesh.c.0828@zhi.org.in', 
         pass: 'dyju pxba misf qfuk' 
+    }
+});
+
+// Server start par check karega ki Email ready hai ya nahi
+transporter.verify((error, success) => {
+    if (error) {
+        console.log("❌ Email Setup Error:", error);
+    } else {
+        console.log("✅ Email Server Ready hai! OTP ja sakta hai.");
     }
 });
 
@@ -216,6 +227,7 @@ app.post('/api/forgot-password', async (req, res) => {
 
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
     } catch (err) {
+        console.log("❌ OTP Bhejney mein error aya:", err); // 🔴 CHANGED: Added Log
         res.status(500).json({ success: false, message: "Error sending email!" });
     }
 });
