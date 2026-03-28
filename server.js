@@ -39,7 +39,7 @@ const noticeStorage = new CloudinaryStorage({
     params: {
         folder: 'ZhiNotices', 
         allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], 
-        resource_type: 'auto'
+       
     },
 });
 const uploadNotice = multer({ storage: noticeStorage });
