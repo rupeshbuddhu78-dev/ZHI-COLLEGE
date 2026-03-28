@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const https = require('https'); // 🔴 ADDED: Server ko awake rakhne ke liye
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -107,7 +108,7 @@ app.post('/api/login', async (req, res) => {
                     bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
                     category: student.category || "N/A",
                     religion: student.religion || "N/A",
-                    profilePicUrl: student.profilePicUrl || "" // 🔴 YAHAN SE APP MEIN LINK JAYEGA
+                    profilePicUrl: student.profilePicUrl || "" 
                 });
             }
             
@@ -253,5 +254,21 @@ const seedAdmin = async () => {
 };
 seedAdmin();
 
-// --- 8. START SERVER ---
+// --- 8. SELF-PING LOGIC (Anti-Sleep) ---
+const keepAlive = () => {
+    const SERVER_URL = 'https://zhi-college.onrender.com'; // 🔴 Aapka URL add kar diya
+    
+    https.get(SERVER_URL, (res) => {
+        if (res.statusCode === 200) {
+            console.log('⏰ Server khud ko ping kar raha hai taaki soye nahi! (Status: 200)');
+        }
+    }).on('error', (err) => {
+        console.log('❌ Ping fail ho gaya:', err.message);
+    });
+};
+
+// Har 14 minute (14 * 60 * 1000 ms) mein server khud ko ping karega
+setInterval(keepAlive, 14 * 60 * 1000);
+
+// --- 9. START SERVER ---
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
