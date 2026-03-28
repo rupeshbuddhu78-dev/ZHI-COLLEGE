@@ -2,7 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const nodemailer = require('nodemailer'); // 🔴 NAYA PACKAGE EMAIL KE LIYe
+const nodemailer = require('nodemailer'); 
+// 🔴 NAYE PACKAGES PHOTO UPLOAD KE LIYE 🔴
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,18 +16,35 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- CLOUDINARY CONFIGURATION ---
+// 🔴 Yahan tumhari API keys set ki hain
+cloudinary.config({ 
+    cloud_name: 'dzbpiv7ds', 
+    api_key: '812196161439545', 
+    api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY' 
+});
+
+// --- MULTER STORAGE SETUP (Cloudinary Godown) ---
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ZhiStudentProfiles', // Is folder mein sab bacho ki photo jayegi
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], 
+    },
+});
+const upload = multer({ storage: storage });
+
 // --- 1. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
 .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
 .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// --- EMAIL TRANSPORTER SETUP (OTP Bhejne ke liye) ---
-// ⚠️ DHYAN DE: Yahan apna asli college/app ka email aur "App Password" dalna hoga
+// --- EMAIL TRANSPORTER SETUP ---
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'rupesh.c.0828@zhi.org.in', // 🔴 APNA GMAIL YAHA DALE
-        pass: 'dyju pxba misf qfuk' // 🔴 APNA GMAIL APP PASSWORD YAHA DALE (Normal password kaam nahi karega)
+        user: 'rupesh.c.0828@zhi.org.in', 
+        pass: 'dyju pxba misf qfuk' 
     }
 });
 
@@ -33,8 +54,8 @@ const userSchema = new mongoose.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    resetOtp: { type: String },       // 🔴 OTP save karne ke liye
-    otpExpiry: { type: Date }         // 🔴 OTP kab expire hoga uske liye
+    resetOtp: { type: String },       
+    otpExpiry: { type: Date }         
 });
 const User = mongoose.model('User', userSchema);
 
@@ -54,10 +75,12 @@ const studentSchema = new mongoose.Schema({
     guardianMobile: String, guardianAddress: String,
     amountCollected: Number, paymentMode: String, transactionId: String,
     password: { type: String, required: true },
-    resetOtp: { type: String },       // 🔴 OTP save karne ke liye
-    otpExpiry: { type: Date }         // 🔴 OTP expiry ke liye
+    resetOtp: { type: String },       
+    otpExpiry: { type: Date },
+    profilePicUrl: { type: String, default: "" } // 🔴 NAYA FIELD PHOTO LINK KE LIYE
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
+
 
 // --- 3. API ROUTES ---
 
@@ -71,30 +94,26 @@ app.post('/api/login', async (req, res) => {
     try {
         if (role === 'Student' || role === 'student') {
             const student = await Student.findOne({ email: email, password: password });
-if (student) {
-    return res.status(200).json({ 
-        success: true, 
-        message: "Welcome Student!", 
-        role: "Student", 
-        
-        // Basic Info
-        studentName: student.studentName,
-        course: student.course || "N/A",      
-        semester: student.semester || "N/A",  
-        email: student.email,
+            if (student) {
+                return res.status(200).json({ 
+                    success: true, 
+                    message: "Welcome Student!", 
+                    role: "Student", 
+                    
+                    studentName: student.studentName,
+                    course: student.course || "N/A",      
+                    semester: student.semester || "N/A",  
+                    email: student.email,
 
-        // 🔴 YAHAN FIX KIYA HAI (Database keys se match kar diya)
-        registrationNo: student.collegeRegNo || "N/A",   // DB mein 'collegeRegNo' hai
-        regDate: student.registrationDate || "N/A",      // DB mein 'registrationDate' hai
-        dob: student.dob || "N/A",
-        gender: student.gender || "N/A",
-        bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
-        category: student.category || "N/A",
-        religion: student.religion || "N/A"
-    });
-
-
-
+                    registrationNo: student.collegeRegNo || "N/A",   
+                    regDate: student.registrationDate || "N/A",      
+                    dob: student.dob || "N/A",
+                    gender: student.gender || "N/A",
+                    bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
+                    category: student.category || "N/A",
+                    religion: student.religion || "N/A",
+                    profilePicUrl: student.profilePicUrl || "" // 🔴 YAHAN SE APP MEIN LINK JAYEGA
+                });
             } else {
                 return res.status(401).json({ success: false, message: "Invalid Email or Password!" });
             }
@@ -111,6 +130,40 @@ if (student) {
         res.status(500).json({ success: false, message: "Server Error!" });
     }
 });
+
+
+// 🔥 NAYA API: PROFILE PHOTO UPLOAD 🔥
+app.post('/api/upload-photo/:id', upload.single('profileImage'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Koi photo miley nahi!' });
+        }
+
+        const studentId = req.params.id;
+        const photoUrl = req.file.path; // Cloudinary se aaya hua link
+
+        const student = await Student.findByIdAndUpdate(
+            studentId, 
+            { profilePicUrl: photoUrl }, 
+            { new: true }
+        );
+
+        if (!student) {
+            return res.status(404).json({ success: false, message: 'Student nahi mila!' });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Photo Cloudinary aur Database mein save ho gayi! 🎉', 
+            profilePicUrl: photoUrl 
+        });
+
+    } catch (error) {
+        console.error("Upload Error:", error);
+        res.status(500).json({ success: false, message: 'Server error!' });
+    }
+});
+
 
 // Add Student
 app.post('/api/add-student', async (req, res) => {
@@ -156,11 +209,10 @@ app.delete('/api/students/:id', async (req, res) => {
     }
 });
 
-// 🔥 NAYA API 1: FORGOT PASSWORD (OTP Bhejne ke liye) 🔥
+// FORGOT PASSWORD
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
-        // Pehle Student dhoondho, agar nahi mila toh Admin dhoondho
         let user = await Student.findOne({ email });
         let isStudent = true;
 
@@ -173,17 +225,13 @@ app.post('/api/forgot-password', async (req, res) => {
             return res.status(404).json({ success: false, message: "Is email se koi account nahi mila!" });
         }
 
-        // 6-digit ka random OTP banao
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // OTP ko database mein save karo (10 minute ki expiry ke sath)
         user.resetOtp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 Minutes
+        user.otpExpiry = Date.now() + 10 * 60 * 1000; 
         await user.save();
 
-        // Email bhejne ka setup
         const mailOptions = {
-            from: 'tumhara.email@gmail.com', // 🔴 Apna same email yaha dalo
+            from: 'rupesh.c.0828@zhi.org.in', 
             to: user.email,
             subject: 'ZHI App - Password Reset OTP',
             text: `Aapka Password Reset OTP hai: ${otp}\n\nYeh OTP 10 minute tak valid rahega. Agar aapne request nahi ki hai toh is message ko ignore karein.`
@@ -203,7 +251,7 @@ app.post('/api/forgot-password', async (req, res) => {
     }
 });
 
-// 🔥 NAYA API 2: RESET PASSWORD (OTP verify karke naya password set karna) 🔥
+// RESET PASSWORD
 app.post('/api/reset-password', async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {
@@ -216,7 +264,6 @@ app.post('/api/reset-password', async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found!" });
         }
 
-        // Check karo OTP sahi hai ya nahi, aur expiry time check karo
         if (user.resetOtp !== otp) {
             return res.status(400).json({ success: false, message: "Galat OTP!" });
         }
@@ -225,7 +272,6 @@ app.post('/api/reset-password', async (req, res) => {
             return res.status(400).json({ success: false, message: "OTP expire ho gaya hai! Naya OTP bhejein." });
         }
 
-        // Agar sab sahi hai, toh naya password set karo aur OTP delete kar do
         user.password = newPassword;
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
