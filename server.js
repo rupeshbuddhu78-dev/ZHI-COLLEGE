@@ -22,7 +22,6 @@ cloudinary.config({
     api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY' 
 });
 
-// Multer Storage Setup
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -51,8 +50,8 @@ const userSchema = new mongoose.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    resetOtp: String,       
-    otpExpiry: Date         
+    resetOtp: String,        
+    otpExpiry: Date          
 });
 const User = mongoose.model('User', userSchema);
 
@@ -72,12 +71,11 @@ const studentSchema = new mongoose.Schema({
     guardianMobile: String, guardianAddress: String,
     amountCollected: Number, paymentMode: String, transactionId: String,
     password: { type: String, required: true },
-    resetOtp: String,       
+    resetOtp: String,        
     otpExpiry: Date,
     profilePicUrl: { type: String, default: "" } 
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
-
 
 // --- 6. API ROUTES ---
 
@@ -85,7 +83,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Login API
+// Login API (Students & Admin)
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
     try {
@@ -98,13 +96,17 @@ app.post('/api/login', async (req, res) => {
                     role: "Student", 
                     studentName: student.studentName,
                     email: student.email,
-                    profilePicUrl: student.profilePicUrl || ""
+                    profilePicUrl: student.profilePicUrl || "",
+                    // Baki fields jo App me chahiye
+                    course: student.course,
+                    semester: student.semester,
+                    registrationNo: student.collegeRegNo
                 });
             }
         } else {
             const user = await User.findOne({ email, role, password });
             if (user) {
-                return res.status(200).json({ success: true, message: "Welcome!", role: user.role });
+                return res.status(200).json({ success: true, message: "Welcome Admin!", role: user.role });
             }
         }
         res.status(401).json({ success: false, message: "Invalid Credentials!" });
@@ -113,19 +115,17 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 🔥 FIXED: Add Student (Returns studentId now)
+// Add Student (Returns studentId for next step: photo upload)
 app.post('/api/add-student', async (req, res) => {
     try {
         const newStudent = new Student({
             ...req.body,
-            password: req.body.studentMobile // Phone number is default password
+            password: req.body.studentMobile // Default password is mobile number
         });
         const savedStudent = await newStudent.save();
-        
-        // Return studentId taaki frontend photo upload kar sake
         res.status(201).json({ 
             success: true, 
-            message: 'Student added!', 
+            message: 'Student added successfully!', 
             studentId: savedStudent._id 
         });
     } catch (error) {
@@ -134,7 +134,7 @@ app.post('/api/add-student', async (req, res) => {
     }
 });
 
-// 🔥 Photo Upload Route
+// Photo Upload Route
 app.post('/api/upload-photo/:id', upload.single('profileImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded!' });
@@ -148,7 +148,7 @@ app.post('/api/upload-photo/:id', upload.single('profileImage'), async (req, res
 
         if (!student) return res.status(404).json({ success: false, message: 'Student not found!' });
 
-        res.status(200).json({ success: true, profilePicUrl: photoUrl });
+        res.status(200).json({ success: true, message: 'Photo Updated!', profilePicUrl: photoUrl });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Upload failed!' });
     }
@@ -164,7 +164,29 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
-// Forgot Password
+// Update Student
+app.put('/api/students/:id', async (req, res) => {
+    try {
+        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
+        res.status(200).json({ success: true, message: 'Student details updated!', data: updatedStudent });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error!' });
+    }
+});
+
+// Delete Student
+app.delete('/api/students/:id', async (req, res) => {
+    try {
+        const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+        if (!deletedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
+        res.status(200).json({ success: true, message: 'Student deleted successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error!' });
+    }
+});
+
+// Forgot Password (OTP)
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
@@ -180,10 +202,10 @@ app.post('/api/forgot-password', async (req, res) => {
             from: 'rupesh.c.0828@zhi.org.in',
             to: user.email,
             subject: 'ZHI App - OTP',
-            text: `Aapka OTP hai: ${otp}`
+            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid hai.`
         });
 
-        res.status(200).json({ success: true, message: "OTP sent!" });
+        res.status(200).json({ success: true, message: "OTP sent to your email!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "Error sending email!" });
     }
@@ -203,7 +225,7 @@ app.post('/api/reset-password', async (req, res) => {
         user.otpExpiry = undefined;
         await user.save();
 
-        res.status(200).json({ success: true, message: "Password updated!" });
+        res.status(200).json({ success: true, message: "Password updated successfully!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "Server error!" });
     }
@@ -218,9 +240,10 @@ const seedAdmin = async () => {
             email: 'admin@zhi.edu.in',
             password: 'admin123'
         });
+        console.log("👤 Admin seeded: admin@zhi.edu.in / admin123");
     }
 };
 seedAdmin();
 
 // --- 8. START SERVER ---
-app.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
