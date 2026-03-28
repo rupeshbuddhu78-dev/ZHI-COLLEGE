@@ -20,7 +20,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 cloudinary.config({ 
     cloud_name: 'dzbpiv7ds', 
     api_key: '812196161439545', 
-    api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY' 
+    api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY',
+    secure: true // 🔴 ADDED: Isse browser mein link block nahi hoga
 });
 
 // Profile Photos ke liye storage
@@ -38,8 +39,7 @@ const noticeStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'ZhiNotices', 
-        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], 
-       
+        resource_type: 'auto' // 🔴 CRITICAL FIX: Isse PDF aur Image dono bina clash ke upload honge
     },
 });
 const uploadNotice = multer({ storage: noticeStorage });
@@ -118,7 +118,7 @@ const transactionSchema = new mongoose.Schema({
     receiptNo: { type: String, unique: true }, 
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
     date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String,
-    payerMobile: String // 🔴 ADDED: Payer Mobile Number
+    payerMobile: String 
 }, { timestamps: true });
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
@@ -406,17 +406,16 @@ app.post('/api/finance/expense', async (req, res) => {
 
 // 🟢 NEW: GLOBAL NOTICE APIs 🟢
 
-// 1. Upload Notice
+// 1. Upload Notice (POST)
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
         
         let fileUrl = "";
         if (req.file) {
-            fileUrl = req.file.path; // Cloudinary ka direct link aayega
+            fileUrl = req.file.secure_url || req.file.path; // Secured URL for Web and App
         }
 
-        // Frontend se string aayega, usko array mein convert karna hai
         let parsedAudience = [];
         try {
             parsedAudience = JSON.parse(audience);
@@ -436,7 +435,7 @@ app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => 
     }
 });
 
-// 2. Fetch Notices (App aur Admin dono ke liye)
+// 2. Fetch Notices (GET)
 app.get('/api/notices', async (req, res) => {
     try {
         const { targetRole } = req.query; // 'Students', 'Faculty', etc.
@@ -448,6 +447,51 @@ app.get('/api/notices', async (req, res) => {
 
         const notices = await Notice.find(filter).sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: notices });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Edit Notice (PUT) 🔴 NEW API ADDED
+app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) => {
+    try {
+        const { title, message, priority, audience } = req.body;
+        
+        // Prepare data to update
+        let updateData = { title, message, priority };
+        
+        // Parse audience if provided
+        if (audience) {
+            try {
+                updateData.audience = JSON.parse(audience);
+            } catch (e) {
+                updateData.audience = audience.split(',');
+            }
+        }
+
+        // If a new file is uploaded during edit, update the fileUrl
+        if (req.file) {
+            updateData.fileUrl = req.file.secure_url || req.file.path;
+        }
+
+        const updatedNotice = await Notice.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        
+        if (!updatedNotice) return res.status(404).json({ success: false, message: "Notice not found!" });
+
+        res.status(200).json({ success: true, message: "Notice updated successfully!", data: updatedNotice });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 4. Delete Notice (DELETE) 🔴 NEW API ADDED
+app.delete('/api/notices/:id', async (req, res) => {
+    try {
+        const deletedNotice = await Notice.findByIdAndDelete(req.params.id);
+        
+        if (!deletedNotice) return res.status(404).json({ success: false, message: "Notice not found!" });
+
+        res.status(200).json({ success: true, message: "Notice deleted permanently!" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
