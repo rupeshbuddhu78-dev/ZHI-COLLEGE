@@ -23,6 +23,7 @@ cloudinary.config({
     api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY' 
 });
 
+// Profile Photos ke liye storage
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -31,6 +32,16 @@ const storage = new CloudinaryStorage({
     },
 });
 const upload = multer({ storage: storage });
+
+// 🔴 NEW: Global Notices (PDF/Images) ke liye storage 🔴
+const noticeStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ZhiNotices', 
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], 
+    },
+});
+const uploadNotice = multer({ storage: noticeStorage });
 
 // --- 3. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
@@ -115,6 +126,17 @@ const expenseSchema = new mongoose.Schema({
     mode: String, amount: Number, description: String
 }, { timestamps: true });
 const Expense = mongoose.model('Expense', expenseSchema);
+
+// 🟢 NEW: NOTICE SCHEMA 🟢
+const noticeSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+    priority: { type: String, default: "info" }, // 'info' ya 'urgent'
+    audience: [{ type: String }], // Array ["Students", "Faculty", "Staff"]
+    fileUrl: { type: String, default: "" }, // PDF/Image URL from Cloudinary
+    postedBy: { type: String, default: "Director Office" }
+}, { timestamps: true });
+const Notice = mongoose.model('Notice', noticeSchema);
 
 // 🟢 FEE GENERATOR HELPER FUNCTION 🟢
 const generateFeeStructure = (courseName) => {
@@ -283,7 +305,6 @@ app.post('/api/reset-password', async (req, res) => {
 
 // 🟢 FINANCE API ROUTES 🟢
 
-// Advanced Search Student for Fee Modal & Ledger
 app.get('/api/finance/search-student', async (req, res) => {
     try {
         const { q, course, sem, batch } = req.query;
@@ -307,7 +328,6 @@ app.get('/api/finance/search-student', async (req, res) => {
     }
 });
 
-// Get/Generate Student Fee Record
 app.get('/api/finance/student-fee/:studentId', async (req, res) => {
     try {
         const student = await Student.findById(req.params.studentId);
@@ -325,7 +345,6 @@ app.get('/api/finance/student-fee/:studentId', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// Collect Fee (UPDATED: Added Payer Mobile saving logic)
 app.post('/api/finance/collect-fee', async (req, res) => {
     const { studentId, headId, amount, mode, remarks, date, payerMobile } = req.body; 
     try {
@@ -348,7 +367,7 @@ app.post('/api/finance/collect-fee', async (req, res) => {
         const newTrans = new Transaction({
             receiptNo, studentId, amount, mode, date: date || new Date(), 
             feeHeadName: feeRecord.feeHeads[headIndex].headName, remarks,
-            payerMobile // 🔴 Saving payer mobile to DB
+            payerMobile 
         });
         await newTrans.save();
 
@@ -356,7 +375,6 @@ app.post('/api/finance/collect-fee', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// Get Dashboard Stats & Lists
 app.get('/api/finance/dashboard', async (req, res) => {
     try {
         const transactions = await Transaction.find().populate('studentId', 'studentName collegeRegNo course').sort({createdAt: -1}).limit(20);
@@ -376,7 +394,6 @@ app.get('/api/finance/dashboard', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// Add Expense
 app.post('/api/finance/expense', async (req, res) => {
     try {
         const voucherNo = "EXP" + Math.floor(1000 + Math.random() * 9000);
@@ -385,6 +402,56 @@ app.post('/api/finance/expense', async (req, res) => {
         res.status(201).json({ success: true, message: "Expense Recorded!" });
     } catch (err) { res.status(500).json({ success: false }); }
 });
+
+// 🟢 NEW: GLOBAL NOTICE APIs 🟢
+
+// 1. Upload Notice
+app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
+    try {
+        const { title, message, priority, audience } = req.body;
+        
+        let fileUrl = "";
+        if (req.file) {
+            fileUrl = req.file.path; // Cloudinary ka direct link aayega
+        }
+
+        // Frontend se string aayega, usko array mein convert karna hai
+        let parsedAudience = [];
+        try {
+            parsedAudience = JSON.parse(audience);
+        } catch (e) {
+            parsedAudience = audience ? audience.split(',') : [];
+        }
+
+        const newNotice = new Notice({
+            title, message, priority, audience: parsedAudience, fileUrl
+        });
+
+        await newNotice.save();
+        res.status(201).json({ success: true, message: "Notice sent successfully!", data: newNotice });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Fetch Notices (App aur Admin dono ke liye)
+app.get('/api/notices', async (req, res) => {
+    try {
+        const { targetRole } = req.query; // 'Students', 'Faculty', etc.
+        let filter = {};
+        
+        if (targetRole) {
+            filter.audience = targetRole; 
+        }
+
+        const notices = await Notice.find(filter).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: notices });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 
 // --- 7. SEED ADMIN ---
 const seedAdmin = async () => {
