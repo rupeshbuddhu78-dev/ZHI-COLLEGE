@@ -94,15 +94,22 @@ app.post('/api/login', async (req, res) => {
                     success: true, 
                     message: "Welcome Student!", 
                     role: "Student", 
+                    
                     studentName: student.studentName,
+                    course: student.course || "N/A",      
+                    semester: student.semester || "N/A",  
                     email: student.email,
-                    profilePicUrl: student.profilePicUrl || "",
-                    // Baki fields jo App me chahiye
-                    course: student.course,
-                    semester: student.semester,
-                    registrationNo: student.collegeRegNo
+
+                    registrationNo: student.collegeRegNo || "N/A",   
+                    regDate: student.registrationDate || "N/A",      
+                    dob: student.dob || "N/A",
+                    gender: student.gender || "N/A",
+                    bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
+                    category: student.category || "N/A",
+                    religion: student.religion || "N/A",
+                    profilePicUrl: student.profilePicUrl || "" // 🔴 YAHAN SE APP MEIN LINK JAYEGA
                 });
-            }
+            
         } else {
             const user = await User.findOne({ email, role, password });
             if (user) {
