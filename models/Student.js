@@ -4,7 +4,7 @@ const studentSchema = new mongoose.Schema({
     // Academic Details
     course: String,
     semester: String,
-    sessionBatch: String,       // Naya add kiya hua field
+    sessionBatch: String,       
     registrationDate: String,
     collegeRegNo: String,
     univRegNo: String,
@@ -18,16 +18,16 @@ const studentSchema = new mongoose.Schema({
     motherTongue: String,
     studentMobile: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    aadharNumber: String,       // Naya add kiya hua field
-    category: String,           // Naya add kiya hua field
-    religion: String,           // Naya add kiya hua field
+    aadharNumber: String,       
+    category: String,           
+    religion: String,           
     
     // Address Details
     permanentAddress: String,
     city: String,
     state: String,
-    pincode: String,            // Naya add kiya hua field
-    district: String,           // Naya add kiya hua field
+    pincode: String,            
+    district: String,           
     tempAddress: String,
     
     // Guardian Details
@@ -45,9 +45,18 @@ const studentSchema = new mongoose.Schema({
     paymentMode: String,
     transactionId: String,
     
+    // 🔴 PHOTO AND DOCUMENTS LINK (Naya Add Kiya Gaya Hai)
+    // Cloudinary ka URL yahan save hoga
+    profilePicUrl: { type: String, default: "" }, 
+    aadharDocUrl: { type: String, default: "" }, 
+    
     // Credentials
-    // Note: Password hum wahi mobile number ko save karenge
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+
+    // OTP and Security (Forgot Password ke liye zaroori hai)
+    resetOtp: { type: String },
+    otpExpiry: { type: Date }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Student', studentSchema);
