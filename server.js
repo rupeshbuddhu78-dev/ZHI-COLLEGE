@@ -109,6 +109,7 @@ app.post('/api/login', async (req, res) => {
                     religion: student.religion || "N/A",
                     profilePicUrl: student.profilePicUrl || "" // 🔴 YAHAN SE APP MEIN LINK JAYEGA
                 });
+            }
             
         } else {
             const user = await User.findOne({ email, role, password });
