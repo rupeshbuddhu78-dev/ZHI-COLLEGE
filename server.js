@@ -413,7 +413,9 @@ app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => 
         
         let fileUrl = "";
         if (req.file) {
-            fileUrl = req.file.secure_url || req.file.path; // Secured URL for Web and App
+            // 🔴 JADOO YAHAN HAI: Ye line URL legi aur usme se .pdf ko hata kar .png laga degi
+            let tempUrl = req.file.secure_url || req.file.path;
+            fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
         }
 
         let parsedAudience = [];
@@ -452,15 +454,13 @@ app.get('/api/notices', async (req, res) => {
     }
 });
 
-// 3. Edit Notice (PUT) 🔴 NEW API ADDED
+// 3. Edit Notice (PUT) 🔴 UPDATED WITH PNG FIX
 app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
         
-        // Prepare data to update
         let updateData = { title, message, priority };
         
-        // Parse audience if provided
         if (audience) {
             try {
                 updateData.audience = JSON.parse(audience);
@@ -469,9 +469,11 @@ app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) 
             }
         }
 
-        // If a new file is uploaded during edit, update the fileUrl
+        // 🔴 FIX YAHAN HAI: Agar nayi file upload ho rahi hai
         if (req.file) {
-            updateData.fileUrl = req.file.secure_url || req.file.path;
+            let tempUrl = req.file.secure_url || req.file.path;
+            // PDF ko PNG extension mein convert kar raha hai
+            updateData.fileUrl = tempUrl.replace(/\.pdf$/i, '.png');
         }
 
         const updatedNotice = await Notice.findByIdAndUpdate(req.params.id, updateData, { new: true });
