@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const https = require('https'); // 🔴 ADDED: Server ko awake rakhne ke liye
+const https = require('https'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,7 +37,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
 .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
 .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// --- 4. EMAIL SETUP (🔴 UPDATED FOR SECURITY & LOGGING) ---
+// --- 4. EMAIL SETUP ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
@@ -48,7 +48,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Server start par check karega ki Email ready hai ya nahi
 transporter.verify((error, success) => {
     if (error) {
         console.log("❌ Email Setup Error:", error);
@@ -89,7 +88,7 @@ const studentSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
 
-// 🟢 NEW ADDITION: FINANCE SCHEMAS 🟢
+// 🟢 FINANCE SCHEMAS (Advanced Array Logic) 🟢
 const feeHeadSchema = new mongoose.Schema({
     headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 }, 
     fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 }, 
@@ -99,13 +98,15 @@ const feeHeadSchema = new mongoose.Schema({
 const studentFeeSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
     totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
-    feeHeads: [feeHeadSchema]
+    feeHeads: [feeHeadSchema] // 🔴 6 Semesters ka list yahan aayega
 });
 const StudentFee = mongoose.model('StudentFee', studentFeeSchema);
 
 const transactionSchema = new mongoose.Schema({
-    receiptNo: { type: String, unique: true }, studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
-    date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String
+    receiptNo: { type: String, unique: true }, 
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+    date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String,
+    payerMobile: String // 🔴 ADDED: Payer Mobile Number
 }, { timestamps: true });
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
@@ -115,7 +116,7 @@ const expenseSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Expense = mongoose.model('Expense', expenseSchema);
 
-// 🟢 NEW ADDITION: FEE GENERATOR HELPER FUNCTION 🟢
+// 🟢 FEE GENERATOR HELPER FUNCTION 🟢
 const generateFeeStructure = (courseName) => {
     let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880; 
     let heads = [
@@ -153,7 +154,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Login API (Students & Admin)
+// Login API
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
     try {
@@ -164,12 +165,10 @@ app.post('/api/login', async (req, res) => {
                     success: true, 
                     message: "Welcome Student!", 
                     role: "Student", 
-                    
                     studentName: student.studentName,
                     course: student.course || "N/A",      
                     semester: student.semester || "N/A",  
                     email: student.email,
-
                     registrationNo: student.collegeRegNo || "N/A",   
                     regDate: student.registrationDate || "N/A",      
                     dob: student.dob || "N/A",
@@ -180,7 +179,6 @@ app.post('/api/login', async (req, res) => {
                     profilePicUrl: student.profilePicUrl || "" 
                 });
             }
-            
         } else {
             const user = await User.findOne({ email, role, password });
             if (user) {
@@ -188,12 +186,10 @@ app.post('/api/login', async (req, res) => {
             }
         }
         res.status(401).json({ success: false, message: "Invalid Credentials!" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Server Error!" });
-    }
+    } catch (err) { res.status(500).json({ success: false, message: "Server Error!" }); }
 });
 
-// Add Student (Returns studentId for next step: photo upload)
+// Admin & Student Core APIs
 app.post('/api/add-student', async (req, res) => {
     try {
         const newStudent = new Student({
@@ -202,9 +198,7 @@ app.post('/api/add-student', async (req, res) => {
         });
         const savedStudent = await newStudent.save();
         res.status(201).json({ 
-            success: true, 
-            message: 'Student added successfully!', 
-            studentId: savedStudent._id 
+            success: true, message: 'Student added successfully!', studentId: savedStudent._id 
         });
     } catch (error) {
         if (error.code === 11000) return res.status(400).json({ success: false, message: 'Email already exists!' });
@@ -212,59 +206,39 @@ app.post('/api/add-student', async (req, res) => {
     }
 });
 
-// Photo Upload Route
 app.post('/api/upload-photo/:id', upload.single('profileImage'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded!' });
-
         const photoUrl = req.file.path;
-        const student = await Student.findByIdAndUpdate(
-            req.params.id, 
-            { profilePicUrl: photoUrl }, 
-            { new: true }
-        );
-
+        const student = await Student.findByIdAndUpdate(req.params.id, { profilePicUrl: photoUrl }, { new: true });
         if (!student) return res.status(404).json({ success: false, message: 'Student not found!' });
-
         res.status(200).json({ success: true, message: 'Photo Updated!', profilePicUrl: photoUrl });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Upload failed!' });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: 'Upload failed!' }); }
 });
 
-// Get All Students
 app.get('/api/students', async (req, res) => {
     try {
         const students = await Student.find().sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: students });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error!' });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: 'Server error!' }); }
 });
 
-// Update Student
 app.put('/api/students/:id', async (req, res) => {
     try {
         const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
         res.status(200).json({ success: true, message: 'Student details updated!', data: updatedStudent });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error!' });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: 'Server error!' }); }
 });
 
-// Delete Student
 app.delete('/api/students/:id', async (req, res) => {
     try {
         const deletedStudent = await Student.findByIdAndDelete(req.params.id);
         if (!deletedStudent) return res.status(404).json({ success: false, message: 'Student not found!' });
         res.status(200).json({ success: true, message: 'Student deleted successfully!' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error!' });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: 'Server error!' }); }
 });
 
-// Forgot Password (OTP)
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
@@ -285,12 +259,11 @@ app.post('/api/forgot-password', async (req, res) => {
 
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
     } catch (err) {
-        console.log("❌ OTP Bhejney mein error aya:", err); // 🔴 CHANGED: Added Log
+        console.log("❌ OTP Bhejney mein error aya:", err);
         res.status(500).json({ success: false, message: "Error sending email!" });
     }
 });
 
-// Reset Password
 app.post('/api/reset-password', async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {
@@ -298,19 +271,16 @@ app.post('/api/reset-password', async (req, res) => {
         if (!user || user.resetOtp !== otp || user.otpExpiry < Date.now()) {
             return res.status(400).json({ success: false, message: "Invalid or Expired OTP!" });
         }
-
         user.password = newPassword;
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
         await user.save();
-
         res.status(200).json({ success: true, message: "Password updated successfully!" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Server error!" });
-    }
+    } catch (err) { res.status(500).json({ success: false, message: "Server error!" }); }
 });
 
-// 🟢 NEW ADDITION: FINANCE API ROUTES 🟢
+
+// 🟢 FINANCE API ROUTES 🟢
 
 // Advanced Search Student for Fee Modal & Ledger
 app.get('/api/finance/search-student', async (req, res) => {
@@ -329,7 +299,7 @@ app.get('/api/finance/search-student', async (req, res) => {
         if (sem && sem !== "") filterQuery.semester = sem;
         if (batch && batch !== "") filterQuery.sessionBatch = new RegExp(batch, 'i');
 
-        const students = await Student.find(filterQuery).select('_id studentName collegeRegNo course sessionBatch');
+        const students = await Student.find(filterQuery).select('_id studentName collegeRegNo course sessionBatch semester');
         res.status(200).json({ success: true, data: students });
     } catch (err) { 
         res.status(500).json({ success: false, message: "Error searching students" }); 
@@ -354,9 +324,9 @@ app.get('/api/finance/student-fee/:studentId', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// Collect Fee
+// Collect Fee (UPDATED: Added Payer Mobile saving logic)
 app.post('/api/finance/collect-fee', async (req, res) => {
-    const { studentId, headId, amount, mode, remarks, date } = req.body;
+    const { studentId, headId, amount, mode, remarks, date, payerMobile } = req.body; 
     try {
         let feeRecord = await StudentFee.findOne({ studentId });
         if(!feeRecord) return res.status(404).json({ success: false, message: "Ledger not found!" });
@@ -364,6 +334,7 @@ app.post('/api/finance/collect-fee', async (req, res) => {
         const headIndex = feeRecord.feeHeads.findIndex(h => h._id.toString() === headId);
         if(headIndex === -1) return res.status(400).json({ success: false, message: "Fee head not found!" });
 
+        // Update amounts
         feeRecord.feeHeads[headIndex].paid += Number(amount);
         feeRecord.feeHeads[headIndex].due -= Number(amount);
         if(feeRecord.feeHeads[headIndex].due <= 0) feeRecord.feeHeads[headIndex].status = "Paid";
@@ -375,7 +346,8 @@ app.post('/api/finance/collect-fee', async (req, res) => {
         const receiptNo = "REC" + Math.floor(100000 + Math.random() * 900000);
         const newTrans = new Transaction({
             receiptNo, studentId, amount, mode, date: date || new Date(), 
-            feeHeadName: feeRecord.feeHeads[headIndex].headName, remarks
+            feeHeadName: feeRecord.feeHeads[headIndex].headName, remarks,
+            payerMobile // 🔴 Saving payer mobile to DB
         });
         await newTrans.save();
 
@@ -413,7 +385,6 @@ app.post('/api/finance/expense', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-
 // --- 7. SEED ADMIN ---
 const seedAdmin = async () => {
     const adminExists = await User.findOne({ email: 'admin@zhi.edu.in' });
@@ -430,7 +401,7 @@ seedAdmin();
 
 // --- 8. SELF-PING LOGIC (Anti-Sleep) ---
 const keepAlive = () => {
-    const SERVER_URL = 'https://zhi-college.onrender.com'; // 🔴 Aapka URL add kar diya
+    const SERVER_URL = 'https://zhi-college.onrender.com'; 
     
     https.get(SERVER_URL, (res) => {
         if (res.statusCode === 200) {
@@ -441,7 +412,6 @@ const keepAlive = () => {
     });
 };
 
-// Har 5 minute (5 * 60 * 1000 ms) mein server khud ko ping karega
 setInterval(keepAlive, 5 * 60 * 1000);
 
 // --- 9. START SERVER ---
