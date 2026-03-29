@@ -34,15 +34,27 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage: storage });
 
-// 🔴 NEW: Global Notices (PDF/Images) ke liye storage 🔴
+// Global Notices (PDF/Images) ke liye storage
 const noticeStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'ZhiNotices', 
-        resource_type: 'auto' // 🔴 CRITICAL FIX: Isse PDF aur Image dono bina clash ke upload honge
+        resource_type: 'auto' 
     },
 });
 const uploadNotice = multer({ storage: noticeStorage });
+
+// 🟢 NEW: Staff (Management/Teacher/Non-Teaching) Files ke liye storage 🟢
+const staffStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ZhiStaffFiles', 
+        resource_type: 'auto', // Auto taaki PDF (Resume) aur JPG (Profile) dono support kare
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx']
+    },
+});
+const uploadStaff = multer({ storage: staffStorage });
+
 
 // --- 3. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
@@ -69,6 +81,8 @@ transporter.verify((error, success) => {
 });
 
 // --- 5. SCHEMAS & MODELS ---
+
+// (Existing Schemas kept exactly same)
 const userSchema = new mongoose.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -100,7 +114,7 @@ const studentSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
 
-// 🟢 FINANCE SCHEMAS (Advanced Array Logic) 🟢
+// FINANCE SCHEMAS
 const feeHeadSchema = new mongoose.Schema({
     headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 }, 
     fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 }, 
@@ -110,7 +124,7 @@ const feeHeadSchema = new mongoose.Schema({
 const studentFeeSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
     totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
-    feeHeads: [feeHeadSchema] // 🔴 6 Semesters ka list yahan aayega
+    feeHeads: [feeHeadSchema] 
 });
 const StudentFee = mongoose.model('StudentFee', studentFeeSchema);
 
@@ -128,18 +142,64 @@ const expenseSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Expense = mongoose.model('Expense', expenseSchema);
 
-// 🟢 NEW: NOTICE SCHEMA 🟢
+// NOTICE SCHEMA
 const noticeSchema = new mongoose.Schema({
     title: { type: String, required: true },
     message: { type: String, required: true },
-    priority: { type: String, default: "info" }, // 'info' ya 'urgent'
-    audience: [{ type: String }], // Array ["Students", "Faculty", "Staff"]
-    fileUrl: { type: String, default: "" }, // PDF/Image URL from Cloudinary
+    priority: { type: String, default: "info" }, 
+    audience: [{ type: String }], 
+    fileUrl: { type: String, default: "" }, 
     postedBy: { type: String, default: "Director Office" }
 }, { timestamps: true });
 const Notice = mongoose.model('Notice', noticeSchema);
 
-// 🟢 FEE GENERATOR HELPER FUNCTION 🟢
+// 🟢 NEW: STAFF SCHEMA (Management, Teacher, Non-Teaching) 🟢
+const staffSchema = new mongoose.Schema({
+    category: { type: String, required: true }, // 'management', 'teacher', 'nonteaching'
+    role: { type: String, required: true }, // 'Principal', 'Guard', etc.
+    empId: { type: String, required: true, unique: true }, // e.g. ZHI-EMP-101
+    
+    // Basic Details
+    name: { type: String, required: true },
+    fatherName: String,
+    dob: String,
+    gender: String,
+    mobile: { type: String, required: true },
+    email: { type: String }, // Optional for Guard/Sweeper
+    address: String,
+    contact: String, // Contact for table display (Email or Mobile)
+    
+    // Identity Details
+    aadhaar: String,
+    pan: String,
+    
+    // Education & Skills (Mostly for Teachers/Management)
+    qualification: String,
+    university: String,
+    experience: String,
+    skills: String,
+    
+    // Job Details
+    joinDate: String,
+    dept: String,
+    shift: String,
+    salary: Number,
+    status: { type: String, default: "Active" }, // 'Active' or 'Disabled'
+    
+    // Bank Details
+    bankName: String,
+    accNumber: String,
+    ifsc: String,
+
+    // File Upload Links (Cloudinary)
+    profilePicUrl: { type: String, default: "" },
+    resumeUrl: { type: String, default: "" },
+    certUrl: { type: String, default: "" }
+}, { timestamps: true });
+const Staff = mongoose.model('Staff', staffSchema);
+
+
+// FEE GENERATOR HELPER FUNCTION
 const generateFeeStructure = (courseName) => {
     let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880; 
     let heads = [
@@ -170,6 +230,7 @@ const generateFeeStructure = (courseName) => {
     let total = processedHeads.reduce((sum, h) => sum + h.amount, 0);
     return { feeHeads: processedHeads, totalAmount: total, totalDue: total, totalPaid: 0, totalDiscount: 0 };
 };
+
 
 // --- 6. API ROUTES ---
 
@@ -305,7 +366,6 @@ app.post('/api/reset-password', async (req, res) => {
 
 
 // 🟢 FINANCE API ROUTES 🟢
-
 app.get('/api/finance/search-student', async (req, res) => {
     try {
         const { q, course, sem, batch } = req.query;
@@ -404,96 +464,144 @@ app.post('/api/finance/expense', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 🟢 NEW: GLOBAL NOTICE APIs 🟢
 
-// 1. Upload Notice (POST)
+// 🟢 GLOBAL NOTICE APIs 🟢
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
         
         let fileUrl = "";
         if (req.file) {
-            // 🔴 JADOO YAHAN HAI: Ye line URL legi aur usme se .pdf ko hata kar .png laga degi
             let tempUrl = req.file.secure_url || req.file.path;
             fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
         }
 
         let parsedAudience = [];
-        try {
-            parsedAudience = JSON.parse(audience);
-        } catch (e) {
-            parsedAudience = audience ? audience.split(',') : [];
-        }
+        try { parsedAudience = JSON.parse(audience); } 
+        catch (e) { parsedAudience = audience ? audience.split(',') : []; }
 
-        const newNotice = new Notice({
-            title, message, priority, audience: parsedAudience, fileUrl
-        });
-
+        const newNotice = new Notice({ title, message, priority, audience: parsedAudience, fileUrl });
         await newNotice.save();
         res.status(201).json({ success: true, message: "Notice sent successfully!", data: newNotice });
 
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-// 2. Fetch Notices (GET)
 app.get('/api/notices', async (req, res) => {
     try {
-        const { targetRole } = req.query; // 'Students', 'Faculty', etc.
+        const { targetRole } = req.query; 
         let filter = {};
+        if (targetRole) filter.audience = targetRole; 
         
-        if (targetRole) {
-            filter.audience = targetRole; 
-        }
-
         const notices = await Notice.find(filter).sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: notices });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-// 3. Edit Notice (PUT) 🔴 UPDATED WITH PNG FIX
 app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
-        
         let updateData = { title, message, priority };
         
         if (audience) {
-            try {
-                updateData.audience = JSON.parse(audience);
-            } catch (e) {
-                updateData.audience = audience.split(',');
-            }
+            try { updateData.audience = JSON.parse(audience); } 
+            catch (e) { updateData.audience = audience.split(','); }
         }
 
-        // 🔴 FIX YAHAN HAI: Agar nayi file upload ho rahi hai
         if (req.file) {
             let tempUrl = req.file.secure_url || req.file.path;
-            // PDF ko PNG extension mein convert kar raha hai
             updateData.fileUrl = tempUrl.replace(/\.pdf$/i, '.png');
         }
 
         const updatedNotice = await Notice.findByIdAndUpdate(req.params.id, updateData, { new: true });
-        
         if (!updatedNotice) return res.status(404).json({ success: false, message: "Notice not found!" });
 
         res.status(200).json({ success: true, message: "Notice updated successfully!", data: updatedNotice });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
+
+app.delete('/api/notices/:id', async (req, res) => {
+    try {
+        const deletedNotice = await Notice.findByIdAndDelete(req.params.id);
+        if (!deletedNotice) return res.status(404).json({ success: false, message: "Notice not found!" });
+        res.status(200).json({ success: true, message: "Notice deleted permanently!" });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
+
+
+// 🟢 NEW: STAFF (USERS & ROLES) APIs 🟢
+
+// 1. ADD NEW STAFF (Uploads 3 files: profilePic, resumeFile, certFile)
+app.post('/api/staff', uploadStaff.fields([
+    { name: 'profilePic', maxCount: 1 }, 
+    { name: 'resumeFile', maxCount: 1 }, 
+    { name: 'certFile', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const staffData = req.body;
+
+        // Ensure Employee ID is unique
+        const existingStaff = await Staff.findOne({ empId: staffData.empId });
+        if(existingStaff) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
+
+        // Grab Cloudinary Uploaded Links
+        if (req.files) {
+            if (req.files['profilePic']) staffData.profilePicUrl = req.files['profilePic'][0].path;
+            if (req.files['resumeFile']) staffData.resumeUrl = req.files['resumeFile'][0].path;
+            if (req.files['certFile']) staffData.certUrl = req.files['certFile'][0].path;
+        }
+
+        const newStaff = new Staff(staffData);
+        await newStaff.save();
+
+        res.status(201).json({ success: true, message: "Staff Added Successfully!", data: newStaff });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// 4. Delete Notice (DELETE) 🔴 NEW API ADDED
-app.delete('/api/notices/:id', async (req, res) => {
+// 2. GET ALL STAFF
+app.get('/api/staff', async (req, res) => {
     try {
-        const deletedNotice = await Notice.findByIdAndDelete(req.params.id);
-        
-        if (!deletedNotice) return res.status(404).json({ success: false, message: "Notice not found!" });
+        const staffList = await Staff.find().sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: staffList });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
-        res.status(200).json({ success: true, message: "Notice deleted permanently!" });
+// 3. EDIT STAFF
+app.put('/api/staff/:id', uploadStaff.fields([
+    { name: 'profilePic', maxCount: 1 }, 
+    { name: 'resumeFile', maxCount: 1 }, 
+    { name: 'certFile', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const updateData = req.body;
+
+        // Replace old links if new files are uploaded
+        if (req.files) {
+            if (req.files['profilePic']) updateData.profilePicUrl = req.files['profilePic'][0].path;
+            if (req.files['resumeFile']) updateData.resumeUrl = req.files['resumeFile'][0].path;
+            if (req.files['certFile']) updateData.certUrl = req.files['certFile'][0].path;
+        }
+
+        const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updatedStaff) return res.status(404).json({ success: false, message: "Staff not found!" });
+
+        res.status(200).json({ success: true, message: "Staff Details Updated!", data: updatedStaff });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 4. DELETE STAFF
+app.delete('/api/staff/:id', async (req, res) => {
+    try {
+        const deletedStaff = await Staff.findByIdAndDelete(req.params.id);
+        if (!deletedStaff) return res.status(404).json({ success: false, message: "Staff not found!" });
+
+        res.status(200).json({ success: true, message: "Staff Data Deleted!" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
