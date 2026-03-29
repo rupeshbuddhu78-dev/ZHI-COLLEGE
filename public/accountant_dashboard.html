@@ -181,28 +181,28 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #dcfce7; color: var(--success);"><i class='bx bx-rupee'></i></div>
                     <div class="stat-info">
-                        <h4>₹45,500</h4>
+                        <h4>₹<span id="todayCollection">0</span></h4>
                         <p>Today's Collection</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-trending-down'></i></div>
                     <div class="stat-info">
-                        <h4>₹2,100</h4>
+                        <h4>₹<span id="todayExpense">0</span></h4>
                         <p>Today's Expenses</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-time-five'></i></div>
                     <div class="stat-info">
-                        <h4>₹1.2L</h4>
+                        <h4>₹<span id="totalPending">0</span></h4>
                         <p>Total Pending Dues</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bxs-bank'></i></div>
                     <div class="stat-info">
-                        <h4>₹43,400</h4>
+                        <h4>₹<span id="netBalance">0</span></h4>
                         <p>Net Balance (Today)</p>
                     </div>
                 </div>
@@ -245,40 +245,8 @@
                                 <th>Type</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Today, 11:30 AM</td>
-                                <td><b>REC-89012</b></td>
-                                <td>Admission Fee - Rahul Sharma (BCA)</td>
-                                <td>UPI / Online</td>
-                                <td><b style="color: var(--success);">+ ₹30,000</b></td>
-                                <td><span class="badge-income">Income</span></td>
-                            </tr>
-                            <tr>
-                                <td>Today, 10:15 AM</td>
-                                <td><b>EXP-1045</b></td>
-                                <td>Office Stationary & Print Papers</td>
-                                <td>Cash</td>
-                                <td><b style="color: var(--danger);">- ₹1,200</b></td>
-                                <td><span class="badge-expense">Expense</span></td>
-                            </tr>
-                            <tr>
-                                <td>Yesterday, 2:45 PM</td>
-                                <td><b>REC-89011</b></td>
-                                <td>1st Sem Tuition Fee - Vikash (BBA)</td>
-                                <td>Bank Transfer</td>
-                                <td><b style="color: var(--success);">+ ₹12,130</b></td>
-                                <td><span class="badge-income">Income</span></td>
-                            </tr>
-                            <tr>
-                                <td>Yesterday, 1:00 PM</td>
-                                <td><b>EXP-1044</b></td>
-                                <td>Campus Maintenance (Plumber)</td>
-                                <td>Cash</td>
-                                <td><b style="color: var(--danger);">- ₹900</b></td>
-                                <td><span class="badge-expense">Expense</span></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="transactionTableBody">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -292,7 +260,7 @@
                 <h3><i class='bx bx-trending-down' style="color: var(--danger);"></i> Record New Expense</h3>
                 <button onclick="closeExpenseModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
             </div>
-            <form onsubmit="saveExpense(event)">
+            <form id="expenseForm" onsubmit="saveExpense(event)">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Expense Date</label>
@@ -300,7 +268,7 @@
                     </div>
                     <div class="form-group">
                         <label>Expense Category</label>
-                        <select required>
+                        <select id="expCategory" required>
                             <option value="Office Supplies">Office Stationary / Supplies</option>
                             <option value="Maintenance">Campus Maintenance / Repair</option>
                             <option value="Utility Bills">Utility Bills (Electricity, Internet)</option>
@@ -310,11 +278,11 @@
                     </div>
                     <div class="form-group">
                         <label>Amount (₹) *</label>
-                        <input type="number" placeholder="Enter amount spent" required>
+                        <input type="number" id="expAmount" placeholder="Enter amount spent" required>
                     </div>
                     <div class="form-group">
                         <label>Payment Mode</label>
-                        <select required>
+                        <select id="expMode" required>
                             <option value="Cash">Cash</option>
                             <option value="UPI">UPI / Online Transfer</option>
                             <option value="Bank/Cheque">Bank Account / Cheque</option>
@@ -322,21 +290,22 @@
                     </div>
                     <div class="form-group">
                         <label>Brief Description / Details *</label>
-                        <textarea rows="2" placeholder="Where was the money spent?" required></textarea>
+                        <textarea id="expDesc" rows="2" placeholder="Where was the money spent?" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeExpenseModal()" style="padding: 10px 18px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
-                    <button type="submit" class="btn-danger"><i class='bx bx-save'></i> Save Expense</button>
+                    <button type="submit" id="saveExpBtn" class="btn-danger"><i class='bx bx-save'></i> Save Expense</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Set today's date in Expense Date input
-        document.getElementById('expDate').valueAsDate = new Date();
+        // Server URL (Aapki file se liya gaya hai)
+        const SERVER_URL = 'https://zhi-college.onrender.com';
 
+        // 1. Sidebar Toggle Logic
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -344,22 +313,124 @@
             overlay.classList.toggle('active');
         }
 
-        // Display Name from LocalStorage (Set during login)
+        // 2. Initial Setup on Page Load
         window.onload = () => {
+            // Set Today's Date in Modal
+            document.getElementById('expDate').valueAsDate = new Date();
+            
+            // Fetch User Name
             const userName = localStorage.getItem('userName');
             if(userName) {
                 document.getElementById('adminName').innerText = userName;
             }
+
+            // Fetch Live Finance Data from Server
+            fetchDashboardData();
         };
 
-        // Modal Logic
+        // 3. Modals Logic
         function openExpenseModal() { document.getElementById('expenseModal').style.display = 'flex'; }
         function closeExpenseModal() { document.getElementById('expenseModal').style.display = 'none'; }
-        
-        function saveExpense(event) {
+
+        // 4. GET Data from Server (Stats & Transactions)
+        async function fetchDashboardData() {
+            try {
+                // Yahan server ke endpoint call honge (Maine standard API route use kiye hain)
+                // Agar aapke server ka route alag hai, toh bas '/api/finance/stats' ko change kar dena.
+                
+                // Fetch Stats
+                const statsResponse = await fetch(`${SERVER_URL}/api/finance/stats`);
+                if(statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('todayCollection').innerText = stats.todayCollection || "0";
+                    document.getElementById('todayExpense').innerText = stats.todayExpense || "0";
+                    document.getElementById('totalPending').innerText = stats.totalPending || "0";
+                    document.getElementById('netBalance').innerText = stats.netBalance || "0";
+                }
+
+                // Fetch Recent Transactions
+                const transResponse = await fetch(`${SERVER_URL}/api/finance/transactions`);
+                if(transResponse.ok) {
+                    const data = await transResponse.json();
+                    renderTransactionsTable(data.transactions || []);
+                }
+            } catch (error) {
+                console.log("Fetching live data... Make sure API endpoints exist on server.", error);
+            }
+        }
+
+        // 5. Render Data in Table dynamically
+        function renderTransactionsTable(transactions) {
+            const tableBody = document.getElementById('transactionTableBody');
+            tableBody.innerHTML = ""; // Clear pehle ka data
+            
+            if (transactions.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-light);">No transactions found</td></tr>`;
+                return;
+            }
+
+            transactions.forEach(t => {
+                const isIncome = t.type === 'Income';
+                const sign = isIncome ? '+' : '-';
+                const color = isIncome ? 'var(--success)' : 'var(--danger)';
+                const badge = isIncome ? 'badge-income' : 'badge-expense';
+
+                const row = `
+                    <tr>
+                        <td>${new Date(t.date).toLocaleString()}</td>
+                        <td><b>${t.receiptNo || 'N/A'}</b></td>
+                        <td>${t.description}</td>
+                        <td>${t.mode}</td>
+                        <td><b style="color: ${color};">${sign} ₹${t.amount}</b></td>
+                        <td><span class="${badge}">${t.type}</span></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // 6. POST Expense to Server
+        async function saveExpense(event) {
             event.preventDefault();
-            alert("Expense Saved Successfully! (Dummy alert - API will be linked here)");
-            closeExpenseModal();
+            const btn = document.getElementById('saveExpBtn');
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Saving...`;
+            btn.disabled = true;
+
+            const expenseData = {
+                date: document.getElementById('expDate').value,
+                category: document.getElementById('expCategory').value,
+                amount: document.getElementById('expAmount').value,
+                mode: document.getElementById('expMode').value,
+                description: document.getElementById('expDesc').value,
+                type: 'Expense' // Type is expense
+            };
+
+            try {
+                // POST request (API path apne hisab se verify kar lena)
+                const response = await fetch(`${SERVER_URL}/api/expenses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(expenseData)
+                });
+
+                const result = await response.json();
+                
+                if(response.ok) {
+                    alert("Expense Saved Successfully!");
+                    document.getElementById('expenseForm').reset();
+                    document.getElementById('expDate').valueAsDate = new Date();
+                    closeExpenseModal();
+                    fetchDashboardData(); // Refresh UI instantly
+                } else {
+                    alert(result.message || "Failed to save expense.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Server Error! Check connection.");
+            } finally {
+                btn.innerHTML = `<i class='bx bx-save'></i> Save Expense`;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
