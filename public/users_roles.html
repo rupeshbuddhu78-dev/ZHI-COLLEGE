@@ -64,7 +64,7 @@
         .panel-header h3 { font-size: 16px; font-weight: 600; }
         
         .table-res { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 850px; }
+        table { width: 100%; border-collapse: collapse; min-width: 950px; } /* Increased width for View Button */
         th { text-align: left; padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600;}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
 
@@ -82,13 +82,14 @@
         .action-btns { display: flex; gap: 8px; }
         .action-btns button { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-dark); transition: 0.2s; display: flex; align-items: center; gap: 4px;}
         .action-btns button:hover { background: #f1f5f9; }
+        .action-btns .btn-view { color: var(--primary); border-color: #bfdbfe; }
+        .action-btns .btn-view:hover { background: #eff6ff; }
         .action-btns .btn-danger { color: var(--danger); border-color: #fca5a5; }
         .action-btns .btn-danger:hover { background: #fef2f2; }
 
         /* ------------------ HUGE MODAL FOR STAFF REGISTRATION ------------------ */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: flex-start; padding: 20px; backdrop-filter: blur(4px); overflow-y: auto;}
         
-        /* Modal Box Styling */
         .modal-box { background: var(--bg); width: 100%; max-width: 900px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; animation: slideIn 0.3s ease; margin: auto; }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
@@ -96,7 +97,6 @@
         .modal-header h3 { font-size: 18px; color: var(--text-dark); }
         .modal-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
         
-        /* Form Sections / Cards */
         .form-section { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .section-title { font-size: 14px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
         
@@ -106,54 +106,28 @@
         .form-group.full-width { grid-column: 1 / -1; }
         
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-        
-        /* Fixed Input Styles */
-        .form-group input, .form-group select, .form-group textarea { 
-            width: 100%; 
-            padding: 10px 12px; 
-            border: 1px solid var(--border); 
-            border-radius: 6px; 
-            outline: none; 
-            font-size: 14px; 
-            font-family: inherit; 
-            background: #fff;
-            transition: all 0.2s;
-        }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; font-family: inherit; background: #fff; transition: all 0.2s; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         
-        /* 🔴 FIXED FILE INPUT OVERFLOW ISSUE 🔴 */
-        .form-group input[type="file"] { 
-            padding: 7px; 
-            background: #f8fafc; 
-            font-size: 13px;
-            color: var(--text-light);
-            cursor: pointer;
-            box-sizing: border-box;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .form-group input[type="file"]::file-selector-button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            margin-right: 10px;
-            cursor: pointer;
-            font-weight: 500;
-        }
+        .form-group input[type="file"] { padding: 7px; background: #f8fafc; font-size: 13px; color: var(--text-light); cursor: pointer; box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .form-group input[type="file"]::file-selector-button { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; margin-right: 10px; cursor: pointer; font-weight: 500; }
 
-        /* Conditional Displays */
         .hide-section { display: none !important; }
 
         .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--white); border-radius: 0 0 12px 12px; position: sticky; bottom: 0; z-index: 10;}
 
-        /* 📱 MOBILE RESPONSIVENESS (IMPROVED) */
+        /* ------------------ PROFILE VIEW CSS ------------------ */
+        .view-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .view-grid div { display: flex; flex-direction: column; gap: 4px; }
+        .view-grid label { font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 600; }
+        .view-grid span { font-size: 14px; color: var(--text-dark); font-weight: 500; word-break: break-word;}
+        .doc-link { background: #eff6ff; color: var(--primary); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #bfdbfe; transition: 0.2s; }
+        .doc-link:hover { background: #dbeafe; }
+
+        /* 📱 MOBILE RESPONSIVENESS */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
         @media (max-width: 992px) {
-            .form-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-grid, .view-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100vh; }
@@ -164,17 +138,15 @@
             .topbar { padding: 0 15px; }
             .search-bar { width: 180px; } 
             
-            /* Better Modal on Phone */
             .modal-box { margin: 0; max-height: 100vh; border-radius: 0; width: 100%;}
             .modal-overlay { padding: 0; }
             .modal-header { border-radius: 0; padding: 15px; }
             .modal-body { padding: 15px; gap: 15px;}
             .form-section { padding: 15px; }
-            .form-grid, .form-grid-2 { grid-template-columns: 1fr; gap: 12px;} 
+            .form-grid, .form-grid-2, .view-grid { grid-template-columns: 1fr; gap: 12px;} 
             .modal-footer { padding: 15px; }
         }
 
-        /* Loading Spinner */
         .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; margin: 30px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -262,7 +234,7 @@
                 <button onclick="closeModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
             </div>
             
-            <div class="modal-body" id="modalBodyScroll">
+            <div class="modal-body">
                 <form id="addStaffForm" onsubmit="saveUser(event)">
                     
                     <div class="form-section" style="background: #eff6ff; border-color: #bfdbfe;">
@@ -366,6 +338,74 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class='bx bx-user-circle' style="color: var(--primary);"></i> Staff Profile Details</h3>
+                <button onclick="closeViewModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <div style="display:flex; gap: 20px; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                    <img id="viewProfilePic" src="https://via.placeholder.com/80?text=Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #eff6ff;">
+                    <div>
+                        <h2 id="viewName" style="font-size: 20px; color: var(--text-dark);"></h2>
+                        <p id="viewRoleDept" style="color: var(--text-light); font-size: 14px; margin-top: 4px;"></p>
+                        <div id="viewStatusBadge" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Personal & Contact Info</div>
+                    <div class="view-grid">
+                        <div><label>Emp ID</label><span id="viewEmpId"></span></div>
+                        <div><label>Mobile Number</label><span id="viewMobile"></span></div>
+                        <div><label>Login Email</label><span id="viewEmail"></span></div>
+                        <div><label>Login Password</label><span id="viewPassword"></span></div>
+                        <div><label>Date of Birth</label><span id="viewDob"></span></div>
+                        <div><label>Gender</label><span id="viewGender"></span></div>
+                        <div><label>Aadhaar No.</label><span id="viewAadhaar"></span></div>
+                        <div><label>PAN Card</label><span id="viewPan"></span></div>
+                        <div style="grid-column: 1/-1"><label>Full Address</label><span id="viewAddress"></span></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Job & Bank Details</div>
+                    <div class="view-grid">
+                        <div><label>Joining Date</label><span id="viewJoinDate"></span></div>
+                        <div><label>Duty Shift</label><span id="viewShift"></span></div>
+                        <div><label>Basic Salary</label><span id="viewSalary"></span></div>
+                        <div><label>Bank Name</label><span id="viewBankName"></span></div>
+                        <div><label>Account No.</label><span id="viewAccNo"></span></div>
+                        <div><label>IFSC Code</label><span id="viewIfsc"></span></div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="viewEduSection">
+                    <div class="section-title">Education & Skills</div>
+                    <div class="view-grid">
+                        <div><label>Highest Qual.</label><span id="viewQual"></span></div>
+                        <div><label>University / Board</label><span id="viewUniv"></span></div>
+                        <div><label>Experience</label><span id="viewExp"></span></div>
+                        <div style="grid-column: 1/-1"><label>Key Skills / Subjects</label><span id="viewSkills"></span></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Uploaded Documents (View / Download)</div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <a id="linkProfile" href="#" target="_blank" class="doc-link hide-section"><i class='bx bx-image'></i> View Photo</a>
+                        <a id="linkResume" href="#" target="_blank" class="doc-link hide-section"><i class='bx bx-file'></i> View Resume</a>
+                        <a id="linkCert" href="#" target="_blank" class="doc-link hide-section"><i class='bx bx-certification'></i> View Certificate</a>
+                        <span id="noDocsMsg" style="color: var(--text-light); font-size: 13px; display:none;">No documents uploaded to server yet.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- UI & SIDEBAR LOGIC ---
         function toggleSidebar() {
@@ -392,6 +432,7 @@
         }
 
         function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
 
         // --- DYNAMIC FORM LOGIC ---
         const roleOptions = {
@@ -404,7 +445,6 @@
             const category = document.getElementById('staffCategory').value;
             const roleDropdown = document.getElementById('staffRole');
             
-            // Populate Roles
             const currentSelectedRole = roleDropdown.value; 
             roleDropdown.innerHTML = '<option value="">-- Select Specific Role --</option>';
             if(category && roleOptions[category]) {
@@ -413,13 +453,11 @@
                 });
             }
 
-            // Hide/Show specific fields based on category
             const isNonTeaching = (category === 'nonteaching');
             
             document.getElementById('emailGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('email').required = !isNonTeaching;
             
-            // 🔴 TOGGLE PASSWORD FIELD FOR DASHBOARD 🔴
             document.getElementById('passwordGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('password').required = !isNonTeaching;
 
@@ -446,7 +484,6 @@
             document.getElementById('userTableBody').innerHTML = '';
             
             try {
-                // 🔴 REAL BACKEND API CALL
                 const res = await fetch('/api/staff');
                 const result = await res.json();
                 
@@ -486,11 +523,12 @@
                             <span class="badge ${badgeClass}">${user.category}</span><br>
                             <span style="font-size: 13px; color: var(--text-light);">${user.role}</span>
                         </td>
-                        <td><span style="font-size: 13px; font-weight: 500;">${user.dept}</span></td>
+                        <td><span style="font-size: 13px; font-weight: 500;">${user.dept || 'N/A'}</span></td>
                         <td><span style="color: var(--text-light); font-size: 13px;">${user.contact || user.mobile}</span></td>
                         <td>${statusHtml}</td>
                         <td>
                             <div class="action-btns">
+                                <button class="btn-view" onclick="viewUser('${user._id}')" title="View Profile"><i class='bx bx-show'></i> View</button>
                                 <button onclick="editUser('${user._id}')" title="Edit Data"><i class='bx bx-edit'></i> Edit</button>
                                 <button class="btn-danger" onclick="deleteUser('${user._id}')" title="Delete Data"><i class='bx bx-trash'></i> Delete</button>
                             </div>
@@ -525,6 +563,67 @@
             renderTable(filteredData);
         }
 
+        // --- VIEW PROFILE DETAILS ---
+        function viewUser(id) {
+            const user = usersData.find(u => u._id === id);
+            if(!user) return;
+
+            document.getElementById('viewProfilePic').src = user.profilePicUrl || 'https://via.placeholder.com/80?text=No+Photo';
+            document.getElementById('viewName').innerText = user.name || 'N/A';
+            document.getElementById('viewRoleDept').innerText = `${user.role} | ${user.dept || 'N/A'}`;
+            
+            const statusBadge = document.getElementById('viewStatusBadge');
+            if(user.status === 'Active') {
+                statusBadge.innerHTML = `<span class="badge" style="background:#dcfce7; color:#166534;">Active</span>`;
+            } else {
+                statusBadge.innerHTML = `<span class="badge" style="background:#fee2e2; color:#991b1b;">Disabled</span>`;
+            }
+
+            document.getElementById('viewEmpId').innerText = user.empId || 'N/A';
+            document.getElementById('viewMobile').innerText = user.mobile || 'N/A';
+            document.getElementById('viewEmail').innerText = user.email || 'N/A (Non-Teaching)';
+            document.getElementById('viewPassword').innerText = user.password || 'N/A';
+            document.getElementById('viewDob').innerText = user.dob || 'N/A';
+            document.getElementById('viewGender').innerText = user.gender || 'N/A';
+            document.getElementById('viewAadhaar').innerText = user.aadhaar || 'N/A';
+            document.getElementById('viewPan').innerText = user.pan || 'N/A';
+            document.getElementById('viewAddress').innerText = user.address || 'N/A';
+
+            document.getElementById('viewJoinDate').innerText = user.joinDate || 'N/A';
+            document.getElementById('viewShift').innerText = user.shift || 'N/A';
+            document.getElementById('viewSalary').innerText = user.salary ? `₹${user.salary}` : 'N/A';
+            document.getElementById('viewBankName').innerText = user.bankName || 'N/A';
+            document.getElementById('viewAccNo').innerText = user.accNumber || 'N/A';
+            document.getElementById('viewIfsc').innerText = user.ifsc || 'N/A';
+
+            if (user.category === 'nonteaching') {
+                document.getElementById('viewEduSection').style.display = 'none';
+            } else {
+                document.getElementById('viewEduSection').style.display = 'block';
+                document.getElementById('viewQual').innerText = user.qualification || 'N/A';
+                document.getElementById('viewUniv').innerText = user.university || 'N/A';
+                document.getElementById('viewExp').innerText = user.experience ? `${user.experience} Years` : 'N/A';
+                document.getElementById('viewSkills').innerText = user.skills || 'N/A';
+            }
+
+            // Documents Links logic
+            const linkProfile = document.getElementById('linkProfile');
+            const linkResume = document.getElementById('linkResume');
+            const linkCert = document.getElementById('linkCert');
+            const noDocsMsg = document.getElementById('noDocsMsg');
+
+            let hasDocs = false;
+
+            if(user.profilePicUrl) { linkProfile.href = user.profilePicUrl; linkProfile.classList.remove('hide-section'); hasDocs = true; } else { linkProfile.classList.add('hide-section'); }
+            if(user.resumeUrl) { linkResume.href = user.resumeUrl; linkResume.classList.remove('hide-section'); hasDocs = true; } else { linkResume.classList.add('hide-section'); }
+            if(user.certUrl) { linkCert.href = user.certUrl; linkCert.classList.remove('hide-section'); hasDocs = true; } else { linkCert.classList.add('hide-section'); }
+
+            if(!hasDocs) noDocsMsg.style.display = 'inline-block';
+            else noDocsMsg.style.display = 'none';
+
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
         // --- SAVE / UPDATE DATA ---
         async function saveUser(event) {
             event.preventDefault();
@@ -546,7 +645,6 @@
             formData.append('mobile', mobile);
             formData.append('email', document.getElementById('email').value);
             
-            // 🔴 AUTO PASSWORD: If empty, use mobile number
             let passwordValue = document.getElementById('password').value;
             if(!passwordValue) passwordValue = mobile; 
             formData.append('password', passwordValue);
@@ -631,7 +729,7 @@
             document.getElementById('gender').value = user.gender || 'Male';
             document.getElementById('mobile').value = user.mobile || '';
             document.getElementById('email').value = user.email || '';
-            document.getElementById('password').value = user.password || ''; // 🔴 EDIT PASSWORD
+            document.getElementById('password').value = user.password || ''; 
             document.getElementById('address').value = user.address || '';
             document.getElementById('aadhaar').value = user.aadhaar || '';
             document.getElementById('pan').value = user.pan || '';
