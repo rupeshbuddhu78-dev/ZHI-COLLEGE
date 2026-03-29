@@ -242,23 +242,14 @@ app.get('/', (req, res) => {
 });
 
 // ------------------------------------------
-// Login API (UPDATED AND OPTIMIZED)
+// Login API (UPDATED FOR STAFF/TEACHER LOGIN)
 // ------------------------------------------
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
-
-    // 🔴 NEW: Validation Check taaki app crash na ho agar details missing ho
-    if (!role || !email || !password) {
-        return res.status(400).json({ success: false, message: "Role, Email and Password are required!" });
-    }
-
     try {
-        // Case-insensitive email processing 
-        const searchEmail = email.toLowerCase().trim();
-
         // 1. STUDENT LOGIN
         if (role.toLowerCase() === 'student') {
-            const student = await Student.findOne({ email: new RegExp(`^${searchEmail}$`, 'i'), password });
+            const student = await Student.findOne({ email, password });
             if (student) {
                 return res.status(200).json({ 
                     success: true, 
@@ -283,7 +274,7 @@ app.post('/api/login', async (req, res) => {
         
         // 2. DIRECTOR / SUPER ADMIN LOGIN (Checks 'User' schema)
         else if (role.toLowerCase() === 'director') {
-            const user = await User.findOne({ email: new RegExp(`^${searchEmail}$`, 'i'), password, role: 'director' });
+            const user = await User.findOne({ email, password, role: 'director' });
             if (user) {
                 return res.status(200).json({ success: true, message: "Welcome Admin!", role: user.role });
             }
@@ -296,7 +287,7 @@ app.post('/api/login', async (req, res) => {
             // Frontend bhejta hai 'accounts', par database me category 'management' hai.
             const dbCategory = role.toLowerCase() === 'faculty' ? 'teacher' : 'management';
             
-            const staffUser = await Staff.findOne({ email: new RegExp(`^${searchEmail}$`, 'i'), password, category: dbCategory });
+            const staffUser = await Staff.findOne({ email, password, category: dbCategory });
             
             if (staffUser) {
                 // Check if admin has disabled their account
@@ -315,11 +306,11 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Agar koi password/email DB me na mile
-        return res.status(401).json({ success: false, message: "Invalid Email or Password!" });
+        res.status(401).json({ success: false, message: "Invalid Email or Password!" });
 
     } catch (err) { 
         console.error(err);
-        return res.status(500).json({ success: false, message: "Server Error!" }); 
+        res.status(500).json({ success: false, message: "Server Error!" }); 
     }
 });
 
