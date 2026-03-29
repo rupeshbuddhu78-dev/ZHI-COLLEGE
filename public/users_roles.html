@@ -47,7 +47,8 @@
         .search-bar:focus-within { border-color: var(--primary); background: white;}
         .search-bar input { background: none; border: none; outline: none; width: 100%; font-size: 13px; margin-left: 8px;}
 
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
+        /* 🔴 ANCHOR TAG BUTTON DESIGN 🔴 */
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; text-decoration: none; }
         .btn-primary:hover { background: #2563eb; }
 
         .content { padding: 25px; flex: 1; }
@@ -64,7 +65,7 @@
         .panel-header h3 { font-size: 16px; font-weight: 600; }
         
         .table-res { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 950px; } /* Increased width for View Button */
+        table { width: 100%; border-collapse: collapse; min-width: 950px; } 
         th { text-align: left; padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600;}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
 
@@ -87,7 +88,7 @@
         .action-btns .btn-danger { color: var(--danger); border-color: #fca5a5; }
         .action-btns .btn-danger:hover { background: #fef2f2; }
 
-        /* ------------------ HUGE MODAL FOR STAFF REGISTRATION ------------------ */
+        /* ------------------ MODALS CSS (Edit & View) ------------------ */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: flex-start; padding: 20px; backdrop-filter: blur(4px); overflow-y: auto;}
         
         .modal-box { background: var(--bg); width: 100%; max-width: 900px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; animation: slideIn 0.3s ease; margin: auto; }
@@ -190,7 +191,7 @@
                     <i class='bx bx-search'></i> <input type="text" id="searchInput" placeholder="Search employee..." onkeyup="handleSearch()">
                 </div>
             </div>
-            <button class="btn-primary" onclick="openModal()"><i class='bx bx-plus'></i> Add Employee</button>
+            <a href="addstaff.html" class="btn-primary"><i class='bx bx-plus'></i> Add Employee</a>
         </header>
 
         <main class="content">
@@ -230,19 +231,18 @@
     <div class="modal-overlay" id="userModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 id="modalTitle">Register New Staff Member</h3>
+                <h3 id="modalTitle">✏️ Edit Staff Member Data</h3>
                 <button onclick="closeModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
             </div>
             
-            <div class="modal-body">
-                <form id="addStaffForm" onsubmit="saveUser(event)">
+            <div class="modal-body" id="modalBodyScroll">
+                <form id="editStaffForm" onsubmit="updateUser(event)">
                     
                     <div class="form-section" style="background: #eff6ff; border-color: #bfdbfe;">
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label>Staff Category (Main Category) *</label>
                                 <select id="staffCategory" required onchange="handleCategoryChange()" style="font-weight: 600; color: var(--primary);">
-                                    <option value="">-- Select Category --</option>
                                     <option value="management">🏢 Management Staff (Admin/Office)</option>
                                     <option value="teacher">🎓 Teaching Faculty (Professors)</option>
                                     <option value="nonteaching">🛠️ Non-Teaching Staff (Support)</option>
@@ -251,8 +251,7 @@
                             <div class="form-group">
                                 <label>Specific Role / Designation *</label>
                                 <select id="staffRole" required>
-                                    <option value="">-- First select Category --</option>
-                                </select>
+                                    </select>
                             </div>
                         </div>
                     </div>
@@ -260,49 +259,47 @@
                     <div class="form-section">
                         <div class="section-title"><i class='bx bx-user'></i> Basic Personal Details</div>
                         <div class="form-grid">
-                            <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required placeholder="Full Legal Name"></div>
-                            <div class="form-group"><label>Father/Guardian Name</label><input type="text" id="fatherName" placeholder="Father's Name"></div>
+                            <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required></div>
+                            <div class="form-group"><label>Father/Guardian Name</label><input type="text" id="fatherName"></div>
                             <div class="form-group"><label>Date of Birth</label><input type="date" id="dob"></div>
                             <div class="form-group"><label>Gender</label>
                                 <select id="gender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
                             </div>
-                            <div class="form-group"><label>Mobile Number *</label><input type="text" id="mobile" required placeholder="10-digit number"></div>
+                            <div class="form-group"><label>Mobile Number *</label><input type="text" id="mobile" required></div>
                             
-                            <div class="form-group" id="emailGroup"><label>Email ID (Login ID) *</label><input type="email" id="email" placeholder="official@zhi.edu"></div>
-                            <div class="form-group" id="passwordGroup"><label>Login Password *</label><input type="text" id="password" placeholder="Default: Mobile Number"></div>
+                            <div class="form-group" id="emailGroup"><label>Email ID (Login ID) *</label><input type="email" id="email"></div>
+                            <div class="form-group" id="passwordGroup"><label>Login Password *</label><input type="text" id="password"></div>
                             
-                            <div class="form-group full-width"><label>Full Permanent Address</label><textarea id="address" rows="2" placeholder="House No, Street, City, State, Pincode"></textarea></div>
+                            <div class="form-group full-width"><label>Full Permanent Address</label><textarea id="address" rows="2"></textarea></div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <div class="section-title"><i class='bx bx-id-card'></i> Identity & Documents</div>
                         <div class="form-grid">
-                            <div class="form-group"><label>Aadhaar Number *</label><input type="text" id="aadhaar" required placeholder="12-digit Aadhaar"></div>
-                            <div class="form-group" id="panGroup"><label>PAN Card Number</label><input type="text" id="pan" placeholder="ABCDE1234F"></div>
-                            <div class="form-group"><label>Profile Photo</label><input type="file" id="profilePic" accept="image/*"></div>
+                            <div class="form-group"><label>Aadhaar Number *</label><input type="text" id="aadhaar" required></div>
+                            <div class="form-group" id="panGroup"><label>PAN Card Number</label><input type="text" id="pan"></div>
+                            <div class="form-group"><label>Update Profile Photo</label><input type="file" id="profilePic" accept="image/*"></div>
                             
-                            <div class="form-group" id="resumeGroup"><label>Upload Resume / CV</label><input type="file" id="resumeFile" accept=".pdf,.doc,.docx"></div>
-                            <div class="form-group" id="certGroup"><label>Degree/Certificates</label><input type="file" id="certFile" accept=".pdf"></div>
+                            <div class="form-group" id="resumeGroup"><label>Update Resume / CV</label><input type="file" id="resumeFile" accept=".pdf,.doc,.docx"></div>
+                            <div class="form-group" id="certGroup"><label>Update Certificates</label><input type="file" id="certFile" accept=".pdf"></div>
                         </div>
                     </div>
 
                     <div class="form-section" id="educationSection">
                         <div class="section-title"><i class='bx bxs-graduation'></i> Education & Experience</div>
                         <div class="form-grid">
-                            <div class="form-group"><label>Highest Qualification *</label>
-                                <input type="text" id="qualification" placeholder="e.g. MCA, MBA, Ph.D, 12th Pass">
-                            </div>
-                            <div class="form-group" id="universityGroup"><label>University / Board</label><input type="text" id="university" placeholder="e.g. Magadh University"></div>
-                            <div class="form-group"><label>Total Experience (Years)</label><input type="number" id="experience" placeholder="e.g. 5"></div>
-                            <div class="form-group full-width" id="skillsGroup"><label>Key Skills / Subjects to Teach</label><input type="text" id="skills" placeholder="e.g. Java, Python OR Finance, HR"></div>
+                            <div class="form-group"><label>Highest Qualification *</label><input type="text" id="qualification"></div>
+                            <div class="form-group" id="universityGroup"><label>University / Board</label><input type="text" id="university"></div>
+                            <div class="form-group"><label>Total Experience (Years)</label><input type="number" id="experience"></div>
+                            <div class="form-group full-width" id="skillsGroup"><label>Key Skills / Subjects to Teach</label><input type="text" id="skills"></div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <div class="section-title"><i class='bx bx-briefcase'></i> College Job Details</div>
                         <div class="form-grid">
-                            <div class="form-group"><label>Employee ID *</label><input type="text" id="empId" required placeholder="e.g. ZHI-EMP-101"></div>
+                            <div class="form-group"><label>Employee ID *</label><input type="text" id="empId" required readonly style="background:#f1f5f9;"></div>
                             <div class="form-group"><label>Joining Date *</label><input type="date" id="joinDate" required></div>
                             <div class="form-group"><label>Department / Area</label>
                                 <select id="department">
@@ -316,22 +313,22 @@
                             <div class="form-group" id="shiftGroup"><label>Duty Shift</label>
                                 <select id="shift"><option value="Day Shift (General)">Day Shift (General)</option><option value="Morning Shift">Morning Shift</option><option value="Night Shift">Night Shift</option></select>
                             </div>
-                            <div class="form-group"><label>Basic Salary (₹) *</label><input type="number" id="salary" required placeholder="Monthly Salary"></div>
+                            <div class="form-group"><label>Basic Salary (₹) *</label><input type="number" id="salary" required></div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <div class="section-title"><i class='bx bxs-bank'></i> Bank & Payroll Details</div>
                         <div class="form-grid">
-                            <div class="form-group"><label>Bank Name</label><input type="text" id="bankName" placeholder="e.g. SBI, HDFC"></div>
-                            <div class="form-group"><label>Account Number</label><input type="text" id="accNumber" placeholder="Account No"></div>
-                            <div class="form-group"><label>IFSC Code</label><input type="text" id="ifsc" placeholder="IFSC Code"></div>
+                            <div class="form-group"><label>Bank Name</label><input type="text" id="bankName"></div>
+                            <div class="form-group"><label>Account Number</label><input type="text" id="accNumber"></div>
+                            <div class="form-group"><label>IFSC Code</label><input type="text" id="ifsc"></div>
                         </div>
                     </div>
 
                     <div class="modal-footer" style="margin-top: 20px;">
                         <button type="button" onclick="closeModal()" style="padding: 10px 18px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
-                        <button type="submit" class="btn-primary" id="saveBtn" style="padding: 10px 20px;"><i class='bx bx-save'></i> Save Staff Record</button>
+                        <button type="submit" class="btn-primary" id="updateBtn" style="padding: 10px 20px;"><i class='bx bx-refresh'></i> Update Details</button>
                     </div>
                 </form>
             </div>
@@ -407,34 +404,19 @@
     </div>
 
     <script>
-        // --- UI & SIDEBAR LOGIC ---
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
         function checkMobileClose() {
-            if (window.innerWidth <= 768) { toggleSidebar(); }
+            if (window.innerWidth <= 768) toggleSidebar(); 
         }
 
         let editingUserId = null;
-
-        function openModal() { 
-            editingUserId = null; 
-            document.getElementById('modalTitle').innerText = "Register New Staff Member";
-            document.getElementById('saveBtn').innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
-            
-            document.getElementById('addStaffForm').reset();
-            document.getElementById('staffRole').innerHTML = '<option value="">-- First select Category --</option>';
-            handleCategoryChange(); 
-            
-            document.getElementById('userModal').style.display = 'flex'; 
-        }
-
         function closeModal() { document.getElementById('userModal').style.display = 'none'; }
         function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
 
-        // --- DYNAMIC FORM LOGIC ---
         const roleOptions = {
             management: ["Director", "Principal", "Vice Principal", "HOD (Head of Department)", "Admin Staff", "Accountant", "Office Staff"],
             teacher: ["Professor", "Assistant Professor", "Lecturer", "Guest Faculty"],
@@ -445,7 +427,6 @@
             const category = document.getElementById('staffCategory').value;
             const roleDropdown = document.getElementById('staffRole');
             
-            const currentSelectedRole = roleDropdown.value; 
             roleDropdown.innerHTML = '<option value="">-- Select Specific Role --</option>';
             if(category && roleOptions[category]) {
                 roleOptions[category].forEach(role => {
@@ -464,7 +445,6 @@
             document.getElementById('panGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('resumeGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('certGroup').classList.toggle('hide-section', isNonTeaching);
-            
             document.getElementById('universityGroup').classList.toggle('hide-section', isNonTeaching);
             
             const skillsLabel = document.querySelector('#skillsGroup label');
@@ -475,7 +455,6 @@
             document.getElementById('skills').required = (category === 'teacher');
         }
 
-        // --- LIVE SERVER LOGIC ---
         let usersData = []; 
         let currentFilter = 'all';
 
@@ -491,11 +470,10 @@
                     usersData = result.data;
                     renderTable(usersData);
                 } else {
-                    document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data from server.</td></tr>`;
+                    document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data.</td></tr>`;
                 }
             } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Server connection error. Ensure your backend is running.</td></tr>`;
+                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Server connection error.</td></tr>`;
             }
             document.getElementById('tableLoader').style.display = 'none';
         }
@@ -505,7 +483,7 @@
             tbody.innerHTML = '';
             
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--text-light);">No staff records found in Database. Click 'Add Employee' to insert.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--text-light);">No staff records found.</td></tr>`;
                 return;
             }
 
@@ -539,7 +517,6 @@
             });
         }
 
-        // --- FILTER & SEARCH ---
         function filterUsers(category) {
             currentFilter = category;
             const btns = document.querySelectorAll('.filter-btn');
@@ -552,7 +529,6 @@
 
         function applyFiltersAndSearch() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
-            
             let filteredData = usersData.filter(user => {
                 const matchesRole = (currentFilter === 'all') || (user.category === currentFilter);
                 const matchesSearch = (user.name && user.name.toLowerCase().includes(searchText)) || 
@@ -606,7 +582,6 @@
                 document.getElementById('viewSkills').innerText = user.skills || 'N/A';
             }
 
-            // Documents Links logic
             const linkProfile = document.getElementById('linkProfile');
             const linkResume = document.getElementById('linkResume');
             const linkCert = document.getElementById('linkCert');
@@ -624,12 +599,12 @@
             document.getElementById('viewModal').style.display = 'flex';
         }
 
-        // --- SAVE / UPDATE DATA ---
-        async function saveUser(event) {
+        // --- UPDATE EXISTING USER ---
+        async function updateUser(event) {
             event.preventDefault();
             
-            const btn = document.getElementById('saveBtn');
-            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Saving to Database...";
+            const btn = document.getElementById('updateBtn');
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Updating...";
             btn.disabled = true;
 
             const category = document.getElementById('staffCategory').value;
@@ -644,11 +619,7 @@
             formData.append('gender', document.getElementById('gender').value);
             formData.append('mobile', mobile);
             formData.append('email', document.getElementById('email').value);
-            
-            let passwordValue = document.getElementById('password').value;
-            if(!passwordValue) passwordValue = mobile; 
-            formData.append('password', passwordValue);
-
+            formData.append('password', document.getElementById('password').value);
             formData.append('address', document.getElementById('address').value);
             formData.append('aadhaar', document.getElementById('aadhaar').value);
             formData.append('pan', document.getElementById('pan').value);
@@ -670,59 +641,48 @@
 
             const profilePic = document.getElementById('profilePic').files[0];
             if (profilePic) formData.append('profilePic', profilePic);
-            
             const resumeFile = document.getElementById('resumeFile').files[0];
             if (resumeFile) formData.append('resumeFile', resumeFile);
-            
             const certFile = document.getElementById('certFile').files[0];
             if (certFile) formData.append('certFile', certFile);
 
             try {
-                let url = '/api/staff';
-                let method = 'POST';
-
-                if (editingUserId) {
-                    url = '/api/staff/' + editingUserId;
-                    method = 'PUT';
-                }
-
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch('/api/staff/' + editingUserId, {
+                    method: 'PUT',
                     body: formData 
                 });
-                
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(editingUserId ? "✅ Staff Data Updated Successfully!" : "✅ New Staff Added Successfully!");
+                    alert("✅ Staff Data Updated Successfully!");
                     closeModal();
                     fetchUsersFromLiveServer(); 
                 } else {
                     alert("❌ Failed: " + result.message);
                 }
-
             } catch (error) {
-                alert("❌ Server Error: Could not save data. Please check your Node.js Backend.");
+                alert("❌ Server Error: Could not update data.");
             }
 
-            btn.innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
+            btn.innerHTML = "<i class='bx bx-refresh'></i> Update Details";
             btn.disabled = false;
         }
 
-        // --- EDIT EXISTING USER ---
+        // --- PREFILL EDIT FORM ---
         function editUser(id) {
             const user = usersData.find(u => u._id === id);
             if(!user) return;
 
             editingUserId = id;
-
-            document.getElementById('modalTitle').innerText = "✏️ Edit Staff Member Data";
-            document.getElementById('saveBtn').innerHTML = "<i class='bx bx-refresh'></i> Update Details";
             
             document.getElementById('staffCategory').value = user.category || '';
             handleCategoryChange(); 
             
-            document.getElementById('staffRole').value = user.role || '';
+            // Wait slightly for dropdown to populate before setting role
+            setTimeout(() => {
+                document.getElementById('staffRole').value = user.role || '';
+            }, 50);
+
             document.getElementById('fullName').value = user.name || '';
             document.getElementById('fatherName').value = user.fatherName || '';
             document.getElementById('dob').value = user.dob || '';
