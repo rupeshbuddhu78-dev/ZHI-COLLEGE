@@ -121,7 +121,8 @@
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Staff & Academics</li>
             <li><a href="users_roles.html"><i class='bx bx-briefcase-alt-2'></i> Staff Records</a></li>
             <li><a href="addstaff.html"><i class='bx bx-user-pin'></i> Add Teacher/Staff</a></li>
-            <li><a href="#"><i class='bx bx-book-bookmark'></i> Course & Subjects</a></li> <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Office Tools</li>
+            <li><a href="#"><i class='bx bx-book-bookmark'></i> Course & Subjects</a></li> 
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Office Tools</li>
             <li><a href="#"><i class='bx bx-id-card'></i> Generate ID Cards</a></li>
             <li><a href="GlobalNotice.html"><i class='bx bx-message-square-detail'></i> Notice Board</a></li>
             <li><a href="#"><i class='bx bx-pie-chart-alt-2'></i> Office Reports</a></li>
@@ -152,15 +153,13 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-group'></i></div>
                     <div class="stat-info">
-                        <h4>1,245</h4>
-                        <p>Total Students</p>
+                        <h4 id="totalStudents">0</h4> <p>Total Students</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-voice'></i></div>
                     <div class="stat-info">
-                        <h4>48</h4>
-                        <p>Total Teachers</p>
+                        <h4 id="totalTeachers">0</h4> <p>Total Teachers</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -173,8 +172,7 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class='bx bx-user-plus'></i></div>
                     <div class="stat-info">
-                        <h4>+5</h4>
-                        <p>Admissions Today</p>
+                        <h4 id="admissionsToday">+0</h4> <p>Admissions Today</p>
                     </div>
                 </div>
             </div>
@@ -215,28 +213,7 @@
                                 <th>Date</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><b>ZHI-26-001</b></td>
-                                <td>Rahul Sharma</td>
-                                <td><span class="badge-new">New Student</span></td>
-                                <td>BCA (Sem 1)</td>
-                                <td>Today, 10:30 AM</td>
-                            </tr>
-                            <tr>
-                                <td><b>EMP-TCH-04</b></td>
-                                <td>Anjali Singh</td>
-                                <td><span class="badge-new" style="background: #eff6ff; color: #1e40af;">New Teacher</span></td>
-                                <td>Computer Science</td>
-                                <td>Yesterday, 2:15 PM</td>
-                            </tr>
-                            <tr>
-                                <td><b>ZHI-26-002</b></td>
-                                <td>Vikash Kumar</td>
-                                <td><span class="badge-new">New Student</span></td>
-                                <td>BBA (Sem 1)</td>
-                                <td>Yesterday, 4:00 PM</td>
-                            </tr>
+                        <tbody id="recentActivityBody"> <tr><td colspan="5" style="text-align: center;">Loading Live Data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -254,13 +231,106 @@
             overlay.classList.toggle('active');
         }
 
-        // Display Name from LocalStorage (Set during login)
+        // Display Name from LocalStorage & Fetch Live Data
         window.onload = () => {
             const userName = localStorage.getItem('userName');
             if(userName) {
                 document.getElementById('adminName').innerText = userName;
             }
+            fetchLiveDashboardData();
         };
+
+        // --- 🟢 LIVE DATABASE FETCH LOGIC 🟢 ---
+        async function fetchLiveDashboardData() {
+            try {
+                // 1. Fetch Students
+                const studentRes = await fetch('/api/students');
+                const studentData = await studentRes.json();
+                let students = studentData.success ? studentData.data : [];
+
+                // 2. Fetch Staff
+                const staffRes = await fetch('/api/staff');
+                const staffData = await staffRes.json();
+                let staff = staffData.success ? staffData.data : [];
+
+                // Update Stats
+                document.getElementById('totalStudents').innerText = students.length;
+                
+                const teachers = staff.filter(s => s.category === 'teacher');
+                document.getElementById('totalTeachers').innerText = teachers.length;
+
+                // Calculate today's admissions
+                const todayStr = new Date().toDateString();
+                const todaysAdmissions = students.filter(s => new Date(s.createdAt).toDateString() === todayStr);
+                document.getElementById('admissionsToday').innerText = "+" + todaysAdmissions.length;
+
+                // 3. Combine Data for Recent Activity Table
+                let combinedActivity = [];
+                
+                // Add Students to activity list
+                students.forEach(s => {
+                    combinedActivity.push({
+                        regNo: s.collegeRegNo || 'Pending',
+                        name: s.studentName,
+                        type: 'New Student',
+                        dept: `${s.course || 'N/A'} (Sem ${s.semester || '-'})`,
+                        date: new Date(s.createdAt),
+                        badgeStyle: '' // Default green style in CSS
+                    });
+                });
+                
+                // Add Staff/Teachers to activity list
+                staff.forEach(s => {
+                    let typeText = s.category === 'teacher' ? 'New Teacher' : 'New Staff';
+                    let badgeStyle = s.category === 'teacher' 
+                        ? 'style="background: #eff6ff; color: #1e40af;"' 
+                        : 'style="background: #f3e8ff; color: #7e22ce;"';
+                    
+                    combinedActivity.push({
+                        regNo: s.empId || 'N/A',
+                        name: s.name,
+                        type: typeText,
+                        dept: s.dept || 'N/A',
+                        date: new Date(s.createdAt),
+                        badgeStyle: badgeStyle
+                    });
+                });
+
+                // Sort by date (newest first)
+                combinedActivity.sort((a, b) => b.date - a.date);
+                
+                // Get only top 5 recent activities
+                const recent5 = combinedActivity.slice(0, 5);
+
+                // Render Table
+                const tbody = document.getElementById('recentActivityBody');
+                tbody.innerHTML = '';
+                
+                if(recent5.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No recent data found in database.</td></tr>';
+                } else {
+                    recent5.forEach(item => {
+                        // Format date nicely (e.g., "Today, 10:30 AM" or "28/03/2026")
+                        let isToday = item.date.toDateString() === todayStr;
+                        let timeStr = item.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        let dateStr = isToday ? `Today, ${timeStr}` : `${item.date.toLocaleDateString('en-GB')}, ${timeStr}`;
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><b>${item.regNo}</b></td>
+                                <td>${item.name}</td>
+                                <td><span class="badge-new" ${item.badgeStyle}>${item.type}</span></td>
+                                <td>${item.dept}</td>
+                                <td>${dateStr}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) {
+                console.error("Error fetching live data:", e);
+                document.getElementById('recentActivityBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Failed to connect to database.</td></tr>';
+            }
+        }
     </script>
 </body>
 </html>
