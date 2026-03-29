@@ -241,10 +241,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Login API
+// ------------------------------------------
+// Login API (UPDATED FOR STAFF/TEACHER LOGIN)
+// ------------------------------------------
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
     try {
+        // 1. STUDENT LOGIN
         if (role.toLowerCase() === 'student') {
             const student = await Student.findOne({ email, password });
             if (student) {
@@ -267,15 +270,50 @@ app.post('/api/login', async (req, res) => {
                     profilePicUrl: student.profilePicUrl || "" 
                 });
             }
-        } else {
-            const user = await User.findOne({ email, role, password });
+        } 
+        
+        // 2. DIRECTOR / SUPER ADMIN LOGIN (Checks 'User' schema)
+        else if (role.toLowerCase() === 'director') {
+            const user = await User.findOne({ email, password, role: 'director' });
             if (user) {
                 return res.status(200).json({ success: true, message: "Welcome Admin!", role: user.role });
             }
+        } 
+        
+        // 3. FACULTY (TEACHER) & ACCOUNTS (MANAGEMENT) LOGIN (Checks 'Staff' schema)
+        else if (role.toLowerCase() === 'faculty' || role.toLowerCase() === 'accounts') {
+            
+            // Frontend bhejta hai 'faculty', par database me category 'teacher' hai. 
+            // Frontend bhejta hai 'accounts', par database me category 'management' hai.
+            const dbCategory = role.toLowerCase() === 'faculty' ? 'teacher' : 'management';
+            
+            const staffUser = await Staff.findOne({ email, password, category: dbCategory });
+            
+            if (staffUser) {
+                // Check if admin has disabled their account
+                if (staffUser.status === 'Disabled') {
+                    return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Admin." });
+                }
+
+                return res.status(200).json({ 
+                    success: true, 
+                    message: "Welcome " + staffUser.name, 
+                    role: role,
+                    staffId: staffUser._id,
+                    staffName: staffUser.name
+                });
+            }
         }
-        res.status(401).json({ success: false, message: "Invalid Credentials!" });
-    } catch (err) { res.status(500).json({ success: false, message: "Server Error!" }); }
+
+        // Agar koi password/email DB me na mile
+        res.status(401).json({ success: false, message: "Invalid Email or Password!" });
+
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server Error!" }); 
+    }
 });
+
 
 // Admin & Student Core APIs
 app.post('/api/add-student', async (req, res) => {
