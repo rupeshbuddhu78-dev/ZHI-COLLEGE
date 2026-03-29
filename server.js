@@ -280,25 +280,30 @@ app.post('/api/login', async (req, res) => {
             }
         } 
         
-        // 3. FACULTY (TEACHER) & ACCOUNTS (MANAGEMENT) LOGIN (Checks 'Staff' schema)
-        else if (role.toLowerCase() === 'faculty' || role.toLowerCase() === 'accounts') {
+     // 3. HOD / ACCOUNTANT / STAFF / TEACHER LOGIN (Checks 'Staff' schema)
+        else if (['hod', 'accountant', 'staff', 'teacher'].includes(role.toLowerCase())) {
             
-            // Frontend bhejta hai 'faculty', par database me category 'teacher' hai. 
-            // Frontend bhejta hai 'accounts', par database me category 'management' hai.
-            const dbCategory = role.toLowerCase() === 'faculty' ? 'teacher' : 'management';
+            // Frontend se aaye hue role ko Database ki Category se match karenge
+            // Teacher ke liye category 'teacher' hogi, baaki sab (HOD, Accountant, Staff) 'management' me aate hain
+            let dbCategory = 'management'; 
+            if (role.toLowerCase() === 'teacher') {
+                dbCategory = 'teacher';
+            }
             
+            // Database me Staff dhoondo
             const staffUser = await Staff.findOne({ email, password, category: dbCategory });
             
             if (staffUser) {
-                // Check if admin has disabled their account
+                // Agar Admin ne account disable kar diya hai
                 if (staffUser.status === 'Disabled') {
-                    return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Admin." });
+                    return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Director." });
                 }
 
+                // Login Success 
                 return res.status(200).json({ 
                     success: true, 
                     message: "Welcome " + staffUser.name, 
-                    role: role,
+                    role: role, // HTML ko wahi role return karega taaki sahi dashboard khule
                     staffId: staffUser._id,
                     staffName: staffUser.name
                 });
