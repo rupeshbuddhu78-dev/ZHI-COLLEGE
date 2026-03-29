@@ -159,6 +159,9 @@ const staffSchema = new mongoose.Schema({
     role: { type: String, required: true }, // 'Principal', 'Guard', etc.
     empId: { type: String, required: true, unique: true }, // e.g. ZHI-EMP-101
     
+    // 🟢 NAYA ADD KIYA: Password field
+    password: { type: String, required: true },
+    
     // Basic Details
     name: { type: String, required: true },
     fatherName: String,
@@ -544,11 +547,20 @@ app.post('/api/staff', uploadStaff.fields([
         const existingStaff = await Staff.findOne({ empId: staffData.empId });
         if(existingStaff) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
 
-        // Grab Cloudinary Uploaded Links
+        // Grab Cloudinary Uploaded Links and Convert PDF to PNG 🟢
         if (req.files) {
-            if (req.files['profilePic']) staffData.profilePicUrl = req.files['profilePic'][0].path;
-            if (req.files['resumeFile']) staffData.resumeUrl = req.files['resumeFile'][0].path;
-            if (req.files['certFile']) staffData.certUrl = req.files['certFile'][0].path;
+            if (req.files['profilePic']) {
+                let tempUrl = req.files['profilePic'][0].secure_url || req.files['profilePic'][0].path;
+                staffData.profilePicUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
+            if (req.files['resumeFile']) {
+                let tempUrl = req.files['resumeFile'][0].secure_url || req.files['resumeFile'][0].path;
+                staffData.resumeUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
+            if (req.files['certFile']) {
+                let tempUrl = req.files['certFile'][0].secure_url || req.files['certFile'][0].path;
+                staffData.certUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
         }
 
         const newStaff = new Staff(staffData);
@@ -579,11 +591,20 @@ app.put('/api/staff/:id', uploadStaff.fields([
     try {
         const updateData = req.body;
 
-        // Replace old links if new files are uploaded
+        // Replace old links if new files are uploaded and Convert PDF to PNG 🟢
         if (req.files) {
-            if (req.files['profilePic']) updateData.profilePicUrl = req.files['profilePic'][0].path;
-            if (req.files['resumeFile']) updateData.resumeUrl = req.files['resumeFile'][0].path;
-            if (req.files['certFile']) updateData.certUrl = req.files['certFile'][0].path;
+            if (req.files['profilePic']) {
+                let tempUrl = req.files['profilePic'][0].secure_url || req.files['profilePic'][0].path;
+                updateData.profilePicUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
+            if (req.files['resumeFile']) {
+                let tempUrl = req.files['resumeFile'][0].secure_url || req.files['resumeFile'][0].path;
+                updateData.resumeUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
+            if (req.files['certFile']) {
+                let tempUrl = req.files['certFile'][0].secure_url || req.files['certFile'][0].path;
+                updateData.certUrl = tempUrl.replace(/\.pdf$/i, '.png');
+            }
         }
 
         const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, updateData, { new: true });
