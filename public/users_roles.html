@@ -102,7 +102,7 @@
         
         .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; overflow: hidden; } /* Fix for overflow */
+        .form-group { display: flex; flex-direction: column; gap: 5px; overflow: hidden; } 
         .form-group.full-width { grid-column: 1 / -1; }
         
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
@@ -309,7 +309,7 @@
                             <div class="form-group" id="panGroup"><label>PAN Card Number</label><input type="text" id="pan" placeholder="ABCDE1234F"></div>
                             <div class="form-group"><label>Profile Photo</label><input type="file" id="profilePic" accept="image/*"></div>
                             
-                            <div class="form-group" id="resumeGroup"><label>Upload Resume / CV</label><input type="file" id="resumeFile" accept=".pdf,.doc"></div>
+                            <div class="form-group" id="resumeGroup"><label>Upload Resume / CV</label><input type="file" id="resumeFile" accept=".pdf,.doc,.docx"></div>
                             <div class="form-group" id="certGroup"><label>Degree/Certificates</label><input type="file" id="certFile" accept=".pdf"></div>
                         </div>
                     </div>
@@ -405,7 +405,7 @@
             const roleDropdown = document.getElementById('staffRole');
             
             // Populate Roles
-            const currentSelectedRole = roleDropdown.value; // Store if editing
+            const currentSelectedRole = roleDropdown.value; 
             roleDropdown.innerHTML = '<option value="">-- Select Specific Role --</option>';
             if(category && roleOptions[category]) {
                 roleOptions[category].forEach(role => {
@@ -433,8 +433,8 @@
             document.getElementById('skills').required = (category === 'teacher');
         }
 
-        // --- LIVE SERVER LOGIC (No Dummy Data Default) ---
-        let usersData = []; // 🔴 REMOVED DUMMY DATA. WILL FETCH FROM SERVER
+        // --- LIVE SERVER LOGIC (Connected to /api/staff) ---
+        let usersData = []; 
         let currentFilter = 'all';
 
         async function fetchUsersFromLiveServer() {
@@ -442,23 +442,21 @@
             document.getElementById('userTableBody').innerHTML = '';
             
             try {
-                // 🔴 UNCOMMENT THIS TO CONNECT TO REAL BACKEND (EXPRESS/MONGO)
-                /*
+                // 🔴 REAL BACKEND API CALL 🔴
                 const res = await fetch('/api/staff');
-                usersData = await res.json();
-                */
-
-                // Since we don't have backend running right now, it will show "No records found" (Blank Database)
-                // If you want to test without backend, add 1 object inside usersData temporarily.
+                const result = await res.json();
                 
-                renderTable(usersData);
-                document.getElementById('tableLoader').style.display = 'none';
-                
+                if(result.success) {
+                    usersData = result.data;
+                    renderTable(usersData);
+                } else {
+                    document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data from server.</td></tr>`;
+                }
             } catch (error) {
                 console.error("Error connecting to Live Database:", error);
-                document.getElementById('tableLoader').style.display = 'none';
-                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data from server.</td></tr>`;
+                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Server connection error. Is the server running?</td></tr>`;
             }
+            document.getElementById('tableLoader').style.display = 'none';
         }
 
         function renderTable(data) {
@@ -485,12 +483,12 @@
                             <span style="font-size: 13px; color: var(--text-light);">${user.role}</span>
                         </td>
                         <td><span style="font-size: 13px; font-weight: 500;">${user.dept}</span></td>
-                        <td><span style="color: var(--text-light); font-size: 13px;">${user.contact}</span></td>
+                        <td><span style="color: var(--text-light); font-size: 13px;">${user.contact || user.mobile}</span></td>
                         <td>${statusHtml}</td>
                         <td>
                             <div class="action-btns">
-                                <button onclick="editUser('${user._id || user.id}')" title="Edit Data"><i class='bx bx-edit'></i> Edit</button>
-                                <button class="btn-danger" onclick="deleteUser('${user._id || user.id}')" title="Delete Data"><i class='bx bx-trash'></i> Delete</button>
+                                <button onclick="editUser('${user._id}')" title="Edit Data"><i class='bx bx-edit'></i> Edit</button>
+                                <button class="btn-danger" onclick="deleteUser('${user._id}')" title="Delete Data"><i class='bx bx-trash'></i> Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -515,13 +513,15 @@
             
             let filteredData = usersData.filter(user => {
                 const matchesRole = (currentFilter === 'all') || (user.category === currentFilter);
-                const matchesSearch = user.name.toLowerCase().includes(searchText) || user.empId.toLowerCase().includes(searchText) || user.role.toLowerCase().includes(searchText);
+                const matchesSearch = (user.name && user.name.toLowerCase().includes(searchText)) || 
+                                      (user.empId && user.empId.toLowerCase().includes(searchText)) || 
+                                      (user.role && user.role.toLowerCase().includes(searchText));
                 return matchesRole && matchesSearch;
             });
             renderTable(filteredData);
         }
 
-        // --- SAVE / UPDATE DATA (POST / PUT) ---
+        // --- SAVE / UPDATE DATA (POST / PUT with FormData) ---
         async function saveUser(event) {
             event.preventDefault();
             
@@ -531,71 +531,73 @@
 
             const category = document.getElementById('staffCategory').value;
             
-            // Build the Data Object (Same keys as your mongoose model)
-            const staffData = {
-                category: category,
-                role: document.getElementById('staffRole').value,
-                name: document.getElementById('fullName').value,
-                fatherName: document.getElementById('fatherName').value,
-                dob: document.getElementById('dob').value,
-                gender: document.getElementById('gender').value,
-                mobile: document.getElementById('mobile').value,
-                email: document.getElementById('email').value,
-                address: document.getElementById('address').value,
-                aadhaar: document.getElementById('aadhaar').value,
-                pan: document.getElementById('pan').value,
-                qualification: document.getElementById('qualification').value,
-                university: document.getElementById('university').value,
-                experience: document.getElementById('experience').value,
-                skills: document.getElementById('skills').value,
-                empId: document.getElementById('empId').value,
-                joinDate: document.getElementById('joinDate').value,
-                dept: document.getElementById('department').value,
-                shift: document.getElementById('shift').value,
-                salary: document.getElementById('salary').value,
-                bankName: document.getElementById('bankName').value,
-                accNumber: document.getElementById('accNumber').value,
-                ifsc: document.getElementById('ifsc').value,
-                contact: category === 'nonteaching' ? document.getElementById('mobile').value : document.getElementById('email').value,
-                status: "Active"
-            };
+            // 🔴 USE FORM DATA BECAUSE WE ARE SENDING FILES (Profile Pic, Resume, Cert) 🔴
+            const formData = new FormData();
+            
+            formData.append('category', category);
+            formData.append('role', document.getElementById('staffRole').value);
+            formData.append('name', document.getElementById('fullName').value);
+            formData.append('fatherName', document.getElementById('fatherName').value);
+            formData.append('dob', document.getElementById('dob').value);
+            formData.append('gender', document.getElementById('gender').value);
+            formData.append('mobile', document.getElementById('mobile').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('aadhaar', document.getElementById('aadhaar').value);
+            formData.append('pan', document.getElementById('pan').value);
+            formData.append('qualification', document.getElementById('qualification').value);
+            formData.append('university', document.getElementById('university').value);
+            formData.append('experience', document.getElementById('experience').value);
+            formData.append('skills', document.getElementById('skills').value);
+            formData.append('empId', document.getElementById('empId').value);
+            formData.append('joinDate', document.getElementById('joinDate').value);
+            formData.append('dept', document.getElementById('department').value);
+            formData.append('shift', document.getElementById('shift').value);
+            formData.append('salary', document.getElementById('salary').value);
+            formData.append('bankName', document.getElementById('bankName').value);
+            formData.append('accNumber', document.getElementById('accNumber').value);
+            formData.append('ifsc', document.getElementById('ifsc').value);
+            
+            let contactField = category === 'nonteaching' ? document.getElementById('mobile').value : document.getElementById('email').value;
+            formData.append('contact', contactField);
+
+            // Append Files if Selected
+            const profilePic = document.getElementById('profilePic').files[0];
+            if (profilePic) formData.append('profilePic', profilePic);
+            
+            const resumeFile = document.getElementById('resumeFile').files[0];
+            if (resumeFile) formData.append('resumeFile', resumeFile);
+            
+            const certFile = document.getElementById('certFile').files[0];
+            if (certFile) formData.append('certFile', certFile);
 
             try {
+                let url = '/api/staff';
+                let method = 'POST';
+
                 if (editingUserId) {
-                    // UPDATE LOGIC (PUT REQUEST)
-                    /* 🔴 REAL BACKEND CODE:
-                    await fetch('/api/staff/' + editingUserId, {
-                        method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(staffData)
-                    }); 
-                    */
-                    
-                    // Frontend Simulation:
-                    const index = usersData.findIndex(u => (u._id || u.id) == editingUserId);
-                    if(index !== -1) {
-                        staffData.id = editingUserId; // retain ID
-                        usersData[index] = staffData;
-                    }
-                    alert("✅ Staff Data Updated Successfully!");
-
-                } else {
-                    // NEW ADD LOGIC (POST REQUEST)
-                    /* 🔴 REAL BACKEND CODE:
-                    await fetch('/api/staff', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(staffData)
-                    }); 
-                    */
-
-                    // Frontend Simulation:
-                    staffData.id = Math.floor(Math.random() * 10000); // Generate Temp ID
-                    usersData.unshift(staffData);
-                    alert("✅ New Staff Added Successfully!");
+                    url = '/api/staff/' + editingUserId;
+                    method = 'PUT';
                 }
 
-                applyFiltersAndSearch();    
-                closeModal();
+                // 🔴 REAL BACKEND REQUEST 🔴
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData // Note: Do not set Content-Type header when using FormData
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(editingUserId ? "✅ Staff Data Updated Successfully!" : "✅ New Staff Added Successfully!");
+                    closeModal();
+                    fetchUsersFromLiveServer(); // Refresh the table automatically
+                } else {
+                    alert("❌ Failed: " + result.message);
+                }
 
             } catch (error) {
-                alert("❌ Server Error: Could not save data.");
+                alert("❌ Server Error: Could not save data. Check your internet/backend.");
             }
 
             btn.innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
@@ -604,8 +606,7 @@
 
         // --- EDIT EXISTING USER ---
         function editUser(id) {
-            // Find User Data
-            const user = usersData.find(u => (u._id || u.id) == id);
+            const user = usersData.find(u => u._id === id);
             if(!user) return;
 
             editingUserId = id;
@@ -615,8 +616,8 @@
             document.getElementById('saveBtn').innerHTML = "<i class='bx bx-refresh'></i> Update Details";
             
             // Populate Basic Structure First
-            document.getElementById('staffCategory').value = user.category;
-            handleCategoryChange(); // Load Dropdown options
+            document.getElementById('staffCategory').value = user.category || '';
+            handleCategoryChange(); 
             
             // Populate Form Fields
             document.getElementById('staffRole').value = user.role || '';
@@ -624,7 +625,7 @@
             document.getElementById('fatherName').value = user.fatherName || '';
             document.getElementById('dob').value = user.dob || '';
             document.getElementById('gender').value = user.gender || 'Male';
-            document.getElementById('mobile').value = user.mobile || user.contact || '';
+            document.getElementById('mobile').value = user.mobile || '';
             document.getElementById('email').value = user.email || '';
             document.getElementById('address').value = user.address || '';
             document.getElementById('aadhaar').value = user.aadhaar || '';
@@ -642,6 +643,9 @@
             document.getElementById('accNumber').value = user.accNumber || '';
             document.getElementById('ifsc').value = user.ifsc || '';
 
+            // Note: Since files are handled securely, we don't prepopulate input type="file" for security reasons.
+            // But if user doesn't select new files, the backend logic ignores file updates and keeps old files safely.
+
             // Open the Modal
             document.getElementById('userModal').style.display = 'flex'; 
         }
@@ -652,15 +656,16 @@
             if(!confirmDelete) return;
 
             try {
-                // 🔴 REAL BACKEND DELETE CODE:
-                /*
-                await fetch('/api/staff/' + id, { method: 'DELETE' });
-                */
-                
-                // Frontend Simulation:
-                usersData = usersData.filter(u => (u._id || u.id) != id);
-                applyFiltersAndSearch();
-                alert("🗑️ Staff Member deleted successfully.");
+                // 🔴 REAL BACKEND DELETE CALL 🔴
+                const response = await fetch('/api/staff/' + id, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("🗑️ Staff Member deleted successfully.");
+                    fetchUsersFromLiveServer(); // Refresh Table
+                } else {
+                    alert("❌ Delete failed: " + result.message);
+                }
             } catch (error) {
                 alert("❌ Server Error: Could not delete data.");
             }
