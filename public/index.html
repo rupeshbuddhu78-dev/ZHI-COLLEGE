@@ -39,7 +39,7 @@
                 <label>System Role</label>
                 <select id="userRole">
                     <option value="director">Director / Super Admin</option>
-                    <option value="accounts">Accounts & Admission Staff</option>
+                    <option value="accounts">Accounts & Office Staff</option>
                     <option value="faculty">Faculty Member (Teacher)</option>
                 </select>
             </div>
@@ -54,7 +54,7 @@
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="login-btn">Authenticate</button>
+            <button type="submit" class="login-btn" id="loginBtn">Authenticate</button>
         </form>
 
         <div class="footer">
@@ -65,6 +65,11 @@
     <script>
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            // Loading effect on Button
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = "Authenticating...";
+            btn.disabled = true;
 
             const loginData = {
                 role: document.getElementById('userRole').value,
@@ -82,26 +87,33 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Alert hٹا diya taaki experience smooth lage, direct redirect hoga
+                    // Local Storage me save kar rahe hain taaki dashboard pe user ka naam dikha sakein
+                    localStorage.setItem('userRole', loginData.role);
+                    if(result.staffName) localStorage.setItem('userName', result.staffName);
+                    if(result.staffId) localStorage.setItem('staffId', result.staffId);
                     
-                    // Logic: Kaun kahan jayega (YAHAN FIX KIYA HAI)
+                    // 🔴 YAHAN FIX KIYA HAI: Exact Routing Logic 🔴
                     if (loginData.role === 'director') {
                         // Director jayega Admin Dashboard par
                         window.location.href = 'admin_dashboard.html'; 
                     } else if (loginData.role === 'accounts') {
-                        // Accounts Staff jayega Admission Form par bacche add karne
-                        window.location.href = 'AdmissionForm.html'; 
-                    } else {
-                        // Teachers jayenge Staff Dashboard par
-                        window.location.href = 'staff_dashboard.html';
+                        // Accounts & Management Staff jayega Staff Dashboard par
+                        window.location.href = 'staff_dashboard.html'; 
+                    } else if (loginData.role === 'faculty') {
+                        // Teachers jayenge apni Teacher profile/dashboard par
+                        window.location.href = 'teacher.html';
                     }
                 } else {
                     alert("❌ Access Denied: " + result.message);
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("⚠️ Server down hai bhai!");
+                alert("⚠️ Server down hai bhai! Backend check karo.");
             }
+
+            // Restore button if error occurs (redirect hone pe ye run nahi hoga)
+            btn.innerHTML = "Authenticate";
+            btn.disabled = false;
         };
     </script>
 </body>
