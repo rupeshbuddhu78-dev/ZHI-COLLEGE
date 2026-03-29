@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | Academic & HOD Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); -webkit-font-smoothing: antialiased; }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a i { font-size: 20px; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
+        .user-profile div { display: flex; flex-direction: column; }
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
+
+        .content { padding: 25px; flex: 1; }
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;}
+
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
+        .btn-primary:hover { background: #2563eb; }
+
+        /* ------------------ STATS CARDS ------------------ */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; }
+        .stat-info h4 { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;}
+        .stat-info p { font-size: 13px; color: var(--text-light); font-weight: 500;}
+
+        /* ------------------ QUICK ACTIONS ------------------ */
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .action-btn { background: var(--white); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 13px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: center;}
+        .action-btn i { font-size: 28px; color: var(--purple); }
+        .action-btn:hover { background: #faf5ff; border-color: #e9d5ff; color: var(--purple); }
+
+        /* ------------------ PANELS & TABLES ------------------ */
+        .grid-2-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .panel-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
+        .panel-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        
+        .table-res { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600;}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500;}
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .bg-blue { background: #eff6ff; color: #1e40af; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-yellow { background: #fef9c3; color: #854d0e; }
+        
+        /* Alert List */
+        .alert-list { display: flex; flex-direction: column; }
+        .alert-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+        .alert-item:last-child { border-bottom: none; }
+        .alert-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0;}
+        .alert-content h4 { font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
+        .alert-content p { font-size: 12px; color: var(--text-light); }
+        .alert-action { margin-top: 8px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer; border: none; background: #fee2e2; color: #991b1b;}
+
+        /* Mobile Adjustments */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 992px) {
+            .stats-grid, .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .grid-2-col { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .content { padding: 15px; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-img">
+                    <i class='bx bxs-book-bookmark' style="color:var(--purple); font-size: 26px;"></i>
+                </div>
+                <div>
+                    <h2>ZHI Academics</h2>
+                    <p>HOD / CO-ORDINATOR</p>
+                </div>
+            </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="active"><a href="#"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Management</li>
+            <li><a href="#"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="#"><i class='bx bx-chalkboard'></i> Assign Teachers</a></li>
+            <li><a href="#"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
+            <li><a href="#"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
+            <li><a href="#"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
+            <li><a href="#"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academic Department</div>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <b id="adminName">Dr. Amit Kumar</b>
+                    <span>Head of Department</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="page-title">
+                <div>👋 Welcome, HOD Sir!</div>
+                <button class="btn-primary" style="background: var(--purple);"><i class='bx bx-calendar-plus'></i> Generate Timetable</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-buildings'></i></div>
+                    <div class="stat-info">
+                        <h4>42</h4>
+                        <p>Classes Today</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class='bx bx-user-check'></i></div>
+                    <div class="stat-info">
+                        <h4>38 / 40</h4>
+                        <p>Teachers Present</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-book-open'></i></div>
+                    <div class="stat-info">
+                        <h4>65%</h4>
+                        <p>Avg. Syllabus Comp.</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
+                    <div class="stat-info">
+                        <h4>12</h4>
+                        <p>Low Attendance Alerts</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <a href="#" class="action-btn">
+                    <i class='bx bx-calendar'></i>
+                    Manage Timetable
+                </a>
+                <a href="#" class="action-btn">
+                    <i class='bx bx-transfer'></i>
+                    Assign Substitute
+                </a>
+                <a href="#" class="action-btn">
+                    <i class='bx bx-book-reader'></i>
+                    Track Syllabus Progress
+                </a>
+                <a href="#" class="action-btn">
+                    <i class='bx bx-line-chart'></i>
+                    View Weak Students
+                </a>
+            </div>
+
+            <div class="grid-2-col">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class='bx bx-time-five'></i> Ongoing & Upcoming Classes</h3>
+                        <span class="badge bg-blue">Today's Routine</span>
+                    </div>
+                    <div class="table-res">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Course</th>
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10:00 - 11:00 AM</td>
+                                    <td>BCA (Sem 1)</td>
+                                    <td>C Programming</td>
+                                    <td><b style="color: var(--primary);">Rahul Sir</b></td>
+                                    <td><span class="badge bg-yellow">Room 101</span></td>
+                                </tr>
+                                <tr>
+                                    <td>11:00 - 12:00 PM</td>
+                                    <td>BBA (Sem 3)</td>
+                                    <td>Finance Mgmt.</td>
+                                    <td><b style="color: var(--primary);">Priya Mam</b></td>
+                                    <td><span class="badge bg-yellow">Room 205</span></td>
+                                </tr>
+                                <tr>
+                                    <td>12:00 - 01:00 PM</td>
+                                    <td>MCA (Sem 1)</td>
+                                    <td>Data Structures</td>
+                                    <td><b style="color: var(--primary);">Amit Sir</b></td>
+                                    <td><span class="badge bg-yellow">Lab 1</span></td>
+                                </tr>
+                                <tr>
+                                    <td>02:00 - 03:00 PM</td>
+                                    <td>BCA (Sem 5)</td>
+                                    <td>Web Tech</td>
+                                    <td><b style="color: var(--primary);">Sanjay Sir</b></td>
+                                    <td><span class="badge bg-yellow">Lab 2</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class='bx bx-bell' style="color: var(--danger);"></i> Critical Alerts</h3>
+                    </div>
+                    <div class="alert-list">
+                        <div class="alert-item">
+                            <div class="alert-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
+                            <div class="alert-content">
+                                <h4>Teacher Absent Today</h4>
+                                <p><b>Vikas Sir</b> is on leave. 2 classes need a substitute.</p>
+                                <button class="alert-action">Assign Substitute Now</button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item">
+                            <div class="alert-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-trending-down'></i></div>
+                            <div class="alert-content">
+                                <h4>Low Attendance Warning</h4>
+                                <p>BCA Sem 1 Section A has average attendance below 65% this week.</p>
+                            </div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-book'></i></div>
+                            <div class="alert-content">
+                                <h4>Syllabus Lagging</h4>
+                                <p>Maths (BBA Sem 1) is 15% behind the target schedule.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Display Name from LocalStorage (Set during login)
+        window.onload = () => {
+            const userName = localStorage.getItem('userName');
+            if(userName) {
+                document.getElementById('adminName').innerText = userName;
+            }
+        };
+    </script>
+</body>
+</html>
