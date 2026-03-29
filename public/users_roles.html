@@ -297,6 +297,7 @@
                             <div class="form-group"><label>Mobile Number *</label><input type="text" id="mobile" required placeholder="10-digit number"></div>
                             
                             <div class="form-group" id="emailGroup"><label>Email ID (Login ID) *</label><input type="email" id="email" placeholder="official@zhi.edu"></div>
+                            <div class="form-group" id="passwordGroup"><label>Login Password *</label><input type="text" id="password" placeholder="Default: Mobile Number"></div>
                             
                             <div class="form-group full-width"><label>Full Permanent Address</label><textarea id="address" rows="2" placeholder="House No, Street, City, State, Pincode"></textarea></div>
                         </div>
@@ -376,17 +377,16 @@
             if (window.innerWidth <= 768) { toggleSidebar(); }
         }
 
-        // Global variable for Edit Mode
         let editingUserId = null;
 
         function openModal() { 
-            editingUserId = null; // Reset edit ID
+            editingUserId = null; 
             document.getElementById('modalTitle').innerText = "Register New Staff Member";
             document.getElementById('saveBtn').innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
             
             document.getElementById('addStaffForm').reset();
             document.getElementById('staffRole').innerHTML = '<option value="">-- First select Category --</option>';
-            handleCategoryChange(); // Reset dynamic fields logic
+            handleCategoryChange(); 
             
             document.getElementById('userModal').style.display = 'flex'; 
         }
@@ -419,6 +419,10 @@
             document.getElementById('emailGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('email').required = !isNonTeaching;
             
+            // 🔴 TOGGLE PASSWORD FIELD FOR DASHBOARD 🔴
+            document.getElementById('passwordGroup').classList.toggle('hide-section', isNonTeaching);
+            document.getElementById('password').required = !isNonTeaching;
+
             document.getElementById('panGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('resumeGroup').classList.toggle('hide-section', isNonTeaching);
             document.getElementById('certGroup').classList.toggle('hide-section', isNonTeaching);
@@ -433,7 +437,7 @@
             document.getElementById('skills').required = (category === 'teacher');
         }
 
-        // --- LIVE SERVER LOGIC (Connected to /api/staff) ---
+        // --- LIVE SERVER LOGIC ---
         let usersData = []; 
         let currentFilter = 'all';
 
@@ -442,7 +446,7 @@
             document.getElementById('userTableBody').innerHTML = '';
             
             try {
-                // 🔴 REAL BACKEND API CALL 🔴
+                // 🔴 REAL BACKEND API CALL
                 const res = await fetch('/api/staff');
                 const result = await res.json();
                 
@@ -453,8 +457,8 @@
                     document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data from server.</td></tr>`;
                 }
             } catch (error) {
-                console.error("Error connecting to Live Database:", error);
-                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Server connection error. Is the server running?</td></tr>`;
+                console.error("Error:", error);
+                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Server connection error. Ensure your backend is running.</td></tr>`;
             }
             document.getElementById('tableLoader').style.display = 'none';
         }
@@ -521,7 +525,7 @@
             renderTable(filteredData);
         }
 
-        // --- SAVE / UPDATE DATA (POST / PUT with FormData) ---
+        // --- SAVE / UPDATE DATA ---
         async function saveUser(event) {
             event.preventDefault();
             
@@ -530,18 +534,23 @@
             btn.disabled = true;
 
             const category = document.getElementById('staffCategory').value;
+            const mobile = document.getElementById('mobile').value;
             
-            // 🔴 USE FORM DATA BECAUSE WE ARE SENDING FILES (Profile Pic, Resume, Cert) 🔴
             const formData = new FormData();
-            
             formData.append('category', category);
             formData.append('role', document.getElementById('staffRole').value);
             formData.append('name', document.getElementById('fullName').value);
             formData.append('fatherName', document.getElementById('fatherName').value);
             formData.append('dob', document.getElementById('dob').value);
             formData.append('gender', document.getElementById('gender').value);
-            formData.append('mobile', document.getElementById('mobile').value);
+            formData.append('mobile', mobile);
             formData.append('email', document.getElementById('email').value);
+            
+            // 🔴 AUTO PASSWORD: If empty, use mobile number
+            let passwordValue = document.getElementById('password').value;
+            if(!passwordValue) passwordValue = mobile; 
+            formData.append('password', passwordValue);
+
             formData.append('address', document.getElementById('address').value);
             formData.append('aadhaar', document.getElementById('aadhaar').value);
             formData.append('pan', document.getElementById('pan').value);
@@ -558,10 +567,9 @@
             formData.append('accNumber', document.getElementById('accNumber').value);
             formData.append('ifsc', document.getElementById('ifsc').value);
             
-            let contactField = category === 'nonteaching' ? document.getElementById('mobile').value : document.getElementById('email').value;
+            let contactField = category === 'nonteaching' ? mobile : document.getElementById('email').value;
             formData.append('contact', contactField);
 
-            // Append Files if Selected
             const profilePic = document.getElementById('profilePic').files[0];
             if (profilePic) formData.append('profilePic', profilePic);
             
@@ -580,10 +588,9 @@
                     method = 'PUT';
                 }
 
-                // 🔴 REAL BACKEND REQUEST 🔴
                 const response = await fetch(url, {
                     method: method,
-                    body: formData // Note: Do not set Content-Type header when using FormData
+                    body: formData 
                 });
                 
                 const result = await response.json();
@@ -591,13 +598,13 @@
                 if (result.success) {
                     alert(editingUserId ? "✅ Staff Data Updated Successfully!" : "✅ New Staff Added Successfully!");
                     closeModal();
-                    fetchUsersFromLiveServer(); // Refresh the table automatically
+                    fetchUsersFromLiveServer(); 
                 } else {
                     alert("❌ Failed: " + result.message);
                 }
 
             } catch (error) {
-                alert("❌ Server Error: Could not save data. Check your internet/backend.");
+                alert("❌ Server Error: Could not save data. Please check your Node.js Backend.");
             }
 
             btn.innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
@@ -611,15 +618,12 @@
 
             editingUserId = id;
 
-            // Change Modal UI
             document.getElementById('modalTitle').innerText = "✏️ Edit Staff Member Data";
             document.getElementById('saveBtn').innerHTML = "<i class='bx bx-refresh'></i> Update Details";
             
-            // Populate Basic Structure First
             document.getElementById('staffCategory').value = user.category || '';
             handleCategoryChange(); 
             
-            // Populate Form Fields
             document.getElementById('staffRole').value = user.role || '';
             document.getElementById('fullName').value = user.name || '';
             document.getElementById('fatherName').value = user.fatherName || '';
@@ -627,6 +631,7 @@
             document.getElementById('gender').value = user.gender || 'Male';
             document.getElementById('mobile').value = user.mobile || '';
             document.getElementById('email').value = user.email || '';
+            document.getElementById('password').value = user.password || ''; // 🔴 EDIT PASSWORD
             document.getElementById('address').value = user.address || '';
             document.getElementById('aadhaar').value = user.aadhaar || '';
             document.getElementById('pan').value = user.pan || '';
@@ -643,10 +648,6 @@
             document.getElementById('accNumber').value = user.accNumber || '';
             document.getElementById('ifsc').value = user.ifsc || '';
 
-            // Note: Since files are handled securely, we don't prepopulate input type="file" for security reasons.
-            // But if user doesn't select new files, the backend logic ignores file updates and keeps old files safely.
-
-            // Open the Modal
             document.getElementById('userModal').style.display = 'flex'; 
         }
 
@@ -656,13 +657,12 @@
             if(!confirmDelete) return;
 
             try {
-                // 🔴 REAL BACKEND DELETE CALL 🔴
                 const response = await fetch('/api/staff/' + id, { method: 'DELETE' });
                 const result = await response.json();
 
                 if (result.success) {
                     alert("🗑️ Staff Member deleted successfully.");
-                    fetchUsersFromLiveServer(); // Refresh Table
+                    fetchUsersFromLiveServer(); 
                 } else {
                     alert("❌ Delete failed: " + result.message);
                 }
@@ -671,7 +671,6 @@
             }
         }
 
-        // Initialize Fetch on Page Load
         window.onload = () => { fetchUsersFromLiveServer(); };
     </script>
 </body>
