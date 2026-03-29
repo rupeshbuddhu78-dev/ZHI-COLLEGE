@@ -30,22 +30,18 @@
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--danger); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        
-        /* Logo Image Style */
         .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; object-fit: contain; }
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
-        .sidebar-menu li a i { font-size: 20px; } /* Icon Size */
+        .sidebar-menu li a i { font-size: 20px; }
         .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
-
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 65px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; }
         .menu-btn, .close-sidebar-btn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
         
-        /* SMART SEARCH BAR */
         .search-bar { display: flex; align-items: center; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; width: 350px; border: 1px solid transparent; transition: 0.3s;}
         .search-bar i { color: var(--text-light); font-size: 18px; }
         .search-bar:focus-within { border-color: var(--primary); background: white;}
@@ -56,69 +52,109 @@
 
         .content { padding: 25px; flex: 1; }
 
+        /* FILTER TABS */
+        .filter-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-btn { padding: 8px 16px; border: 1px solid var(--border); background: var(--white); border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: 0.3s; white-space: nowrap; }
+        .filter-btn:hover { background: #f1f5f9; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         /* PANEL & TABLE */
         .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .panel-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
         .panel-header h3 { font-size: 16px; font-weight: 600; }
         
-        .table-res { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .table-res { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 850px; }
         th { text-align: left; padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600;}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
 
         /* Badges */
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
-        .badge-admin { background: #f3e8ff; color: #7e22ce; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; text-transform: capitalize; }
+        .badge-management { background: #f3e8ff; color: #7e22ce; }
         .badge-teacher { background: #e0f2fe; color: #0369a1; }
-        .badge-staff { background: #ffedd5; color: #c2410c; }
+        .badge-nonteaching { background: #fef08a; color: #854d0e; }
         
         .status-active { color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 5px;}
         .status-active::before { content: ""; width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;}
         .status-disabled { color: var(--text-light); font-weight: 600; display: flex; align-items: center; gap: 5px;}
         .status-disabled::before { content: ""; width: 8px; height: 8px; background: var(--text-light); border-radius: 50%; display: inline-block;}
-
-        .action-btns { display: flex; gap: 10px; }
+        
+        .action-btns { display: flex; gap: 8px; }
         .action-btns button { background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-dark); transition: 0.2s; display: flex; align-items: center; gap: 4px;}
-        .action-btns button i { font-size: 14px; }
         .action-btns button:hover { background: #f1f5f9; }
         .action-btns .btn-danger { color: var(--danger); border-color: #fca5a5; }
         .action-btns .btn-danger:hover { background: #fef2f2; }
 
-        /* ------------------ SMART MODAL (Add/Edit User) ------------------ */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 2000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(2px); }
-        .modal-box { background: white; width: 100%; max-width: 700px; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; animation: slideIn 0.3s ease; }
+        /* ------------------ HUGE MODAL FOR STAFF REGISTRATION ------------------ */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: flex-start; padding: 20px; backdrop-filter: blur(4px); overflow-y: auto;}
+        
+        /* Modal Box Styling */
+        .modal-box { background: var(--bg); width: 100%; max-width: 900px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; animation: slideIn 0.3s ease; margin: auto; }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px 12px 0 0; }
-        .modal-body { padding: 20px; overflow-y: auto; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--white); border-radius: 12px 12px 0 0; position: sticky; top: 0; z-index: 10; }
+        .modal-header h3 { font-size: 18px; color: var(--text-dark); }
+        .modal-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        /* Form Sections / Cards */
+        .form-section { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .section-title { font-size: 14px; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; overflow: hidden; } /* Fix for overflow */
         .form-group.full-width { grid-column: 1 / -1; }
+        
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-        .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        
+        /* Fixed Input Styles */
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            outline: none; 
+            font-size: 14px; 
+            font-family: inherit; 
+            background: #fff;
+            transition: all 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        /* 🔴 FIXED FILE INPUT OVERFLOW ISSUE 🔴 */
+        .form-group input[type="file"] { 
+            padding: 7px; 
+            background: #f8fafc; 
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .form-group input[type="file"]::file-selector-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
 
-        /* Password Gen Box */
-        .password-box { display: flex; gap: 10px; }
-        .password-box input { flex: 1; background: #f8fafc;}
-        .password-box button { background: var(--text-dark); color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s;}
-        .password-box button:hover { background: #334155; }
+        /* Conditional Displays */
+        .hide-section { display: none !important; }
 
-        /* Dynamic Sections */
-        .dynamic-section { display: none; background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 5px; border: 1px dashed #cbd5e1; }
-        .dynamic-section h4 { font-size: 13px; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; }
+        .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--white); border-radius: 0 0 12px 12px; position: sticky; bottom: 0; z-index: 10;}
 
-        /* Permissions Checkboxes */
-        .permissions-box { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border); margin-top: 15px;}
-        .perm-title { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 10px;}
-        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; cursor: pointer; font-weight: 500;}
-        .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
-
-        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-radius: 0 0 12px 12px;}
-
-        /* Mobile Adjustments */
+        /* 📱 MOBILE RESPONSIVENESS (IMPROVED) */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 992px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100vh; }
             .sidebar.active { transform: translateX(260px); }
@@ -126,9 +162,21 @@
             .sidebar-overlay.active { display: block; }
             .content { padding: 15px; }
             .topbar { padding: 0 15px; }
-            .search-bar { width: 200px; } 
-            .form-grid { grid-template-columns: 1fr; } 
+            .search-bar { width: 180px; } 
+            
+            /* Better Modal on Phone */
+            .modal-box { margin: 0; max-height: 100vh; border-radius: 0; width: 100%;}
+            .modal-overlay { padding: 0; }
+            .modal-header { border-radius: 0; padding: 15px; }
+            .modal-body { padding: 15px; gap: 15px;}
+            .form-section { padding: 15px; }
+            .form-grid, .form-grid-2 { grid-template-columns: 1fr; gap: 12px;} 
+            .modal-footer { padding: 15px; }
         }
+
+        /* Loading Spinner */
+        .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; margin: 30px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -138,7 +186,9 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="https://via.placeholder.com/150/ffffff/ff0000?text=Logo" alt="ZHI Logo" class="logo-img">
+                <div class="logo-img">
+                    <i class="fa-solid fa-graduation-cap" style="color:var(--primary); font-size: 24px; padding: 8px;"></i>
+                </div>
                 <div>
                     <h2>ZHI College</h2>
                     <p>DIRECTOR PANEL</p>
@@ -148,15 +198,15 @@
         </div>
         
         <ul class="sidebar-menu">
-            <li><a href="admin_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
-            <li class="active"><a href="#"><i class='bx bx-user-pin'></i> Users & Roles</a></li>
-            <li><a href="students.html"><i class='bx bx-user'></i> Students</a></li>
-            <li><a href="Finance.html"><i class='bx bx-dollar'></i> Finance</a></li>
-            <li><a href="Reports&Analytics.html"><i class='bx bx-bar-chart-alt-2'></i> Reports & Analytics</a></li>
-            <li><a href="Exams&Results.html"><i class='bx bx-file'></i> Exams & Results</a></li>
-            <li><a href="GlobalNotice.html"><i class='bx bx-message-square-detail'></i> Global Notices</a></li>
-            <li><a href="SystemSettings.html"><i class='bx bx-cog'></i> System Settings</a></li>
-            <li><a href="AuditLogs.html"><i class='bx bx-refresh'></i> Audit Logs</a></li>
+            <li><a href="admin_dashboard.html" onclick="checkMobileClose()"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
+            <li class="active"><a href="#" onclick="checkMobileClose()"><i class='bx bx-user-pin'></i> Users & Roles</a></li>
+            <li><a href="students.html" onclick="checkMobileClose()"><i class='bx bx-user'></i> Students</a></li>
+            <li><a href="Finance.html" onclick="checkMobileClose()"><i class='bx bx-dollar'></i> Finance</a></li>
+            <li><a href="Reports&Analytics.html" onclick="checkMobileClose()"><i class='bx bx-bar-chart-alt-2'></i> Reports & Analytics</a></li>
+            <li><a href="Exams&Results.html" onclick="checkMobileClose()"><i class='bx bx-file'></i> Exams & Results</a></li>
+            <li><a href="GlobalNotice.html" onclick="checkMobileClose()"><i class='bx bx-message-square-detail'></i> Global Notices</a></li>
+            <li><a href="SystemSettings.html" onclick="checkMobileClose()"><i class='bx bx-cog'></i> System Settings</a></li>
+            <li><a href="AuditLogs.html" onclick="checkMobileClose()"><i class='bx bx-refresh'></i> Audit Logs</a></li>
         </ul>
     </aside>
 
@@ -165,75 +215,40 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
                 <div class="search-bar">
-                    <i class='bx bx-search'></i> <input type="text" placeholder="Search user by name or email...">
+                    <i class='bx bx-search'></i> <input type="text" id="searchInput" placeholder="Search employee..." onkeyup="handleSearch()">
                 </div>
             </div>
-            <button class="btn-primary" onclick="openModal()"><i class='bx bx-plus'></i> Add New User</button>
+            <button class="btn-primary" onclick="openModal()"><i class='bx bx-plus'></i> Add Employee</button>
         </header>
 
         <main class="content">
+            <div class="filter-tabs" id="roleFilters">
+                <button class="filter-btn active" onclick="filterUsers('all')">All Staff</button>
+                <button class="filter-btn" onclick="filterUsers('management')">Management</button>
+                <button class="filter-btn" onclick="filterUsers('teacher')">Teaching Faculty</button>
+                <button class="filter-btn" onclick="filterUsers('nonteaching')">Non-Teaching Staff</button>
+            </div>
+
             <div class="panel">
                 <div class="panel-header">
-                    <h3>System Access Directory</h3>
+                    <h3>College Employee Directory</h3>
                 </div>
+                <div class="loader" id="tableLoader"></div>
+                
                 <div class="table-res">
                     <table>
                         <thead>
                             <tr>
-                                <th>Name & Email</th>
-                                <th>Role</th>
+                                <th>Emp ID & Name</th>
+                                <th>Category & Role</th>
+                                <th>Department</th>
+                                <th>Contact Details</th>
                                 <th>Status</th>
-                                <th>Last Login</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <b>Ravi Kumar</b><br>
-                                    <span style="font-size: 12px; color: var(--text-light);">ravi.admin@zhi.edu</span>
-                                </td>
-                                <td><span class="badge badge-admin">Admin</span></td>
-                                <td><span class="status-active">Active</span></td>
-                                <td><span style="color: var(--text-light); font-size: 13px;">10 mins ago</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button title="Reset Password"><i class='bx bx-key'></i> Reset</button>
-                                        <button class="btn-danger" title="Disable User"><i class='bx bx-block'></i> Disable</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <b>Sneha Sharma</b><br>
-                                    <span style="font-size: 12px; color: var(--text-light);">sneha.staff@zhi.edu</span>
-                                </td>
-                                <td><span class="badge badge-staff">Admission Staff</span></td>
-                                <td><span class="status-active">Active</span></td>
-                                <td><span style="color: var(--text-light); font-size: 13px;">Yesterday, 2:30 PM</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button><i class='bx bx-key'></i> Reset</button>
-                                        <button class="btn-danger"><i class='bx bx-block'></i> Disable</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <b>Amit Singh</b><br>
-                                    <span style="font-size: 12px; color: var(--text-light);">amit.bca@zhi.edu</span>
-                                </td>
-                                <td><span class="badge badge-teacher">Teacher</span></td>
-                                <td><span class="status-disabled">Disabled</span></td>
-                                <td><span style="color: var(--text-light); font-size: 13px;">25 Mar 2026</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button><i class='bx bx-key'></i> Reset</button>
-                                        <button style="color: var(--success); border-color: #86efac;"><i class='bx bx-check-circle'></i> Enable</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="userTableBody">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -243,153 +258,416 @@
     <div class="modal-overlay" id="userModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h3>Add New System User</h3>
+                <h3 id="modalTitle">Register New Staff Member</h3>
                 <button onclick="closeModal()" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--text-light);"><i class='bx bx-x'></i></button>
             </div>
             
-            <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Assign Primary Role *</label>
-                        <select id="userRole" onchange="toggleDynamicFields()">
-                            <option value="">-- Select Role --</option>
-                            <option value="admin">System Admin / Director</option>
-                            <option value="staff">Admission / Office Staff</option>
-                            <option value="teacher">Teaching Faculty (Teacher)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" placeholder="e.g. Rahul Verma">
-                    </div>
-                    <div class="form-group">
-                        <label>Official Email ID (Login ID)</label>
-                        <input type="email" placeholder="name@zhi.edu">
-                    </div>
-                    <div class="form-group">
-                        <label>Mobile Number</label>
-                        <input type="text" placeholder="+91">
-                    </div>
-                    <div class="form-group">
-                        <label>Aadhar Number</label>
-                        <input type="text" placeholder="XXXX XXXX XXXX">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Initial Login Password (Sent to Email)</label>
-                        <div class="password-box">
-                            <input type="text" id="genPassword" placeholder="Click generate to create password" readonly>
-                            <button type="button" onclick="generateRandomPassword()">🎲 Generate Password</button>
+            <div class="modal-body" id="modalBodyScroll">
+                <form id="addStaffForm" onsubmit="saveUser(event)">
+                    
+                    <div class="form-section" style="background: #eff6ff; border-color: #bfdbfe;">
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>Staff Category (Main Category) *</label>
+                                <select id="staffCategory" required onchange="handleCategoryChange()" style="font-weight: 600; color: var(--primary);">
+                                    <option value="">-- Select Category --</option>
+                                    <option value="management">🏢 Management Staff (Admin/Office)</option>
+                                    <option value="teacher">🎓 Teaching Faculty (Professors)</option>
+                                    <option value="nonteaching">🛠️ Non-Teaching Staff (Support)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Specific Role / Designation *</label>
+                                <select id="staffRole" required>
+                                    <option value="">-- First select Category --</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="teacherModule" class="dynamic-section form-grid">
-                    <div class="form-group full-width">
-                        <h4>🎓 Teaching Profile Details</h4>
+                    <div class="form-section">
+                        <div class="section-title"><i class='bx bx-user'></i> Basic Personal Details</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required placeholder="Full Legal Name"></div>
+                            <div class="form-group"><label>Father/Guardian Name</label><input type="text" id="fatherName" placeholder="Father's Name"></div>
+                            <div class="form-group"><label>Date of Birth</label><input type="date" id="dob"></div>
+                            <div class="form-group"><label>Gender</label>
+                                <select id="gender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+                            </div>
+                            <div class="form-group"><label>Mobile Number *</label><input type="text" id="mobile" required placeholder="10-digit number"></div>
+                            
+                            <div class="form-group" id="emailGroup"><label>Email ID (Login ID) *</label><input type="email" id="email" placeholder="official@zhi.edu"></div>
+                            
+                            <div class="form-group full-width"><label>Full Permanent Address</label><textarea id="address" rows="2" placeholder="House No, Street, City, State, Pincode"></textarea></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Teaching Subject(s)</label>
-                        <input type="text" placeholder="e.g. Java, Python">
-                    </div>
-                    <div class="form-group">
-                        <label>Highest Qualification</label>
-                        <select>
-                            <option>Ph.D.</option>
-                            <option>MCA / M.Tech</option>
-                            <option>BCA / B.Tech</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div id="staffModule" class="dynamic-section form-grid">
-                    <div class="form-group full-width">
-                        <h4>🏢 Office Assignment Details</h4>
+                    <div class="form-section">
+                        <div class="section-title"><i class='bx bx-id-card'></i> Identity & Documents</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Aadhaar Number *</label><input type="text" id="aadhaar" required placeholder="12-digit Aadhaar"></div>
+                            <div class="form-group" id="panGroup"><label>PAN Card Number</label><input type="text" id="pan" placeholder="ABCDE1234F"></div>
+                            <div class="form-group"><label>Profile Photo</label><input type="file" id="profilePic" accept="image/*"></div>
+                            
+                            <div class="form-group" id="resumeGroup"><label>Upload Resume / CV</label><input type="file" id="resumeFile" accept=".pdf,.doc"></div>
+                            <div class="form-group" id="certGroup"><label>Degree/Certificates</label><input type="file" id="certFile" accept=".pdf"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Department</label>
-                        <select>
-                            <option>Directorate (Admin)</option>
-                            <option>Admission Cell</option>
-                            <option>Accounts & Finance</option>
-                            <option>IT Support</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Duty Shift</label>
-                        <select>
-                            <option>Morning (8 AM - 2 PM)</option>
-                            <option>General (10 AM - 5 PM)</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="permissions-box">
-                    <div class="perm-title">Software Module Access (Permissions)</div>
-                    <div class="form-grid" style="gap: 5px;">
-                        <label class="checkbox-label"><input type="checkbox" id="perm_students" checked> <span>Students Directory</span></label>
-                        <label class="checkbox-label"><input type="checkbox" id="perm_attendance"> <span>Attendance Management</span></label>
-                        <label class="checkbox-label"><input type="checkbox" id="perm_finance"> <span>Fees & Finance Access</span></label>
-                        <label class="checkbox-label"><input type="checkbox" id="perm_faculty"> <span>Faculty & Staff View</span></label>
+                    <div class="form-section" id="educationSection">
+                        <div class="section-title"><i class='bx bxs-graduation'></i> Education & Experience</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Highest Qualification *</label>
+                                <input type="text" id="qualification" placeholder="e.g. MCA, MBA, Ph.D, 12th Pass">
+                            </div>
+                            <div class="form-group" id="universityGroup"><label>University / Board</label><input type="text" id="university" placeholder="e.g. Magadh University"></div>
+                            <div class="form-group"><label>Total Experience (Years)</label><input type="number" id="experience" placeholder="e.g. 5"></div>
+                            <div class="form-group full-width" id="skillsGroup"><label>Key Skills / Subjects to Teach</label><input type="text" id="skills" placeholder="e.g. Java, Python OR Finance, HR"></div>
+                        </div>
                     </div>
-                </div>
 
-            </div>
-            
-            <div class="modal-footer">
-                <button onclick="closeModal()" style="padding: 9px 15px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
-                <button class="btn-primary" onclick="alert('User Created Successfully & Credentials Sent!')">Save & Register User</button>
+                    <div class="form-section">
+                        <div class="section-title"><i class='bx bx-briefcase'></i> College Job Details</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Employee ID *</label><input type="text" id="empId" required placeholder="e.g. ZHI-EMP-101"></div>
+                            <div class="form-group"><label>Joining Date *</label><input type="date" id="joinDate" required></div>
+                            <div class="form-group"><label>Department / Area</label>
+                                <select id="department">
+                                    <option value="Computer Science">Computer Science (IT/BCA)</option>
+                                    <option value="Management">Management (BBA/MBA)</option>
+                                    <option value="Administration">Administration & HR</option>
+                                    <option value="Accounts">Accounts & Finance</option>
+                                    <option value="Campus Maintenance">Campus Maintenance & Security</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="shiftGroup"><label>Duty Shift</label>
+                                <select id="shift"><option value="Day Shift (General)">Day Shift (General)</option><option value="Morning Shift">Morning Shift</option><option value="Night Shift">Night Shift</option></select>
+                            </div>
+                            <div class="form-group"><label>Basic Salary (₹) *</label><input type="number" id="salary" required placeholder="Monthly Salary"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title"><i class='bx bxs-bank'></i> Bank & Payroll Details</div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Bank Name</label><input type="text" id="bankName" placeholder="e.g. SBI, HDFC"></div>
+                            <div class="form-group"><label>Account Number</label><input type="text" id="accNumber" placeholder="Account No"></div>
+                            <div class="form-group"><label>IFSC Code</label><input type="text" id="ifsc" placeholder="IFSC Code"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="margin-top: 20px;">
+                        <button type="button" onclick="closeModal()" style="padding: 10px 18px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
+                        <button type="submit" class="btn-primary" id="saveBtn" style="padding: 10px 20px;"><i class='bx bx-save'></i> Save Staff Record</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script>
+        // --- UI & SIDEBAR LOGIC ---
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function openModal() { document.getElementById('userModal').style.display = 'flex'; }
+        function checkMobileClose() {
+            if (window.innerWidth <= 768) { toggleSidebar(); }
+        }
+
+        // Global variable for Edit Mode
+        let editingUserId = null;
+
+        function openModal() { 
+            editingUserId = null; // Reset edit ID
+            document.getElementById('modalTitle').innerText = "Register New Staff Member";
+            document.getElementById('saveBtn').innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
+            
+            document.getElementById('addStaffForm').reset();
+            document.getElementById('staffRole').innerHTML = '<option value="">-- First select Category --</option>';
+            handleCategoryChange(); // Reset dynamic fields logic
+            
+            document.getElementById('userModal').style.display = 'flex'; 
+        }
+
         function closeModal() { document.getElementById('userModal').style.display = 'none'; }
 
-        function generateRandomPassword() {
-            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
-            let pwd = "Zhi@"; 
-            for (let i = 0; i < 5; i++) {
-                pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            document.getElementById('genPassword').value = pwd;
-        }
+        // --- DYNAMIC FORM LOGIC ---
+        const roleOptions = {
+            management: ["Director", "Principal", "Vice Principal", "HOD (Head of Department)", "Admin Staff", "Accountant", "Office Staff"],
+            teacher: ["Professor", "Assistant Professor", "Lecturer", "Guest Faculty"],
+            nonteaching: ["Guard", "Sweeper", "Peon", "Clerk", "Driver", "Electrician"]
+        };
 
-        function toggleDynamicFields() {
-            const role = document.getElementById('userRole').value;
-            const teacherMod = document.getElementById('teacherModule');
-            const staffMod = document.getElementById('staffModule');
+        function handleCategoryChange() {
+            const category = document.getElementById('staffCategory').value;
+            const roleDropdown = document.getElementById('staffRole');
             
-            const pStudents = document.getElementById('perm_students');
-            const pAttendance = document.getElementById('perm_attendance');
-            const pFinance = document.getElementById('perm_finance');
-            const pFaculty = document.getElementById('perm_faculty');
-
-            teacherMod.style.display = 'none';
-            staffMod.style.display = 'none';
-            pStudents.checked = false; pAttendance.checked = false; pFinance.checked = false; pFaculty.checked = false;
-
-            if (role === 'teacher') {
-                teacherMod.style.display = 'grid'; 
-                pStudents.checked = true;          
-                pAttendance.checked = true;        
-            } 
-            else if (role === 'staff') {
-                staffMod.style.display = 'grid';   
-                pStudents.checked = true;          
+            // Populate Roles
+            const currentSelectedRole = roleDropdown.value; // Store if editing
+            roleDropdown.innerHTML = '<option value="">-- Select Specific Role --</option>';
+            if(category && roleOptions[category]) {
+                roleOptions[category].forEach(role => {
+                    roleDropdown.innerHTML += `<option value="${role}">${role}</option>`;
+                });
             }
-            else if (role === 'admin') {
-                staffMod.style.display = 'grid';   
-                pStudents.checked = true; pAttendance.checked = true; pFinance.checked = true; pFaculty.checked = true;
+
+            // Hide/Show specific fields based on category
+            const isNonTeaching = (category === 'nonteaching');
+            
+            document.getElementById('emailGroup').classList.toggle('hide-section', isNonTeaching);
+            document.getElementById('email').required = !isNonTeaching;
+            
+            document.getElementById('panGroup').classList.toggle('hide-section', isNonTeaching);
+            document.getElementById('resumeGroup').classList.toggle('hide-section', isNonTeaching);
+            document.getElementById('certGroup').classList.toggle('hide-section', isNonTeaching);
+            
+            document.getElementById('universityGroup').classList.toggle('hide-section', isNonTeaching);
+            
+            const skillsLabel = document.querySelector('#skillsGroup label');
+            if(category === 'teacher') skillsLabel.innerText = "Subjects to Teach *";
+            else if(category === 'management') skillsLabel.innerText = "Management/Admin Skills";
+            else skillsLabel.innerText = "Previous Work Skills";
+
+            document.getElementById('skills').required = (category === 'teacher');
+        }
+
+        // --- LIVE SERVER LOGIC (No Dummy Data Default) ---
+        let usersData = []; // 🔴 REMOVED DUMMY DATA. WILL FETCH FROM SERVER
+        let currentFilter = 'all';
+
+        async function fetchUsersFromLiveServer() {
+            document.getElementById('tableLoader').style.display = 'block';
+            document.getElementById('userTableBody').innerHTML = '';
+            
+            try {
+                // 🔴 UNCOMMENT THIS TO CONNECT TO REAL BACKEND (EXPRESS/MONGO)
+                /*
+                const res = await fetch('/api/staff');
+                usersData = await res.json();
+                */
+
+                // Since we don't have backend running right now, it will show "No records found" (Blank Database)
+                // If you want to test without backend, add 1 object inside usersData temporarily.
+                
+                renderTable(usersData);
+                document.getElementById('tableLoader').style.display = 'none';
+                
+            } catch (error) {
+                console.error("Error connecting to Live Database:", error);
+                document.getElementById('tableLoader').style.display = 'none';
+                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Failed to load data from server.</td></tr>`;
             }
         }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--text-light);">No staff records found in Database. Click 'Add Employee' to insert.</td></tr>`;
+                return;
+            }
+
+            data.forEach(user => {
+                let badgeClass = `badge-${user.category}`; 
+                let statusHtml = user.status === 'Active' ? `<span class="status-active">Active</span>` : `<span class="status-disabled">Disabled</span>`;
+
+                let row = `
+                    <tr>
+                        <td>
+                            <b>${user.name}</b><br>
+                            <span style="font-size: 11px; color: var(--primary); font-weight: 600;">ID: ${user.empId}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}">${user.category}</span><br>
+                            <span style="font-size: 13px; color: var(--text-light);">${user.role}</span>
+                        </td>
+                        <td><span style="font-size: 13px; font-weight: 500;">${user.dept}</span></td>
+                        <td><span style="color: var(--text-light); font-size: 13px;">${user.contact}</span></td>
+                        <td>${statusHtml}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button onclick="editUser('${user._id || user.id}')" title="Edit Data"><i class='bx bx-edit'></i> Edit</button>
+                                <button class="btn-danger" onclick="deleteUser('${user._id || user.id}')" title="Delete Data"><i class='bx bx-trash'></i> Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // --- FILTER & SEARCH ---
+        function filterUsers(category) {
+            currentFilter = category;
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFiltersAndSearch();
+        }
+
+        function handleSearch() { applyFiltersAndSearch(); }
+
+        function applyFiltersAndSearch() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filteredData = usersData.filter(user => {
+                const matchesRole = (currentFilter === 'all') || (user.category === currentFilter);
+                const matchesSearch = user.name.toLowerCase().includes(searchText) || user.empId.toLowerCase().includes(searchText) || user.role.toLowerCase().includes(searchText);
+                return matchesRole && matchesSearch;
+            });
+            renderTable(filteredData);
+        }
+
+        // --- SAVE / UPDATE DATA (POST / PUT) ---
+        async function saveUser(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('saveBtn');
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Saving to Database...";
+            btn.disabled = true;
+
+            const category = document.getElementById('staffCategory').value;
+            
+            // Build the Data Object (Same keys as your mongoose model)
+            const staffData = {
+                category: category,
+                role: document.getElementById('staffRole').value,
+                name: document.getElementById('fullName').value,
+                fatherName: document.getElementById('fatherName').value,
+                dob: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
+                mobile: document.getElementById('mobile').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
+                aadhaar: document.getElementById('aadhaar').value,
+                pan: document.getElementById('pan').value,
+                qualification: document.getElementById('qualification').value,
+                university: document.getElementById('university').value,
+                experience: document.getElementById('experience').value,
+                skills: document.getElementById('skills').value,
+                empId: document.getElementById('empId').value,
+                joinDate: document.getElementById('joinDate').value,
+                dept: document.getElementById('department').value,
+                shift: document.getElementById('shift').value,
+                salary: document.getElementById('salary').value,
+                bankName: document.getElementById('bankName').value,
+                accNumber: document.getElementById('accNumber').value,
+                ifsc: document.getElementById('ifsc').value,
+                contact: category === 'nonteaching' ? document.getElementById('mobile').value : document.getElementById('email').value,
+                status: "Active"
+            };
+
+            try {
+                if (editingUserId) {
+                    // UPDATE LOGIC (PUT REQUEST)
+                    /* 🔴 REAL BACKEND CODE:
+                    await fetch('/api/staff/' + editingUserId, {
+                        method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(staffData)
+                    }); 
+                    */
+                    
+                    // Frontend Simulation:
+                    const index = usersData.findIndex(u => (u._id || u.id) == editingUserId);
+                    if(index !== -1) {
+                        staffData.id = editingUserId; // retain ID
+                        usersData[index] = staffData;
+                    }
+                    alert("✅ Staff Data Updated Successfully!");
+
+                } else {
+                    // NEW ADD LOGIC (POST REQUEST)
+                    /* 🔴 REAL BACKEND CODE:
+                    await fetch('/api/staff', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(staffData)
+                    }); 
+                    */
+
+                    // Frontend Simulation:
+                    staffData.id = Math.floor(Math.random() * 10000); // Generate Temp ID
+                    usersData.unshift(staffData);
+                    alert("✅ New Staff Added Successfully!");
+                }
+
+                applyFiltersAndSearch();    
+                closeModal();
+
+            } catch (error) {
+                alert("❌ Server Error: Could not save data.");
+            }
+
+            btn.innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
+            btn.disabled = false;
+        }
+
+        // --- EDIT EXISTING USER ---
+        function editUser(id) {
+            // Find User Data
+            const user = usersData.find(u => (u._id || u.id) == id);
+            if(!user) return;
+
+            editingUserId = id;
+
+            // Change Modal UI
+            document.getElementById('modalTitle').innerText = "✏️ Edit Staff Member Data";
+            document.getElementById('saveBtn').innerHTML = "<i class='bx bx-refresh'></i> Update Details";
+            
+            // Populate Basic Structure First
+            document.getElementById('staffCategory').value = user.category;
+            handleCategoryChange(); // Load Dropdown options
+            
+            // Populate Form Fields
+            document.getElementById('staffRole').value = user.role || '';
+            document.getElementById('fullName').value = user.name || '';
+            document.getElementById('fatherName').value = user.fatherName || '';
+            document.getElementById('dob').value = user.dob || '';
+            document.getElementById('gender').value = user.gender || 'Male';
+            document.getElementById('mobile').value = user.mobile || user.contact || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('address').value = user.address || '';
+            document.getElementById('aadhaar').value = user.aadhaar || '';
+            document.getElementById('pan').value = user.pan || '';
+            document.getElementById('qualification').value = user.qualification || '';
+            document.getElementById('university').value = user.university || '';
+            document.getElementById('experience').value = user.experience || '';
+            document.getElementById('skills').value = user.skills || '';
+            document.getElementById('empId').value = user.empId || '';
+            document.getElementById('joinDate').value = user.joinDate || '';
+            document.getElementById('department').value = user.dept || '';
+            document.getElementById('shift').value = user.shift || '';
+            document.getElementById('salary').value = user.salary || '';
+            document.getElementById('bankName').value = user.bankName || '';
+            document.getElementById('accNumber').value = user.accNumber || '';
+            document.getElementById('ifsc').value = user.ifsc || '';
+
+            // Open the Modal
+            document.getElementById('userModal').style.display = 'flex'; 
+        }
+
+        // --- DELETE USER ---
+        async function deleteUser(id) {
+            let confirmDelete = confirm("⚠️ Are you sure you want to permanently delete this Staff Member?");
+            if(!confirmDelete) return;
+
+            try {
+                // 🔴 REAL BACKEND DELETE CODE:
+                /*
+                await fetch('/api/staff/' + id, { method: 'DELETE' });
+                */
+                
+                // Frontend Simulation:
+                usersData = usersData.filter(u => (u._id || u.id) != id);
+                applyFiltersAndSearch();
+                alert("🗑️ Staff Member deleted successfully.");
+            } catch (error) {
+                alert("❌ Server Error: Could not delete data.");
+            }
+        }
+
+        // Initialize Fetch on Page Load
+        window.onload = () => { fetchUsersFromLiveServer(); };
     </script>
 </body>
 </html>
