@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | Timetable Setup (HOD)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --warning: #f59e0b; 
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --card-curve: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        .sidebar-menu li a i { font-size: 20px; transition: transform 0.3s ease;}
+        .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
+        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
+        
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
+
+        .content { padding: 30px; flex: 1; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+
+        /* ------------------ FILTER CARD ------------------ */
+        .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px;}
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
+        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
+        .form-control:focus { border-color: var(--primary); background: #fff; }
+        
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; font-size: 14px;}
+        .btn-primary:hover { background: #2563eb; }
+
+        /* ------------------ TIMETABLE GRID ------------------ */
+        .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; display: none; }
+        .table-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .table-header h3 { font-size: 16px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
+        
+        .table-res { overflow-x: auto; padding: 20px;}
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { padding: 12px; background: var(--bg); font-size: 13px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border: 1px solid var(--border); text-align: center;}
+        td { padding: 10px; border: 1px solid var(--border); font-size: 13px; text-align: center; vertical-align: top; width: 14.28%; transition: 0.2s;}
+        
+        .day-col { font-weight: 700; background: #f8fafc; color: var(--text-dark); vertical-align: middle; }
+        
+        /* Slot Design */
+        .slot { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px; cursor: pointer; transition: 0.2s; min-height: 70px; display: flex; flex-direction: column; justify-content: center; gap: 4px;}
+        .slot:hover { background: #dbeafe; border-color: var(--primary); transform: translateY(-2px);}
+        .slot.empty { background: transparent; border: 1px dashed #cbd5e1; color: var(--text-light); align-items: center; font-size: 20px;}
+        .slot.empty:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc;}
+        
+        .sub-name { font-weight: 700; color: var(--primary); font-size: 13px; }
+        .teacher-name { font-size: 11px; color: var(--text-dark); font-weight: 500;}
+        .room-no { font-size: 10px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 10px; border: 1px solid #e2e8f0; display: inline-block; margin-top: 2px;}
+
+        /* ------------------ MODAL ------------------ */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal-box { background: var(--white); width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; color: var(--text-dark);}
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-light);}
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px;}
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-radius: 0 0 12px 12px; }
+        
+        .btn-outline { background: white; border: 1px solid var(--border); padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; color: var(--text-dark);}
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .filter-card { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
+            <div><h2>ZHI Academics</h2><p>HOD PANEL</p></div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li class="active"><a href="timetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="assign_teacher.html"><i class='bx bx-user-pin'></i> Assign Teachers</a></li>
+            <li><a href="manage_syllabus.html"><i class='bx bx-book-bookmark'></i> Manage Syllabus</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Tracking</li>
+            <li><a href="attendance_overview.html"><i class='bx bx-check-shield'></i> Attendance Overview</a></li>
+            <li><a href="performance_reports.html"><i class='bx bx-bar-chart-alt-2'></i> Performance Reports</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academic Planning</div>
+            </div>
+            <div class="user-profile">
+                <div><b id="hodName">Prof. Sharma</b><span>HOD - BCA Dept</span></div>
+                <img src="https://ui-avatars.com/api/?name=HOD&background=3b82f6&color=fff" alt="HOD">
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">Class Timetable Setup</div>
+            </div>
+
+            <div class="filter-card">
+                <div class="form-group">
+                    <label>Course / Program</label>
+                    <select class="form-control" id="ttCourse">
+                        <option value="">Select Course</option>
+                        <option value="BCA">BCA (Bachelor of Computer Applications)</option>
+                        <option value="BBA">BBA (Bachelor of Business Admin)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Semester / Year</label>
+                    <select class="form-control" id="ttSem">
+                        <option value="">Select Semester</option>
+                        <option value="Sem 1">Semester 1</option>
+                        <option value="Sem 2">Semester 2</option>
+                        <option value="Sem 3">Semester 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Section</label>
+                    <select class="form-control" id="ttSec">
+                        <option value="A">Section A</option>
+                        <option value="B">Section B</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="loadTimetable()"><i class='bx bx-search'></i> Load Schedule</button>
+            </div>
+
+            <div class="table-card" id="timetableCard">
+                <div class="table-header">
+                    <h3 id="ttHeading"><i class='bx bx-calendar-star' style="color: var(--primary);"></i> Weekly Schedule</h3>
+                    <button class="btn-primary" style="background: var(--success);" onclick="alert('Timetable Saved to Database!')"><i class='bx bx-save'></i> Save Changes</button>
+                </div>
+                
+                <div class="table-res">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Day</th>
+                                <th>Period 1 <br><small>09:00 - 10:00</small></th>
+                                <th>Period 2 <br><small>10:00 - 11:00</small></th>
+                                <th>Period 3 <br><small>11:00 - 12:00</small></th>
+                                <th>Period 4 <br><small>12:30 - 01:30</small></th>
+                                <th>Period 5 <br><small>01:30 - 02:30</small></th>
+                                <th>Period 6 <br><small>02:30 - 03:30</small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-col">Monday</td>
+                                <td><div class="slot empty" onclick="openSlotModal('Monday', 'Period 1')"><i class='bx bx-plus'></i></div></td>
+                                <td>
+                                    <div class="slot" onclick="openSlotModal('Monday', 'Period 2')">
+                                        <div class="sub-name">C Programming</div>
+                                        <div class="teacher-name">Dr. Rakesh</div>
+                                        <div><span class="room-no">Room 101</span></div>
+                                    </div>
+                                </td>
+                                <td><div class="slot empty" onclick="openSlotModal('Monday', 'Period 3')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Monday', 'Period 4')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Monday', 'Period 5')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Monday', 'Period 6')"><i class='bx bx-plus'></i></div></td>
+                            </tr>
+                            <tr>
+                                <td class="day-col">Tuesday</td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 1')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 2')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 3')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 4')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 5')"><i class='bx bx-plus'></i></div></td>
+                                <td><div class="slot empty" onclick="openSlotModal('Tuesday', 'Period 6')"><i class='bx bx-plus'></i></div></td>
+                            </tr>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="slotModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class='bx bx-edit' style="color: var(--primary);"></i> Edit Time Slot</h3>
+                <button class="modal-close" onclick="closeModal()"><i class='bx bx-x'></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="background: var(--bg); padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; color: var(--text-dark);" id="slotDetails">
+                    Day - Period
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Subject</label>
+                    <select class="form-control" id="slotSubject">
+                        <option>C Programming</option>
+                        <option>Mathematics I</option>
+                        <option>English Communication</option>
+                        <option>Lab: C Programming</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assign Teacher</label>
+                    <select class="form-control" id="slotTeacher">
+                        <option>Dr. Rakesh (CS)</option>
+                        <option>Prof. Sunita (Math)</option>
+                        <option>Mr. Verma (English)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Room No. / Lab</label>
+                    <input type="text" class="form-control" id="slotRoom" placeholder="e.g. Room 101, Lab 2">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveSlot()"><i class='bx bx-check'></i> Set Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function loadTimetable() {
+            const course = document.getElementById('ttCourse').value;
+            const sem = document.getElementById('ttSem').value;
+            const sec = document.getElementById('ttSec').value;
+
+            if(!course || !sem) {
+                alert("Please select Course and Semester first!");
+                return;
+            }
+
+            document.getElementById('timetableCard').style.display = 'block';
+            document.getElementById('ttHeading').innerHTML = `<i class='bx bx-calendar-star' style="color: var(--primary);"></i> ${course} - ${sem} (Sec ${sec})`;
+        }
+
+        function openSlotModal(day, period) {
+            document.getElementById('slotDetails').innerText = `${day}  |  ${period}`;
+            document.getElementById('slotModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('slotModal').style.display = 'none';
+        }
+
+        function saveSlot() {
+            // Here you will handle the DOM update to show the assigned teacher in the table cell
+            // and later send this data to your backend API
+            alert("Slot updated locally! (Backend integration pending)");
+            closeModal();
+        }
+    </script>
+</body>
+</html>
