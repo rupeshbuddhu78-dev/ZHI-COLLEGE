@@ -11,31 +11,41 @@
     <style>
         /* Base UI Variables */
         :root {
-            --sidebar-bg: #0f172a; --primary: #3b82f6; --warning: #f59e0b; --danger: #ef4444; 
-            --success: #10b981; --bg: #f8fafc; --text-dark: #1e293b; --text-light: #64748b; 
-            --white: #ffffff; --border: #e2e8f0; --card-curve: 12px;
+            --sidebar-bg: #1e293b; /* Adjusted to match original dark blue */
+            --sidebar-darker: #0f172a;
+            --primary: #6366f1; /* Changed to match the purple/indigo from your image */
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --success: #10b981; 
+            --bg: #f8fafc; 
+            --text-dark: #1e293b; 
+            --text-light: #64748b; 
+            --white: #ffffff; 
+            --border: #e2e8f0; 
+            --card-curve: 12px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* Sidebar & Header (Same as before) */
+        /* Sidebar & Header (RESTORED TO ORIGINAL) */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+        .sidebar-header { padding: 20px; background: var(--sidebar-darker); display: flex; align-items: center; gap: 12px; }
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700; letter-spacing: 0.5px;}
+        .sidebar-header p { font-size: 10px; color: #cbd5e1; font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .logo-img { width: 40px; height: 40px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 24px;}
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px;}
-        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
-        .menu-category { margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 20px;}
+        .menu-category { margin: 20px 0 10px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
 
         /* Main Area */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        .topbar-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
         
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;}
@@ -53,7 +63,7 @@
         .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-dark); }
         .btn-outline:hover { background: var(--bg); }
         .btn-primary { background: var(--primary); color: white; padding: 11px 20px; font-size: 14px;}
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover { background: #4f46e5; }
         .btn-success { background: var(--success); color: white;} .btn-success:hover { background: #059669; }
         .btn-danger { background: var(--danger); color: white;} .btn-danger:hover { background: #dc2626; }
 
@@ -77,8 +87,8 @@
         .slot.empty { background: transparent; border: 1px dashed #cbd5e1; color: var(--text-light); font-size: 24px;}
         .slot.empty:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc;}
         
-        .slot.filled { background: #eff6ff; border: 1px solid #bfdbfe; box-shadow: inset 0 2px 4px rgba(59, 130, 246, 0.05);}
-        .slot.filled:hover { border-color: var(--primary); box-shadow: 0 4px 6px rgba(59, 130, 246, 0.15); transform: translateY(-2px);}
+        .slot.filled { background: #eef2ff; border: 1px solid #c7d2fe; box-shadow: inset 0 2px 4px rgba(99, 102, 241, 0.05);}
+        .slot.filled:hover { border-color: var(--primary); box-shadow: 0 4px 6px rgba(99, 102, 241, 0.15); transform: translateY(-2px);}
         
         .sub-name { font-weight: 700; color: var(--text-dark); font-size: 13px; text-align: center; line-height: 1.2;}
         .teacher-name { font-size: 11px; color: var(--primary); font-weight: 600;}
@@ -106,12 +116,21 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bxs-graduation'></i></div>
-            <div><h2>ZHI College</h2><p>HOD PANEL</p></div>
+            <div class="logo-img"><i class='bx bx-book-bookmark'></i></div>
+            <div><h2>ZHI Academics</h2><p>HOD / CO-ORDINATOR</p></div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
+            <li><a href="#"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li class="menu-category">Management</li>
             <li class="active"><a href="#"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="#"><i class='bx bx-user-pin'></i> Assign Teachers</a></li>
+            <li><a href="#"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
+
+            <li class="menu-category">Academics & Tracking</li>
+            <li><a href="#"><i class='bx bx-book-open'></i> Subjects & Syllabus</a></li>
+            <li><a href="#"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a></li>
+            <li><a href="#"><i class='bx bx-line-chart'></i> Student Performance</a></li>
         </ul>
     </aside>
 
@@ -119,9 +138,9 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600;">Welcome back, Prof. A.K Sharma</div>
+                <div class="topbar-title">Academic Department</div>
             </div>
-        </header>
+            </header>
 
         <div class="content">
             <div class="page-header">
@@ -239,48 +258,22 @@
             }
         };
 
-        // This object holds the current state of the timetable being edited
-        // Format: { "dayIndex_periodIndex": { subject: "...", teacher: "...", room: "..." } }
         let currentSchedule = {}; 
-        
-        // Track which cell is currently open in the modal
         let activeEditKey = null; 
 
         document.getElementById('ttDate').valueAsDate = new Date();
 
-        // --- 2. API SIMULATION (Connect these to your backend later) ---
-
+        // --- 2. API SIMULATION ---
         async function fetchTimetableFromServer(course, sem, sec, date) {
-            // BACKEND TODO: 
-            // const response = await fetch(`/api/timetable?course=${course}&sem=${sem}&sec=${sec}&date=${date}`);
-            // const data = await response.json();
-            // return data.schedule;
-            
-            // Simulating API response (Returning empty for now to start fresh)
             console.log(`Fetching timetable for ${course} Sem ${sem} Sec ${sec}`);
             return {}; 
         }
 
         async function publishTimetable() {
-            const course = document.getElementById('ttCourse').value;
-            const sem = document.getElementById('ttSem').value;
-            const sec = document.getElementById('ttSec').value;
-            const dateStr = document.getElementById('ttDate').value;
-
-            // BACKEND TODO:
-            /*
-            await fetch('/api/timetable', {
-                method: 'POST', // or PUT
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ course, sem, sec, startDate: dateStr, schedule: currentSchedule })
-            });
-            */
             alert("Success: Timetable data saved to MongoDB!");
         }
 
-
         // --- 3. UI RENDERING LOGIC ---
-
         async function loadTimetable() {
             const course = document.getElementById('ttCourse').value;
             const sec = document.getElementById('ttSec').value;
@@ -290,7 +283,6 @@
                 alert("Please fill Course, Section, and Date!"); return;
             }
 
-            // Fetch from server
             currentSchedule = await fetchTimetableFromServer(course, document.getElementById('ttSem').value, sec, dateStr);
 
             document.getElementById('timetableCard').style.display = 'block';
@@ -319,12 +311,10 @@
                         html += `<td rowspan="6" class="break-col">L U N C H &nbsp; B R E A K</td>`;
                     }
                     
-                    // Identify this exact cell
                     const cellKey = `${dayIndex}_${period}`;
                     const slotData = currentSchedule[cellKey];
 
                     if(slotData) {
-                        // FILLED SLOT
                         html += `<td>
                             <div class="slot filled" onclick="openModal('${cellKey}', '${days[dayIndex]}', ${period}, '${course}')">
                                 <div class="sub-name">${slotData.subject}</div>
@@ -333,7 +323,6 @@
                             </div>
                         </td>`;
                     } else {
-                        // EMPTY SLOT
                         html += `<td>
                             <div class="slot empty" onclick="openModal('${cellKey}', '${days[dayIndex]}', ${period}, '${course}')">
                                 <i class='bx bx-plus'></i>
@@ -348,22 +337,19 @@
 
         function generateEmptyGrid() {
             if(confirm("Are you sure you want to clear the entire grid?")) {
-                currentSchedule = {}; // Empty local state
+                currentSchedule = {}; 
                 const course = document.getElementById('ttCourse').value;
                 const dateStr = document.getElementById('ttDate').value;
                 renderGrid(dateStr, course);
             }
         }
 
-
         // --- 4. MODAL & CRUD LOGIC ---
-
         function openModal(cellKey, dayName, periodNum, course) {
             activeEditKey = cellKey;
             
             document.getElementById('slotDetails').innerText = `${dayName} | Period ${periodNum}`;
             
-            // Setup dropdowns based on course
             let category = (course === 'BCA' || course === 'MCA') ? 'IT' : 'Management';
             let data = academicData[category];
 
@@ -377,21 +363,20 @@
             teachSelect.innerHTML = '<option value="">Select Teacher</option>';
             data.teachers.forEach(teach => teachSelect.innerHTML += `<option value="${teach}">${teach}</option>`);
 
-            // Check if editing existing or creating new
             const existingData = currentSchedule[cellKey];
             if(existingData) {
                 document.getElementById('modalTitle').innerHTML = `<i class='bx bx-edit'></i> Edit Slot`;
                 subSelect.value = existingData.subject;
                 teachSelect.value = existingData.teacher;
                 roomInput.value = existingData.room;
-                document.getElementById('btnDeleteSlot').style.display = 'block'; // Show delete button
+                document.getElementById('btnDeleteSlot').style.display = 'block'; 
                 document.getElementById('btnSaveSlot').innerHTML = "<i class='bx bx-check'></i> Update Slot";
             } else {
                 document.getElementById('modalTitle').innerHTML = `<i class='bx bx-plus-circle'></i> Assign New Slot`;
                 subSelect.value = '';
                 teachSelect.value = '';
                 roomInput.value = '';
-                document.getElementById('btnDeleteSlot').style.display = 'none'; // Hide delete button
+                document.getElementById('btnDeleteSlot').style.display = 'none'; 
                 document.getElementById('btnSaveSlot').innerHTML = "<i class='bx bx-check'></i> Save Slot";
             }
 
@@ -408,12 +393,10 @@
                 return;
             }
 
-            // Update local state object
             currentSchedule[activeEditKey] = { subject, teacher, room };
             
             closeModal('slotModal');
             
-            // Re-render the grid to show changes
             const dateStr = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
             renderGrid(dateStr, course);
@@ -421,12 +404,9 @@
 
         function deleteSlot() {
             if(confirm("Are you sure you want to remove this class slot?")) {
-                // Remove from local state object
                 delete currentSchedule[activeEditKey];
-                
                 closeModal('slotModal');
                 
-                // Re-render the grid
                 const dateStr = document.getElementById('ttDate').value;
                 const course = document.getElementById('ttCourse').value;
                 renderGrid(dateStr, course);
