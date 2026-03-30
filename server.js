@@ -44,12 +44,12 @@ const noticeStorage = new CloudinaryStorage({
 });
 const uploadNotice = multer({ storage: noticeStorage });
 
-// 🟢 NEW: Staff (Management/Teacher/Non-Teaching) Files ke liye storage 🟢
+// Staff (Management/Teacher/Non-Teaching) Files ke liye storage
 const staffStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'ZhiStaffFiles', 
-        resource_type: 'auto', // Auto taaki PDF (Resume) aur JPG (Profile) dono support kare
+        resource_type: 'auto', 
         allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx']
     },
 });
@@ -82,7 +82,6 @@ transporter.verify((error, success) => {
 
 // --- 5. SCHEMAS & MODELS ---
 
-// (Existing Schemas kept exactly same)
 const userSchema = new mongoose.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -153,53 +152,40 @@ const noticeSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Notice = mongoose.model('Notice', noticeSchema);
 
-// 🟢 NEW: STAFF SCHEMA (Management, Teacher, Non-Teaching) 🟢
+// STAFF SCHEMA (Management, Teacher, Non-Teaching)
 const staffSchema = new mongoose.Schema({
-    category: { type: String, required: true }, // 'management', 'teacher', 'nonteaching'
-    role: { type: String, required: true }, // 'Principal', 'Guard', etc.
-    empId: { type: String, required: true, unique: true }, // e.g. ZHI-EMP-101
-    
-    // 🟢 NAYA ADD KIYA: Password field
+    category: { type: String, required: true }, 
+    role: { type: String, required: true }, 
+    empId: { type: String, required: true, unique: true }, 
     password: { type: String, required: true },
-    
-    // Basic Details
     name: { type: String, required: true },
-    fatherName: String,
-    dob: String,
-    gender: String,
+    fatherName: String, dob: String, gender: String,
     mobile: { type: String, required: true },
-    email: { type: String }, // Optional for Guard/Sweeper
-    address: String,
-    contact: String, // Contact for table display (Email or Mobile)
-    
-    // Identity Details
-    aadhaar: String,
-    pan: String,
-    
-    // Education & Skills (Mostly for Teachers/Management)
-    qualification: String,
-    university: String,
-    experience: String,
-    skills: String,
-    
-    // Job Details
-    joinDate: String,
-    dept: String,
-    shift: String,
-    salary: Number,
-    status: { type: String, default: "Active" }, // 'Active' or 'Disabled'
-    
-    // Bank Details
-    bankName: String,
-    accNumber: String,
-    ifsc: String,
-
-    // File Upload Links (Cloudinary)
+    email: { type: String }, address: String, contact: String, 
+    aadhaar: String, pan: String, qualification: String,
+    university: String, experience: String, skills: String,
+    joinDate: String, dept: String, shift: String,
+    salary: Number, status: { type: String, default: "Active" }, 
+    bankName: String, accNumber: String, ifsc: String,
     profilePicUrl: { type: String, default: "" },
     resumeUrl: { type: String, default: "" },
     certUrl: { type: String, default: "" }
 }, { timestamps: true });
 const Staff = mongoose.model('Staff', staffSchema);
+
+
+// 🟢 NEW: ROUTINE SCHEMA 🟢
+const routineSchema = new mongoose.Schema({
+    course: { type: String, required: true }, // e.g., BCA, BBA
+    semester: { type: String, required: true }, // e.g., 1st, 2nd
+    subject: { type: String, required: true },
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, // Teacher link
+    dayOfWeek: { type: String, required: true }, // Monday, Tuesday, etc.
+    startTime: { type: String, required: true }, // e.g., "10:00 AM"
+    endTime: { type: String, required: true },   // e.g., "11:00 AM"
+    roomNumber: { type: String } // Optional: Class kaha hogi
+}, { timestamps: true });
+const Routine = mongoose.model('Routine', routineSchema);
 
 
 // FEE GENERATOR HELPER FUNCTION
@@ -242,12 +228,11 @@ app.get('/', (req, res) => {
 });
 
 // ------------------------------------------
-// Login API (UPDATED FOR STAFF/TEACHER LOGIN)
+// Login API 
 // ------------------------------------------
 app.post('/api/login', async (req, res) => {
     const { role, email, password } = req.body;
     try {
-        // 1. STUDENT LOGIN
         if (role.toLowerCase() === 'student') {
             const student = await Student.findOne({ email, password });
             if (student) {
@@ -272,7 +257,6 @@ app.post('/api/login', async (req, res) => {
             }
         } 
         
-        // 2. DIRECTOR / SUPER ADMIN LOGIN (Checks 'User' schema)
         else if (role.toLowerCase() === 'director') {
             const user = await User.findOne({ email, password, role: 'director' });
             if (user) {
@@ -280,37 +264,29 @@ app.post('/api/login', async (req, res) => {
             }
         } 
         
-     // 3. HOD / ACCOUNTANT / STAFF / TEACHER LOGIN (Checks 'Staff' schema)
         else if (['hod', 'accountant', 'staff', 'teacher'].includes(role.toLowerCase())) {
-            
-            // Frontend se aaye hue role ko Database ki Category se match karenge
-            // Teacher ke liye category 'teacher' hogi, baaki sab (HOD, Accountant, Staff) 'management' me aate hain
             let dbCategory = 'management'; 
             if (role.toLowerCase() === 'teacher') {
                 dbCategory = 'teacher';
             }
             
-            // Database me Staff dhoondo
             const staffUser = await Staff.findOne({ email, password, category: dbCategory });
             
             if (staffUser) {
-                // Agar Admin ne account disable kar diya hai
                 if (staffUser.status === 'Disabled') {
                     return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Director." });
                 }
 
-                // Login Success 
                 return res.status(200).json({ 
                     success: true, 
                     message: "Welcome " + staffUser.name, 
-                    role: role, // HTML ko wahi role return karega taaki sahi dashboard khule
+                    role: role, 
                     staffId: staffUser._id,
                     staffName: staffUser.name
                 });
             }
         }
 
-        // Agar koi password/email DB me na mile
         res.status(401).json({ success: false, message: "Invalid Email or Password!" });
 
     } catch (err) { 
@@ -325,7 +301,7 @@ app.post('/api/add-student', async (req, res) => {
     try {
         const newStudent = new Student({
             ...req.body,
-            password: req.body.studentMobile // Default password is mobile number
+            password: req.body.studentMobile 
         });
         const savedStudent = await newStudent.save();
         res.status(201).json({ 
@@ -411,7 +387,7 @@ app.post('/api/reset-password', async (req, res) => {
 });
 
 
-// 🟢 FINANCE API ROUTES 🟢
+// FINANCE API ROUTES
 app.get('/api/finance/search-student', async (req, res) => {
     try {
         const { q, course, sem, batch } = req.query;
@@ -461,7 +437,6 @@ app.post('/api/finance/collect-fee', async (req, res) => {
         const headIndex = feeRecord.feeHeads.findIndex(h => h._id.toString() === headId);
         if(headIndex === -1) return res.status(400).json({ success: false, message: "Fee head not found!" });
 
-        // Update amounts
         feeRecord.feeHeads[headIndex].paid += Number(amount);
         feeRecord.feeHeads[headIndex].due -= Number(amount);
         if(feeRecord.feeHeads[headIndex].due <= 0) feeRecord.feeHeads[headIndex].status = "Paid";
@@ -511,7 +486,7 @@ app.post('/api/finance/expense', async (req, res) => {
 });
 
 
-// 🟢 GLOBAL NOTICE APIs 🟢
+// GLOBAL NOTICE APIs
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
@@ -575,9 +550,7 @@ app.delete('/api/notices/:id', async (req, res) => {
 });
 
 
-// 🟢 NEW: STAFF (USERS & ROLES) APIs 🟢
-
-// 1. ADD NEW STAFF (Uploads 3 files: profilePic, resumeFile, certFile)
+// STAFF (USERS & ROLES) APIs
 app.post('/api/staff', uploadStaff.fields([
     { name: 'profilePic', maxCount: 1 }, 
     { name: 'resumeFile', maxCount: 1 }, 
@@ -586,11 +559,9 @@ app.post('/api/staff', uploadStaff.fields([
     try {
         const staffData = req.body;
 
-        // Ensure Employee ID is unique
         const existingStaff = await Staff.findOne({ empId: staffData.empId });
         if(existingStaff) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
 
-        // Grab Cloudinary Uploaded Links and Convert PDF to PNG 🟢
         if (req.files) {
             if (req.files['profilePic']) {
                 let tempUrl = req.files['profilePic'][0].secure_url || req.files['profilePic'][0].path;
@@ -615,7 +586,6 @@ app.post('/api/staff', uploadStaff.fields([
     }
 });
 
-// 2. GET ALL STAFF
 app.get('/api/staff', async (req, res) => {
     try {
         const staffList = await Staff.find().sort({ createdAt: -1 });
@@ -625,7 +595,6 @@ app.get('/api/staff', async (req, res) => {
     }
 });
 
-// 3. EDIT STAFF
 app.put('/api/staff/:id', uploadStaff.fields([
     { name: 'profilePic', maxCount: 1 }, 
     { name: 'resumeFile', maxCount: 1 }, 
@@ -634,7 +603,6 @@ app.put('/api/staff/:id', uploadStaff.fields([
     try {
         const updateData = req.body;
 
-        // Replace old links if new files are uploaded and Convert PDF to PNG 🟢
         if (req.files) {
             if (req.files['profilePic']) {
                 let tempUrl = req.files['profilePic'][0].secure_url || req.files['profilePic'][0].path;
@@ -659,13 +627,74 @@ app.put('/api/staff/:id', uploadStaff.fields([
     }
 });
 
-// 4. DELETE STAFF
 app.delete('/api/staff/:id', async (req, res) => {
     try {
         const deletedStaff = await Staff.findByIdAndDelete(req.params.id);
         if (!deletedStaff) return res.status(404).json({ success: false, message: "Staff not found!" });
 
         res.status(200).json({ success: true, message: "Staff Data Deleted!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ==========================================
+// 🟢 NEW: ROUTINE (TIMETABLE) APIs 🟢
+// ==========================================
+
+// 1. ADD NEW ROUTINE (POST)
+app.post('/api/routines', async (req, res) => {
+    try {
+        const newRoutine = new Routine(req.body);
+        await newRoutine.save();
+        res.status(201).json({ success: true, message: "Routine added successfully!", data: newRoutine });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. GET ROUTINE (GET)
+app.get('/api/routines', async (req, res) => {
+    try {
+        const { course, semester, teacherId, dayOfWeek } = req.query;
+        let filter = {};
+
+        // Query filters taaki App pe easily call lag sake
+        if (course) filter.course = new RegExp(`^${course}$`, 'i'); 
+        if (semester) filter.semester = semester;
+        if (teacherId) filter.teacherId = teacherId;
+        if (dayOfWeek) filter.dayOfWeek = new RegExp(`^${dayOfWeek}$`, 'i');
+
+        const routines = await Routine.find(filter)
+            .populate('teacherId', 'name empId') // Teacher ka naam fetch karke bhejega
+            .sort({ dayOfWeek: 1, startTime: 1 });
+
+        res.status(200).json({ success: true, data: routines });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. EDIT/UPDATE ROUTINE (PUT)
+app.put('/api/routines/:id', async (req, res) => {
+    try {
+        const updatedRoutine = await Routine.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedRoutine) return res.status(404).json({ success: false, message: "Routine not found!" });
+        
+        res.status(200).json({ success: true, message: "Routine updated successfully!", data: updatedRoutine });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 4. DELETE ROUTINE (DELETE)
+app.delete('/api/routines/:id', async (req, res) => {
+    try {
+        const deletedRoutine = await Routine.findByIdAndDelete(req.params.id);
+        if (!deletedRoutine) return res.status(404).json({ success: false, message: "Routine not found!" });
+        
+        res.status(200).json({ success: true, message: "Routine deleted permanently!" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
