@@ -717,7 +717,7 @@ seedAdmin();
 
 // --- 8. SELF-PING LOGIC (Anti-Sleep) ---
 const keepAlive = () => {
-    const SERVER_URL = 'https://zhi-college.onrender.com'; 
+    const SERVER_URL = 'https://zhi-college-rtya.onrender.com'; 
     
     https.get(SERVER_URL, (res) => {
         if (res.statusCode === 200) {
