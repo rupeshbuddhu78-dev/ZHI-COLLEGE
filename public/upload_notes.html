@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | Upload Notes (Teacher)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root { --sidebar-bg: #0f172a; --primary: #3b82f6; --warning: #f59e0b; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; --border: #e2e8f0; --card-curve: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+
+        /* SIDEBAR (Updated Nav) */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 1px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
+        .sidebar-menu li.active a { padding-left: 20px; }
+
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+
+        .content { padding: 30px; flex: 1; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+
+        /* GRID & CARDS */
+        .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; align-items: start;}
+        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; }
+        .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text-dark);}
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
+        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
+        .form-control:focus { border-color: var(--primary); background: #fff; }
+        
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-submit:hover { background: #2563eb; }
+        .btn-danger { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 4px; font-size: 18px; cursor: pointer; display: inline-flex;}
+
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
+        th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
+
+        @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
+            <div><h2>ZHI Academics</h2><p>TEACHER PANEL</p></div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
+            <li class="active"><a href="upload_notes.html"><i class='bx bx-folder-plus'></i> Upload Notes</a></li>
+            <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom</li>
+            <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
+            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics</div>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="page-header"><div class="page-title">Upload Study Material & Notes</div></div>
+
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="card-header"><i class='bx bx-cloud-upload' style="color: var(--primary);"></i> Upload New Note</div>
+                    <form id="noteForm" class="card-body" onsubmit="handleUpload(event)">
+                        <div class="form-group">
+                            <label>Select Class</label>
+                            <select class="form-control" id="nClass"><option>BCA Sem 1</option><option>BBA Sem 3</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <select class="form-control" id="nSub"><option>C Programming</option><option>Economics</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Topic / Title</label>
+                            <input type="text" class="form-control" id="nTitle" placeholder="e.g. Unit 1 - Introduction to C" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Attach File (PDF/PPT)</label>
+                            <input type="file" class="form-control" accept=".pdf,.ppt,.pptx,.doc,.docx" required>
+                        </div>
+                        <button type="submit" class="btn-submit"><i class='bx bx-upload'></i> Upload Note</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class='bx bx-folder-open' style="color: var(--text-light);"></i> Previously Uploaded Materials</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr><th>Date</th><th>Topic/Title</th><th>Class & Subject</th><th>Action</th></tr></thead>
+                            <tbody id="notesTable">
+                                <tr>
+                                    <td><b>Oct 12, 2023</b></td>
+                                    <td style="color: var(--primary); font-weight: 600;"><i class='bx bxs-file-pdf'></i> Pointers Notes</td>
+                                    <td>BCA Sem 1<br><small style="color: var(--text-light);">C Programming</small></td>
+                                    <td><button class="btn-danger" title="Delete"><i class='bx bx-trash'></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function handleUpload(e) {
+            e.preventDefault();
+            alert("Study Material uploaded successfully! Students can now access it.");
+            document.getElementById('noteForm').reset();
+        }
+    </script>
+</body>
+</html>
