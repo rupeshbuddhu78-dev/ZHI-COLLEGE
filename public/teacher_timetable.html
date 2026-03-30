@@ -11,7 +11,8 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #10b981; /* 🟢 CHANGED TO GREEN (MATCHING DASHBOARD) */
+            /* 🟢 Changed Primary Color to match your Teacher Panel Green */
+            --primary: #10b981; 
             --warning: #f59e0b; 
             --danger: #ef4444; 
             --success: #10b981; 
@@ -35,6 +36,8 @@
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        
+        /* 🟢 Hover & Active States updated to Green */
         .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
 
@@ -55,13 +58,14 @@
         
         .table-res { overflow-x: auto; padding: 20px;}
         table { width: 100%; border-collapse: collapse; text-align: center; min-width: 800px;}
-        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #059669;}
+        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #059669;} /* Green borders */
         td { padding: 15px; border: 1px solid var(--border); vertical-align: middle; height: 80px;}
         
+        /* 🟢 Class Blocks in Green Theme */
         .class-block { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 8px; display: inline-block; width: 100%;}
         .class-block b { display: block; font-size: 13px; color: var(--text-dark); margin-bottom: 4px;}
-        .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;}
-        .room-badge { display: block; margin-top: 5px; font-size: 10px; color: var(--primary); font-weight: bold; }
+        .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; display: block; margin-top: 3px;}
+        .room-badge { display: inline-block; margin-top: 5px; font-size: 10px; color: var(--primary); font-weight: bold; }
 
         @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
     </style>
@@ -70,20 +74,21 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-img"><i class='bx bx-book-reader'></i></div>
-            <div><h2>ZHI Faculty</h2><p>TEACHER PANEL</p></div>
+            <div><h2>ZHI Academics</h2><p>TEACHER PANEL</p></div>
         </div>
         
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">My Classes</li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classes & Academics</li>
             <li class="active"><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
-            <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Attendance</a></li>
+            <li><a href="teacher_subjects.html"><i class='bx bx-book-bookmark'></i> My Subjects</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom Duties</li>
+            <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
             <li><a href="upload_notes.html"><i class='bx bx-upload'></i> Upload Notes</a></li>
             <li><a href="assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
-            <li><a href="enter_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Enter Marks</a></li>
             
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
             <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
@@ -95,14 +100,14 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Faculty Portal</div>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics Portal</div>
             </div>
             <div class="user-profile">
                 <div>
-                    <b id="topbar-name" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
+                    <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
                     <span style="font-size: 11px; color: var(--text-light);">Faculty</span>
                 </div>
-                <img id="topbar-img" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff" alt="Teacher">
+                <img id="teacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff" alt="Teacher">
             </div>
         </header>
 
@@ -114,7 +119,7 @@
             <div class="card">
                 <div class="card-header">
                     <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Semester Schedule</span>
-                    <button style="background: var(--bg); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;" onclick="window.print()">
+                    <button style="background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;" onclick="window.print()">
                         <i class='bx bx-printer'></i> Print
                     </button>
                 </div>
@@ -130,8 +135,8 @@
                                 <th>02:00 - 03:00 PM</th>
                             </tr>
                         </thead>
-                        <tbody id="timetable-body">
-                            <tr><td colspan="6">Loading routine... Please wait! ⏳</td></tr>
+                        <tbody id="ttBody">
+                            <tr><td colspan="6" style="padding: 30px;"><b>Connecting to Server... Loading your routine ⏳</b></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -142,73 +147,80 @@
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // 🟢 DYNAMIC DATABASE FETCH LOGIC
+        // 🟢 LIVE SERVER FETCH LOGIC
         document.addEventListener("DOMContentLoaded", async () => {
             
-         
+            // 1. Get logged in teacher's ID from LocalStorage
+            const staffId = localStorage.getItem("staffId");
+            const staffName = localStorage.getItem("staffName") || "Faculty";
 
-            // Set Name in Topbar
-            document.getElementById("topbar-name").innerText = staffName;
-            document.getElementById("topbar-img").src = `https://ui-avatars.com/api/?name=${staffName}&background=10b981&color=fff`;
+            // Update Topbar Profile Name & Image
+            document.getElementById("teacherNameTxt").innerText = staffName;
+            document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName}&background=10b981&color=fff`;
 
-            // 2. Fetch data from your API
+            if (!staffId) {
+                alert("Authentication missing! Please login again.");
+                return;
+            }
+
+            // 2. Fetch routines specifically assigned to this teacher from the database
             try {
+                // Apna live server link (Render)
                 const response = await fetch(`https://zhi-college.onrender.com/api/routines?teacherId=${staffId}`);
                 const result = await response.json();
 
                 if (result.success) {
-                    renderTimetable(result.data);
+                    renderTeacherRoutine(result.data);
                 } else {
-                    document.getElementById("timetable-body").innerHTML = `<tr><td colspan="6" style="color: red;">Error loading routine!</td></tr>`;
+                    document.getElementById("ttBody").innerHTML = `<tr><td colspan="6" style="color: red;">Failed to load data!</td></tr>`;
                 }
             } catch (error) {
-                console.error("Server Error:", error);
-                document.getElementById("timetable-body").innerHTML = `<tr><td colspan="6" style="color: red;">Server connection failed! Check internet or Render link.</td></tr>`;
+                console.error("API Error:", error);
+                document.getElementById("ttBody").innerHTML = `<tr><td colspan="6" style="color: red;">Server is offline or unreachable.</td></tr>`;
             }
         });
 
-        // 3. Render Data into HTML Table
-        function renderTimetable(routines) {
-            const tbody = document.getElementById("timetable-body");
-            tbody.innerHTML = ""; // Clear Loading Text
+        // 3. Render Function to plot the routine properly in the table
+        function renderTeacherRoutine(routines) {
+            const tbody = document.getElementById("ttBody");
+            tbody.innerHTML = ""; 
 
             const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             
-            // Ye wo timings hain jo tumhare table columns mein hain
-            // Note: DB mein save karte waqt time bilkul ishi spelling me hona chahiye
-            const timeSlots = ["10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM"];
+            // These times match the table columns exactly.
+            // If HOD saves "10:00", we match by prefix.
+            const timeCols = ["10:00", "11:00", "12:00", "01:00", "02:00"];
 
             days.forEach(day => {
                 let tr = document.createElement("tr");
 
-                // Day Column
+                // Render Day Name Column
                 let tdDay = document.createElement("td");
                 tdDay.style.fontWeight = "600";
                 tdDay.style.background = "var(--bg)";
                 tdDay.innerText = day;
                 tr.appendChild(tdDay);
 
-                // Check Classes for this Day
-                timeSlots.forEach(time => {
+                // Check Classes for Each Column
+                timeCols.forEach(timePrefix => {
                     let td = document.createElement("td");
 
-                    // Find class mapping with Day and Start Time
-                    const routine = routines.find(r => 
+                    // Find if teacher has a class on this day at this time
+                    const cls = routines.find(r => 
                         r.dayOfWeek.toLowerCase() === day.toLowerCase() && 
-                        r.startTime === time
+                        r.startTime.includes(timePrefix)
                     );
 
-                    if (routine) {
-                        // Agar Class mili
+                    if (cls) {
                         td.innerHTML = `
                             <div class="class-block">
-                                <b>${routine.subject}</b>
-                                <span>${routine.course} (Sem ${routine.semester})</span>
-                                <span class="room-badge"><i class='bx bx-map'></i> ${routine.roomNumber || 'TBA'}</span>
+                                <b>${cls.subject}</b>
+                                <span>${cls.course} - Sem ${cls.semester}</span>
+                                <span class="room-badge"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
                             </div>
                         `;
                     } else {
-                        // Agar Free hai
+                        // Empty slot
                         td.innerHTML = `<span style="color: #94a3b8; font-size: 13px;">- Free -</span>`;
                     }
 
