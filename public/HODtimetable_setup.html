@@ -3,209 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZHI | Dynamic Timetable Setup (HOD)</title>
+    <title>ZHI Academics | Professional Timetable Manager</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <style>
-        /* Base UI Variables */
         :root {
-            --sidebar-bg: #1e293b;
-            --sidebar-darker: #0f172a;
-            --primary: #6366f1; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --success: #10b981; 
-            --bg: #f8fafc; 
-            --text-dark: #1e293b; 
-            --text-light: #64748b; 
-            --white: #ffffff; 
-            --border: #e2e8f0; 
-            --card-curve: 12px;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #f8fafc;
+            --sidebar: #1e293b;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar & Header */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; background: var(--sidebar-darker); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700; letter-spacing: 0.5px;}
-        .sidebar-header p { font-size: 10px; color: #cbd5e1; font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        .logo-img { width: 40px; height: 40px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 24px;}
-
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
-        .sidebar-menu li a i { font-size: 20px;}
-        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 20px;}
-        .menu-category { margin: 20px 0 10px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
-
-        /* Main Area */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
-        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
-        .topbar-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; }
+        .sidebar-header { padding: 24px; background: #0f172a; display: flex; align-items: center; gap: 12px; }
+        .logo-box { width: 35px; height: 35px; background: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--primary);}
         
-        .content { padding: 30px; flex: 1; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;}
-        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+        .nav-menu { padding: 20px 0; flex: 1; }
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; transition: 0.3s; font-size: 14px; border-left: 4px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: white; border-left-color: var(--primary); }
+        .nav-item i { font-size: 20px; }
+
+        /* Main Content */
+        .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         
-        /* Filters & Forms */
-        .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px;}
+        .container { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* Filter Section */
+        .filter-card { background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: flex-end; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
-        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
-        .form-control:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);}
-        
-        /* Buttons */
-        .btn { border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; white-space: nowrap; }
-        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-dark); }
-        .btn-outline:hover { background: var(--bg); }
-        .btn-primary { background: var(--primary); color: white; padding: 11px 20px; font-size: 14px;}
-        .btn-primary:hover { background: #4f46e5; }
-        .btn-success { background: var(--success); color: white;} .btn-success:hover { background: #059669; }
-        .btn-danger { background: var(--danger); color: white;} .btn-danger:hover { background: #dc2626; }
+        .form-control { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; background: var(--bg);}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); background: #fff;}
 
-        /* Timetable Grid */
-        .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); overflow: hidden; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.02);}
-        .table-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; flex-wrap: wrap; gap: 10px;}
-        .table-header h3 { font-size: 16px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
+        .btn { padding: 11px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; justify-content: center;}
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg); }
+
+        /* Table Design */
+        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); display: none; }
+        .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fcfcfd; }
         
-        .table-res { overflow-x: auto; padding: 20px;}
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { padding: 12px; background: var(--sidebar-bg); color: white; font-size: 12px; text-transform: uppercase; font-weight: 600; border: 1px solid var(--border); text-align: center;}
-        td { padding: 8px; border: 1px solid var(--border); font-size: 13px; text-align: center; vertical-align: top; width: 12.5%; }
-        
-        .day-col { font-weight: 700; background: #f8fafc; color: var(--text-dark); vertical-align: middle; font-size: 13px;}
-        .day-col small { display: block; font-weight: 500; color: var(--text-light); font-size: 11px; margin-top: 4px; }
-        .break-col { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; font-weight: 700; color: var(--text-light); letter-spacing: 5px; text-align: center; vertical-align: middle; padding: 0 !important; width: 40px;}
-        
-        /* Slot Styles */
-        .slot { border-radius: 6px; padding: 10px 5px; cursor: pointer; transition: all 0.2s ease; min-height: 85px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; position: relative;}
-        
-        .slot.empty { background: transparent; border: 1px dashed #cbd5e1; color: var(--text-light); font-size: 24px;}
-        .slot.empty:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc;}
-        
-        .slot.filled { background: #eef2ff; border: 1px solid #c7d2fe; box-shadow: inset 0 2px 4px rgba(99, 102, 241, 0.05);}
-        .slot.filled:hover { border-color: var(--primary); box-shadow: 0 4px 6px rgba(99, 102, 241, 0.15); transform: translateY(-2px);}
-        
-        .sub-name { font-weight: 700; color: var(--text-dark); font-size: 13px; text-align: center; line-height: 1.2;}
-        .teacher-name { font-size: 11px; color: var(--primary); font-weight: 600;}
-        .room-no { font-size: 10px; color: var(--text-light); background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border); margin-top: 4px;}
+        .table-wrapper { overflow-x: auto; padding: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; table-layout: fixed; }
+        th { background: #f1f5f9; color: var(--text-light); font-weight: 600; font-size: 12px; text-transform: uppercase; padding: 15px; border: 1px solid var(--border); text-align: center;}
+        td { border: 1px solid var(--border); vertical-align: top; height: 100px; padding: 8px; position: relative; }
+
+        .day-cell { background: #f8fafc; font-weight: 700; text-align: center; vertical-align: middle !important; width: 120px; }
+        .day-cell span { display: block; font-size: 11px; color: var(--text-light); font-weight: 500; margin-top: 4px; }
+
+        /* Lunch Break */
+        .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; letter-spacing: 4px; width: 40px !important; vertical-align: middle;}
+
+        /* Slot Styling */
+        .slot { height: 100%; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; padding: 5px;}
+        .slot.empty { border: 1px dashed #cbd5e1; }
+        .slot.empty:hover { background: #f1f5f9; border-color: var(--primary); color: var(--primary); }
+        .slot.empty i { font-size: 24px; color: #cbd5e1; }
+
+        .slot.filled { background: #eef2ff; border-color: #c7d2fe; border-left: 4px solid var(--primary); }
+        .slot.filled:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99,102,241,0.15); border-color: var(--primary);}
+        .slot .sub { font-weight: 700; font-size: 12px; color: var(--text-main); text-align: center; line-height: 1.2;}
+        .slot .teach { font-size: 11px; color: var(--primary); font-weight: 600; text-align: center;}
+        .slot .room { font-size: 10px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); margin-top: 4px;}
 
         /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
-        .modal-box { background: var(--white); width: 100%; max-width: 450px; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideIn 0.3s ease-out;}
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-light); transition: 0.2s;}
-        .modal-close:hover { color: var(--danger); transform: scale(1.1);}
-        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px;}
-        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 0 0 12px 12px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal { background: white; width: 100%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-head { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-foot { padding: 15px 20px; background: #f8fafc; display: flex; justify-content: space-between; border-top: 1px solid var(--border);}
         
-        .footer-actions { display: flex; gap: 10px; margin-left: auto;}
+        .loading-spinner { text-align: center; padding: 40px; font-size: 18px; color: var(--primary); font-weight: 600;}
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100vh; }
-            .sidebar.active { transform: translateX(260px); }
-            .menu-btn { display: block; }
-        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bx-book-bookmark'></i></div>
-            <div><h2>ZHI Academics</h2><p>HOD / CO-ORDINATOR</p></div>
+            <div class="logo-box"><i class='bx bxs-graduation'></i></div>
+            <div>
+                <h4 style="font-size: 14px;">ZHI Academics</h4>
+                <p style="font-size: 10px; color: #94a3b8;">HOD DASHBOARD</p>
+            </div>
         </div>
-        <ul class="sidebar-menu">
-            <li><a href="#"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
-            
-            <li class="menu-category">Management</li>
-            <li class="active"><a href="#"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
-            <li><a href="#"><i class='bx bx-user-pin'></i> Assign Teachers</a></li>
-            <li><a href="#"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
-
-            <li class="menu-category">Academics & Tracking</li>
-            <li><a href="#"><i class='bx bx-book-open'></i> Subjects & Syllabus</a></li>
-            <li><a href="#"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a></li>
-            <li><a href="#"><i class='bx bx-line-chart'></i> Student Performance</a></li>
-        </ul>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item"><i class='bx bx-home-alt'></i> Dashboard</a>
+            <a href="#" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
+            <a href="#" class="nav-item"><i class='bx bx-user-voice'></i> Faculty Mgmt</a>
+            <a href="#" class="nav-item"><i class='bx bx-file-blank'></i> Reports</a>
+        </nav>
     </aside>
 
-    <main class="main-wrapper">
-        <header class="topbar">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div class="topbar-title">Academic Department</div>
+    <main class="main-content">
+        <header>
+            <h3 style="font-weight: 700; font-size: 18px;">Routine Management System</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light);"></span>
             </div>
         </header>
 
-        <div class="content">
-            <div class="page-header">
-                <div class="page-title">Dynamic Timetable System</div>
-            </div>
-
+        <div class="container">
             <div class="filter-card">
                 <div class="form-group">
-                    <label>Course</label>
+                    <label>Course Program</label>
                     <select class="form-control" id="ttCourse">
                         <option value="">Select Course</option>
-                        <option value="BCA">BCA (IT)</option>
-                        <option value="MCA">MCA (IT - Master)</option>
+                        <option value="BCA">BCA (Information Tech)</option>
+                        <option value="MCA">MCA (Master of Computer)</option>
                         <option value="BBA">BBA (Management)</option>
-                        <option value="MBA">MBA (Management)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Semester</label>
                     <select class="form-control" id="ttSem">
-                        <option value="1">Sem 1</option>
-                        <option value="2">Sem 2</option>
-                        <option value="3">Sem 3</option>
-                        <option value="4">Sem 4</option>
-                        <option value="5">Sem 5</option>
-                        <option value="6">Sem 6</option>
+                        <option value="">Select Semester</option>
+                        <option value="1">1st Sem</option>
+                        <option value="2">2nd Sem</option>
+                        <option value="3">3rd Sem</option>
+                        <option value="4">4th Sem</option>
+                        <option value="5">5th Sem</option>
+                        <option value="6">6th Sem</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Section</label>
-                    <input type="text" class="form-control" id="ttSec" placeholder="e.g., A, B, Morning" required>
+                    <input type="text" class="form-control" id="ttSec" placeholder="e.g. A" value="A">
                 </div>
                 <div class="form-group">
-                    <label>Select Week Date (Mon)</label>
-                    <input type="date" class="form-control" id="ttDate" required>
+                    <label>Week Starting (Monday)</label>
+                    <input type="date" class="form-control" id="ttDate">
                 </div>
-                <button class="btn-primary" onclick="loadTimetable()"><i class='bx bx-search'></i> Fetch / Generate</button>
+                <button class="btn btn-primary" onclick="fetchAndRenderTimetable()">
+                    <i class='bx bx-sync'></i> Load Grid
+                </button>
             </div>
 
-            <div class="table-card" id="timetableCard">
+            <div class="table-container" id="ttContainer">
                 <div class="table-header">
-                    <h3 id="ttHeading"><i class='bx bx-table'></i> Live Schedule Editor</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-outline" onclick="generateEmptyGrid()"><i class='bx bx-refresh'></i> Clear All</button>
-                        <button class="btn btn-success" onclick="publishTimetable()"><i class='bx bx-cloud-upload'></i> Publish to Server</button>
-                    </div>
+                    <h4 id="ttTitle" style="font-size: 16px;">Weekly Schedule</h4>
                 </div>
-                
-                <div class="table-res">
+                <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>Date & Day</th>
-                                <th>Period 1 <br><small>09:00 - 10:00</small></th>
-                                <th>Period 2 <br><small>10:00 - 11:00</small></th>
-                                <th>Period 3 <br><small>11:00 - 12:00</small></th>
-                                <th class="break-col" style="width: 40px;">BREAK</th>
-                                <th>Period 4 <br><small>12:30 - 01:30</small></th>
-                                <th>Period 5 <br><small>01:30 - 02:30</small></th>
-                                <th>Period 6 <br><small>02:30 - 03:30</small></th>
+                                <th>Day / Date</th>
+                                <th>09:00 - 10:00</th>
+                                <th>10:00 - 11:00</th>
+                                <th>11:00 - 12:00</th>
+                                <th class="lunch-break">BREAK</th>
+                                <th>12:30 - 01:30</th>
+                                <th>01:30 - 02:30</th>
+                                <th>02:30 - 03:30</th>
                             </tr>
                         </thead>
                         <tbody id="ttBody">
@@ -217,220 +186,293 @@
     </main>
 
     <div class="modal-overlay" id="slotModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3 id="modalTitle"><i class='bx bx-edit' style="color: var(--primary);"></i> Assign Slot</h3>
-                <button class="modal-close" onclick="closeModal('slotModal')"><i class='bx bx-x'></i></button>
+        <div class="modal">
+            <div class="modal-head">
+                <h4 id="mTitle" style="display: flex; align-items: center; gap: 8px;"><i class='bx bx-edit' style="color: var(--primary);"></i> Assign Class</h4>
+                <i class='bx bx-x' style="cursor:pointer; font-size:24px; color: var(--text-light);" onclick="closeModal()"></i>
             </div>
             <div class="modal-body">
-                <div style="background: var(--bg); padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; color: var(--text-dark);" id="slotDetails">
-                    Date - Period
-                </div>
+                <div id="slotContext" style="font-size: 12px; color: var(--text-dark); font-weight: 700; background: var(--bg); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid var(--border);"></div>
                 
                 <div class="form-group">
-                    <label>Select Subject</label>
-                    <select class="form-control" id="dynSubject"></select>
+                    <label>Subject Name</label>
+                    <input type="text" class="form-control" id="mSub" placeholder="e.g. Database Systems">
                 </div>
                 <div class="form-group">
-                    <label>Assign Teacher</label>
-                    <select class="form-control" id="dynTeacher"></select>
+                    <label>Assign Faculty (From DB)</label>
+                    <select class="form-control" id="mTeach">
+                        <option value="">Loading Teachers...</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>Room No. / Lab</label>
-                    <input type="text" class="form-control" id="dynRoom" placeholder="e.g., Room 101, Computer Lab">
+                    <label>Room / Lab No.</label>
+                    <input type="text" class="form-control" id="mRoom" placeholder="e.g. Lab 2 / Room 101">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" id="btnDeleteSlot" style="display: none;" onclick="deleteSlot()"><i class='bx bx-trash'></i> Remove</button>
-                <div class="footer-actions">
-                    <button class="btn btn-outline" onclick="closeModal('slotModal')">Cancel</button>
-                    <button class="btn btn-primary" id="btnSaveSlot" onclick="saveSlot()"><i class='bx bx-check'></i> Save Slot</button>
+            <div class="modal-foot">
+                <button class="btn btn-danger" id="mDelBtn" onclick="deleteSlot()"><i class='bx bx-trash'></i></button>
+                <div style="display: flex; gap: 8px; margin-left: auto;">
+                    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" id="mSaveBtn" onclick="saveSlot()"><i class='bx bx-check'></i> Save Slot</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. MOCK DATA & STATE MANAGEMENT ---
-        const academicData = {
-            "IT": { 
-                subjects: ["C Programming", "Java", "Python", "DBMS", "Web Dev", "Maths"],
-                teachers: ["Dr. Ravi", "Prof. Sneha", "Mr. Anil", "Dr. Verma"]
-            },
-            "Management": {
-                subjects: ["Principles of Management", "Economics", "Accounting", "HR"],
-                teachers: ["Dr. Sharma", "Prof. Gupta", "Dr. Mehta"]
-            }
-        };
+        // --- 🟢 API CONFIGURATION 🟢 ---
+        // Apna Render URL yahan daalein (local testing ke liye 'http://localhost:5000/api' kar dein)
+        const API_BASE = 'https://zhi-college.onrender.com/api'; 
+        
+        let currentSchedule = {}; // Local memory for fetched routines
+        let teachersList = []; // Fetched from /api/staff
+        
+        // Active click trackers
+        let activeEditId = null; // MongoDB _id (if editing existing)
+        let activeDay = '';
+        let activeStartTime = '';
+        let activeEndTime = '';
 
-        let currentSchedule = {}; 
-        let activeEditKey = null; 
-
-        // Set today's date automatically
+        // Pre-fill Date
         document.getElementById('ttDate').valueAsDate = new Date();
 
-        // --- 2. API SIMULATION ---
-        async function fetchTimetableFromServer(course, sem, sec, date) {
-            console.log(`Fetching timetable for ${course} Sem ${sem} Sec ${sec}`);
-            // Initially return an empty schedule
-            return {}; 
-        }
+        // Clock
+        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN'); }, 1000);
 
-        async function publishTimetable() {
-            alert("Success: Timetable data saved to Database!");
+        // Fetch Teachers on Page Load
+        async function fetchTeachers() {
+            try {
+                const res = await fetch(`${API_BASE}/staff`);
+                const data = await res.json();
+                if(data.success) {
+                    // Filter out only teachers
+                    teachersList = data.data.filter(staff => staff.category === 'teacher' || staff.role.toLowerCase().includes('teacher'));
+                    
+                    const selectEl = document.getElementById('mTeach');
+                    selectEl.innerHTML = '<option value="">-- Select Faculty --</option>';
+                    teachersList.forEach(t => {
+                        selectEl.innerHTML += `<option value="${t._id}">${t.name} (${t.empId})</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load teachers", err);
+            }
         }
+        fetchTeachers(); // Call immediately
 
-        // --- 3. UI RENDERING LOGIC ---
-        async function loadTimetable() {
+        // --- 🟢 1. FETCH ROUTINES FROM SERVER 🟢 ---
+        async function fetchAndRenderTimetable() {
             const course = document.getElementById('ttCourse').value;
+            const sem = document.getElementById('ttSem').value;
             const sec = document.getElementById('ttSec').value;
-            const dateStr = document.getElementById('ttDate').value;
-            
-            if(!course || !sec || !dateStr) {
-                alert("Please fill Course, Section, and Date to generate the schedule."); 
-                return;
+            const startDate = document.getElementById('ttDate').value;
+
+            if(!course || !sem || !sec || !startDate) {
+                return alert("Please fill Course, Semester, Section, and Date!");
             }
 
-            currentSchedule = await fetchTimetableFromServer(course, document.getElementById('ttSem').value, sec, dateStr);
+            document.getElementById('ttContainer').style.display = 'block';
+            document.getElementById('ttTitle').innerText = `${course} - Semester ${sem} (Sec: ${sec})`;
+            document.getElementById('ttBody').innerHTML = `<tr><td colspan="8" class="loading-spinner"><i class='bx bx-loader-alt bx-spin'></i> Loading Timetable from Server...</td></tr>`;
 
-            document.getElementById('timetableCard').style.display = 'block';
-            document.getElementById('ttHeading').innerHTML = `<i class='bx bx-table'></i> Editing: ${course} | Sem ${document.getElementById('ttSem').value} | Sec ${sec}`;
-
-            renderGrid(dateStr, course);
+            try {
+                // Fetch from Server database
+                const response = await fetch(`${API_BASE}/routines?course=${course}&semester=${sem}`);
+                const data = await response.json();
+                
+                currentSchedule = {}; // Reset memory
+                
+                if(data.success) {
+                    // Map arrays into object format: key = "Monday_09:00"
+                    data.data.forEach(routine => {
+                        // Matching your exact schema
+                        let key = `${routine.dayOfWeek}_${routine.startTime}`;
+                        currentSchedule[key] = routine;
+                    });
+                }
+                
+                renderGrid(startDate);
+            } catch (err) {
+                alert("Failed to fetch from server!");
+                renderGrid(startDate); // Render empty grid if fail
+            }
         }
 
-        function renderGrid(startDateStr, course) {
-            const startDate = new Date(startDateStr);
+        // --- 🟢 2. RENDER GRID VISUALLY 🟢 ---
+        function renderGrid(startDateStr) {
             const tbody = document.getElementById('ttBody');
-            tbody.innerHTML = ''; 
-
+            tbody.innerHTML = '';
+            
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const periods = [
+                { start: "09:00", end: "10:00" },
+                { start: "10:00", end: "11:00" },
+                { start: "11:00", end: "12:00" },
+                { break: true }, // 4th column is break
+                { start: "12:30", end: "01:30" },
+                { start: "01:30", end: "02:30" },
+                { start: "02:30", end: "03:30" }
+            ];
 
-            for(let dayIndex=0; dayIndex<6; dayIndex++) {
-                let currentDate = new Date(startDate);
-                currentDate.setDate(currentDate.getDate() + dayIndex);
-                let dateDisplay = currentDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                
+            const start = new Date(startDateStr);
+
+            days.forEach((day, dIdx) => {
+                let rowDate = new Date(start);
+                rowDate.setDate(start.getDate() + dIdx);
+                let dateStr = rowDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+
                 let tr = document.createElement('tr');
-                let html = `<td class="day-col">${days[dayIndex]}<small>${dateDisplay}</small></td>`;
-                
-                for(let period=1; period<=6; period++) {
-                    // Logic to ensure "Lunch Break" only gets generated on the first row but spans 6 rows down
-                    if(period === 4 && dayIndex === 0) { 
-                        html += `<td rowspan="6" class="break-col">L U N C H &nbsp; B R E A K</td>`;
-                    }
-                    
-                    const cellKey = `${dayIndex}_${period}`;
-                    const slotData = currentSchedule[cellKey];
+                let html = `<td class="day-cell">${day} <span>${dateStr}</span></td>`;
 
-                    if(slotData) {
+                periods.forEach((p, pIdx) => {
+                    if (p.break) {
+                        if (dIdx === 0) html += `<td rowspan="6" class="lunch-break">L U N C H &nbsp; B R E A K</td>`;
+                        return; // Skip rendering td for break on other days
+                    }
+
+                    const key = `${day}_${p.start}`;
+                    const slotData = currentSchedule[key];
+
+                    if (slotData) {
+                        // Display filled slot
                         html += `<td>
-                            <div class="slot filled" onclick="openModal('${cellKey}', '${days[dayIndex]}', ${period}, '${course}')">
-                                <div class="sub-name">${slotData.subject}</div>
-                                <div class="teacher-name">${slotData.teacher}</div>
-                                <div class="room-no">${slotData.room}</div>
+                            <div class="slot filled" onclick="openEditor('${key}', '${day}', '${p.start}', '${p.end}')">
+                                <div class="sub">${slotData.subject}</div>
+                                <div class="teach">${slotData.teacherId ? slotData.teacherId.name : 'N/A'}</div>
+                                <div class="room">${slotData.roomNumber || 'TBA'}</div>
                             </div>
                         </td>`;
                     } else {
+                        // Display empty slot
                         html += `<td>
-                            <div class="slot empty" onclick="openModal('${cellKey}', '${days[dayIndex]}', ${period}, '${course}')">
+                            <div class="slot empty" onclick="openEditor('${key}', '${day}', '${p.start}', '${p.end}')">
                                 <i class='bx bx-plus'></i>
                             </div>
                         </td>`;
                     }
-                }
+                });
                 tr.innerHTML = html;
                 tbody.appendChild(tr);
-            }
+            });
         }
 
-        function generateEmptyGrid() {
-            if(confirm("Are you sure you want to clear the entire generated grid? All assigned slots will be lost.")) {
-                currentSchedule = {}; 
-                const course = document.getElementById('ttCourse').value;
-                const dateStr = document.getElementById('ttDate').value;
-                renderGrid(dateStr, course);
-            }
-        }
+        // --- 🟢 3. OPEN MODAL FOR ADD/EDIT 🟢 ---
+        function openEditor(key, day, startT, endT) {
+            activeDay = day;
+            activeStartTime = startT;
+            activeEndTime = endT;
 
-        // --- 4. MODAL & CRUD LOGIC ---
-        function openModal(cellKey, dayName, periodNum, course) {
-            activeEditKey = cellKey;
+            document.getElementById('slotContext').innerText = `${day.toUpperCase()} | ${startT} - ${endT}`;
             
-            document.getElementById('slotDetails').innerText = `${dayName} | Period ${periodNum}`;
+            const existing = currentSchedule[key];
             
-            let category = (course === 'BCA' || course === 'MCA') ? 'IT' : 'Management';
-            let data = academicData[category];
-
-            const subSelect = document.getElementById('dynSubject');
-            const teachSelect = document.getElementById('dynTeacher');
-            const roomInput = document.getElementById('dynRoom');
-            
-            // Populate Dropdowns
-            subSelect.innerHTML = '<option value="">Select Subject</option>';
-            data.subjects.forEach(sub => subSelect.innerHTML += `<option value="${sub}">${sub}</option>`);
-            
-            teachSelect.innerHTML = '<option value="">Select Teacher</option>';
-            data.teachers.forEach(teach => teachSelect.innerHTML += `<option value="${teach}">${teach}</option>`);
-
-            const existingData = currentSchedule[cellKey];
-            if(existingData) {
+            if(existing) {
                 // Edit Mode
-                document.getElementById('modalTitle').innerHTML = `<i class='bx bx-edit'></i> Edit Slot`;
-                subSelect.value = existingData.subject;
-                teachSelect.value = existingData.teacher;
-                roomInput.value = existingData.room;
-                document.getElementById('btnDeleteSlot').style.display = 'block'; 
-                document.getElementById('btnSaveSlot').innerHTML = "<i class='bx bx-check'></i> Update Slot";
+                activeEditId = existing._id;
+                document.getElementById('mTitle').innerText = "Edit Class Slot";
+                document.getElementById('mSub').value = existing.subject;
+                document.getElementById('mTeach').value = existing.teacherId ? existing.teacherId._id : "";
+                document.getElementById('mRoom').value = existing.roomNumber || "";
+                document.getElementById('mDelBtn').style.display = "block";
             } else {
-                // Create Mode
-                document.getElementById('modalTitle').innerHTML = `<i class='bx bx-plus-circle'></i> Assign New Slot`;
-                subSelect.value = '';
-                teachSelect.value = '';
-                roomInput.value = '';
-                document.getElementById('btnDeleteSlot').style.display = 'none'; 
-                document.getElementById('btnSaveSlot').innerHTML = "<i class='bx bx-check'></i> Save Slot";
+                // New Mode
+                activeEditId = null;
+                document.getElementById('mTitle').innerText = "Assign New Class";
+                document.getElementById('mSub').value = "";
+                document.getElementById('mTeach').value = "";
+                document.getElementById('mRoom').value = "";
+                document.getElementById('mDelBtn').style.display = "none";
             }
 
             document.getElementById('slotModal').style.display = 'flex';
         }
 
-        function saveSlot() {
-            const subject = document.getElementById('dynSubject').value;
-            const teacher = document.getElementById('dynTeacher').value;
-            const room = document.getElementById('dynRoom').value;
+        function closeModal() {
+            document.getElementById('slotModal').style.display = 'none';
+        }
 
-            if(!subject || !teacher || !room) {
-                alert("Please fill all fields before saving!");
-                return;
-            }
-
-            currentSchedule[activeEditKey] = { subject, teacher, room };
-            
-            closeModal('slotModal');
-            
-            const dateStr = document.getElementById('ttDate').value;
+        // --- 🟢 4. SAVE OR UPDATE TO SERVER 🟢 ---
+        async function saveSlot() {
             const course = document.getElementById('ttCourse').value;
-            renderGrid(dateStr, course);
-        }
+            const semester = document.getElementById('ttSem').value;
+            
+            const subject = document.getElementById('mSub').value;
+            const teacherId = document.getElementById('mTeach').value;
+            const roomNumber = document.getElementById('mRoom').value;
 
-        function deleteSlot() {
-            if(confirm("Are you sure you want to remove this class slot?")) {
-                delete currentSchedule[activeEditKey];
-                closeModal('slotModal');
-                
-                const dateStr = document.getElementById('ttDate').value;
-                const course = document.getElementById('ttCourse').value;
-                renderGrid(dateStr, course);
+            if(!subject || !teacherId) return alert("Subject and Teacher are required!");
+
+            // Prepare Schema matching Payload
+            const payload = {
+                course,
+                semester,
+                subject,
+                teacherId,
+                dayOfWeek: activeDay,
+                startTime: activeStartTime,
+                endTime: activeEndTime,
+                roomNumber
+            };
+
+            const btn = document.getElementById('mSaveBtn');
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Saving...";
+
+            try {
+                let response;
+                if(activeEditId) {
+                    // Update Existing (PUT)
+                    response = await fetch(`${API_BASE}/routines/${activeEditId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // Create New (POST)
+                    response = await fetch(`${API_BASE}/routines`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                const result = await response.json();
+                if(result.success) {
+                    closeModal();
+                    fetchAndRenderTimetable(); // Refresh grid from server
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (err) {
+                alert("Server connection failed!");
+            } finally {
+                btn.innerHTML = "<i class='bx bx-check'></i> Save Slot";
             }
         }
 
-        function closeModal(id) { 
-            document.getElementById(id).style.display = 'none'; 
-        }
-        
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('active'); 
+        // --- 🟢 5. DELETE FROM SERVER 🟢 ---
+        async function deleteSlot() {
+            if(!activeEditId) return;
+            
+            if(confirm("Permanently delete this class slot?")) {
+                const btn = document.getElementById('mDelBtn');
+                btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i>";
+                
+                try {
+                    const response = await fetch(`${API_BASE}/routines/${activeEditId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    
+                    if(result.success) {
+                        closeModal();
+                        fetchAndRenderTimetable(); // Refresh grid
+                    }
+                } catch (err) {
+                    alert("Failed to delete from server.");
+                } finally {
+                    btn.innerHTML = "<i class='bx bx-trash'></i>";
+                }
+            }
         }
     </script>
 </body>
