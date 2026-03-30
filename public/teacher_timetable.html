@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | My Timetable (Teacher)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; --primary: #3b82f6; --warning: #f59e0b; 
+            --danger: #ef4444; --success: #10b981; --bg: #f8fafc; 
+            --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; 
+            --border: #e2e8f0; --card-curve: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+
+        /* SIDEBAR & TOPBAR */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 1px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
+        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);}
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
+
+        .content { padding: 30px; flex: 1; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+
+        /* TIMETABLE CARD */
+        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px;}
+        .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; color: var(--text-dark);}
+        
+        .table-res { overflow-x: auto; padding: 20px;}
+        table { width: 100%; border-collapse: collapse; text-align: center; min-width: 800px;}
+        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #2563eb;}
+        td { padding: 15px; border: 1px solid var(--border); vertical-align: middle; height: 80px;}
+        
+        .class-block { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px; display: inline-block; width: 100%;}
+        .class-block.lab { background: #fef2f2; border-color: #fecaca; }
+        .class-block b { display: block; font-size: 13px; color: var(--text-dark); margin-bottom: 4px;}
+        .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;}
+
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
+            <div><h2>ZHI Academics</h2><p>TEACHER PANEL</p></div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li class="active"><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
+            <li><a href="teacher_subjects.html"><i class='bx bx-book-bookmark'></i> My Subjects & Syllabus</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom</li>
+            <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
+            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics</div>
+            </div>
+            <div class="user-profile">
+                <div><b style="font-size: 13px; color: var(--text-dark);">Dr. Rakesh Kumar</b><span style="font-size: 11px; color: var(--text-light);">Faculty - BCA</span></div>
+                <img src="https://ui-avatars.com/api/?name=Rakesh+Kumar&background=10b981&color=fff" alt="Teacher">
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">My Weekly Timetable</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Semester Schedule</span>
+                    <button style="background: var(--bg); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;"><i class='bx bx-printer'></i> Print</button>
+                </div>
+                <div class="table-res">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Day / Time</th>
+                                <th>10:00 - 11:00 AM</th>
+                                <th>11:00 - 12:00 PM</th>
+                                <th>12:00 - 01:00 PM</th>
+                                <th>01:00 - 02:00 PM</th>
+                                <th>02:00 - 03:00 PM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight: 600; background: var(--bg);">Monday</td>
+                                <td>
+                                    <div class="class-block">
+                                        <b>C Programming</b>
+                                        <span>BCA Sem 1</span>
+                                    </div>
+                                </td>
+                                <td>- Free -</td>
+                                <td>
+                                    <div class="class-block">
+                                        <b>Data Structures</b>
+                                        <span>BCA Sem 3</span>
+                                    </div>
+                                </td>
+                                <td rowspan="5" style="background: #f1f5f9; font-weight: 700; color: #94a3b8; writing-mode: vertical-rl; text-orientation: mixed;">LUNCH BREAK</td>
+                                <td>- Free -</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600; background: var(--bg);">Tuesday</td>
+                                <td>- Free -</td>
+                                <td>
+                                    <div class="class-block">
+                                        <b>C Programming</b>
+                                        <span>BCA Sem 1</span>
+                                    </div>
+                                </td>
+                                <td>- Free -</td>
+                                <td>
+                                    <div class="class-block lab">
+                                        <b>C++ Lab</b>
+                                        <span>BCA Sem 2</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
+</body>
+</html>
