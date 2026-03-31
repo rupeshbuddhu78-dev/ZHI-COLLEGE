@@ -159,13 +159,6 @@
                         <option value="Sem 6">Semester 6</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Section</label>
-                    <select class="form-control" id="attSec">
-                        <option value="A">Section A</option>
-                    </select>
-                </div>
                 
                 <div class="form-group">
                     <label>Your Subjects (Skills)</label>
@@ -324,12 +317,15 @@
         // ==========================================
         async function fetchTeacherSubjects() {
             try {
-                const response = await fetch(`${API_BASE}/get-teacher-skills`); 
+                const staffId = localStorage.getItem("staffId") || ""; // Get staffId dynamically if implemented
+                const url = staffId ? `${API_BASE}/get-teacher-skills?staffId=${staffId}` : `${API_BASE}/get-teacher-skills`;
+                
+                const response = await fetch(url); 
                 const data = await response.json();
                 const subjectSelect = document.getElementById('attSubject');
                 subjectSelect.innerHTML = ''; 
                 
-                if(data.success && data.skills) {
+                if(data.success && data.skills && data.skills.length > 0) {
                     data.skills.forEach(sub => {
                         let opt = document.createElement('option');
                         opt.value = sub;
@@ -360,7 +356,7 @@
             const course = document.getElementById('attCourse').value;
             const batch = document.getElementById('attBatch').value;
             const sem = document.getElementById('attSem').value;
-            const sec = document.getElementById('attSec').value;
+            // Removed section logic entirely
             const date = document.getElementById('attDate').value;
             const subject = document.getElementById('attSubject').value;
             
@@ -369,7 +365,8 @@
                 return;
             }
 
-            document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem} (Sec ${sec})`;
+            // Updated List Title without Section
+            document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem}`;
             document.getElementById('editBadge').style.display = isEdit ? 'inline-block' : 'none';
             document.getElementById('submitBtn').innerHTML = isEdit ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
             
@@ -378,7 +375,8 @@
             document.getElementById('loadingIndicator').style.display = 'block';
 
             try {
-                const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&section=${sec}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
+                // Removed &section from Query String
+                const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
                 const response = await fetch(`${API_BASE}/get-students${queryStr}`); 
                 const data = await response.json();
                 
@@ -491,7 +489,7 @@
                 batch: document.getElementById('attBatch').value,
                 course: document.getElementById('attCourse').value,
                 semester: document.getElementById('attSem').value,
-                section: document.getElementById('attSec').value,
+                // Removed Section parameter completely
                 subject: document.getElementById('attSubject').value,
                 startTime: timeParts[0], 
                 endTime: timeParts[1],     
