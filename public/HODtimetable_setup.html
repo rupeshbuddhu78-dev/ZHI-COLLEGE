@@ -313,10 +313,12 @@
             
             const teacher = teachersList.find(t => t._id === teachId);
             if(teacher) {
-                // Aapke database se jo bhi properties aa rahi hongi (subject/specialization), wo auto fill ho jayengi
-                const subjectVal = teacher.subject || teacher.specialization || teacher.department;
+                // Aapke database se jo skills (jaise Python) ya properties aa rahi hain wo automatic fill hongi
+                const subjectVal = teacher.skills || teacher.subject || teacher.specialization || teacher.department;
                 if(subjectVal) {
                     document.getElementById('mSub').value = subjectVal;
+                } else {
+                    document.getElementById('mSub').value = ""; // Clear if not found
                 }
             }
         }
