@@ -21,7 +21,7 @@ cloudinary.config({
     cloud_name: 'dzbpiv7ds', 
     api_key: '812196161439545', 
     api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY',
-    secure: true // 🔴 ADDED: Isse browser mein link block nahi hoga
+    secure: true 
 });
 
 // Profile Photos ke liye storage
@@ -44,7 +44,7 @@ const noticeStorage = new CloudinaryStorage({
 });
 const uploadNotice = multer({ storage: noticeStorage });
 
-// Staff (Management/Teacher/Non-Teaching) Files ke liye storage
+// Staff Files ke liye storage
 const staffStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -69,14 +69,6 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: 'rupesh.c.0828@zhi.org.in', 
         pass: 'dyju pxba misf qfuk' 
-    }
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.log("❌ Email Setup Error:", error);
-    } else {
-        console.log("✅ Email Server Ready hai! OTP ja sakta hai.");
     }
 });
 
@@ -152,7 +144,7 @@ const noticeSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Notice = mongoose.model('Notice', noticeSchema);
 
-// STAFF SCHEMA (Management, Teacher, Non-Teaching)
+// STAFF SCHEMA
 const staffSchema = new mongoose.Schema({
     category: { type: String, required: true }, 
     role: { type: String, required: true }, 
@@ -174,7 +166,7 @@ const staffSchema = new mongoose.Schema({
 const Staff = mongoose.model('Staff', staffSchema);
 
 
-// 🟢 ROUTINE SCHEMA 🟢
+// ROUTINE SCHEMA
 const routineSchema = new mongoose.Schema({
     course: { type: String, required: true }, 
     semester: { type: String, required: true }, 
@@ -187,7 +179,7 @@ const routineSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
 
-// 🟢 NEW: ATTENDANCE SCHEMA (FULLY DETAILED) 🟢
+// 🟢 ATTENDANCE SCHEMA (Section removed) 🟢
 const attendanceSchema = new mongoose.Schema({
     fullDate: { type: Date, required: true },
     day: { type: Number, required: true },
@@ -196,11 +188,11 @@ const attendanceSchema = new mongoose.Schema({
     batch: { type: String, required: true },
     course: { type: String, required: true },
     semester: { type: String, required: true },
-    section: { type: String, required: true },
+    // Section hata diya gaya hai yahan se
     subject: { type: String, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, // Reference to Staff/Teacher
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, 
     records: [{
         studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
         rollNumber: { type: String, required: true },
@@ -215,7 +207,6 @@ const attendanceSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Indexing for faster app queries later
 attendanceSchema.index({ 'records.studentId': 1, subject: 1, fullDate: 1 });
 attendanceSchema.index({ batch: 1, course: 1, semester: 1, fullDate: 1 });
 
@@ -778,7 +769,8 @@ app.get('/api/get-teacher-skills', async (req, res) => {
 // 4. Fetch Students List for Attendance
 app.get('/api/get-students', async (req, res) => {
     try {
-        const { course, batch, semester, section, date, isEdit, subject } = req.query;
+        // Section nikal diya gaya hai request query se
+        const { course, batch, semester, date, isEdit, subject } = req.query;
 
         // Fetch students from the specific course, batch, and semester
         const students = await Student.find({
@@ -801,10 +793,10 @@ app.get('/api/get-students', async (req, res) => {
 
         // 🟢 Edit Mode: Purani attendance status (P/A) attach karo
         if (isEdit === 'true') {
+            // Section ko find/filter se bhi nikal diya
             const existingAtt = await Attendance.findOne({
                 course: course,
                 semester: semester,
-                section: section,
                 subject: subject,
                 fullDate: new Date(date) 
             });
@@ -833,13 +825,12 @@ app.post('/api/save-attendance', async (req, res) => {
         const payload = req.body;
 
         if (payload.mode === 'UPDATE') {
-            // Edit Existing Attendance
+            // Edit Existing Attendance (Bina Section ke)
             const updated = await Attendance.findOneAndUpdate(
                 { 
                     fullDate: new Date(payload.fullDate), 
                     course: payload.course, 
                     semester: payload.semester, 
-                    section: payload.section, 
                     subject: payload.subject 
                 },
                 payload,
@@ -847,12 +838,11 @@ app.post('/api/save-attendance', async (req, res) => {
             );
             return res.status(200).json({ success: true, message: "Attendance updated!", data: updated });
         } else {
-            // Check if New Attendance already exists
+            // Check if New Attendance already exists (Bina section ke)
             const existing = await Attendance.findOne({
                 fullDate: new Date(payload.fullDate), 
                 course: payload.course, 
                 semester: payload.semester, 
-                section: payload.section, 
                 subject: payload.subject
             });
 
