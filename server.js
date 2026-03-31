@@ -1034,6 +1034,8 @@ app.get('/api/attendance', async (req, res) => {
 });
 
 
+
+
 // 🔴 NEW HOD APIs FOR LIVE TRACKING (HTML FETCHING FIXED) 🔴
 
 // HOD Dashboard -> GET All records for a course/sem/subject 
@@ -1076,6 +1078,23 @@ app.get('/api/attendance/student-history/:studentId', async (req, res) => {
         });
 
         res.status(200).json({ success: true, data: history });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+// HOD Dashboard / Attendance Filter -> GET Distinct Subjects
+app.get('/api/attendances/subject', async (req, res) => {
+    try {
+        const { course, semester } = req.query;
+        let query = {};
+        
+        if (course) query.course = new RegExp(`^${course}$`, 'i');
+        if (semester) query.semester = semester;
+
+        // Database me se un saare subjects ki unique list nikalega jinki attendance hui hai
+        const subjects = await Attendance.distinct('subject', query);
+        
+        res.status(200).json({ success: true, subjects: subjects.filter(Boolean) });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
