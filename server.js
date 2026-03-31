@@ -859,6 +859,40 @@ app.post('/api/save-attendance', async (req, res) => {
     }
 });
 
+// 🟢 GET ATTENDANCE (FOR ANDROID APP) 🟢
+app.get('/api/attendance', async (req, res) => {
+    try {
+        const { studentId } = req.query;
+
+        if (!studentId) {
+            return res.status(400).json({ success: false, message: "Student ID is required" });
+        }
+
+        // Database mein us student ka attendance find karo
+        let attendanceData = await Attendance.find({ 'records.studentId': studentId })
+            .populate('teacherId', 'name')
+            .sort({ fullDate: -1 });
+
+        // App ke mutabiq data format karna
+        const formattedData = attendanceData.map(record => {
+            const studentRecord = record.records.find(r => r.studentId.toString() === studentId);
+            return {
+                _id: record._id,
+                course: record.course,
+                semester: record.semester,
+                subject: record.subject,
+                date: record.fullDate,
+                teacher: record.teacherId ? record.teacherId.name : "N/A",
+                studentStatus: studentRecord ? studentRecord.status : "A" // P or A
+            };
+        });
+
+        res.status(200).json({ success: true, data: formattedData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 
 // --- 7. SEED ADMIN ---
 const seedAdmin = async () => {
