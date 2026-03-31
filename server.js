@@ -71,6 +71,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
 .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
 .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
+
 // --- 4. EMAIL SETUP ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -81,6 +82,7 @@ const transporter = nodemailer.createTransport({
         pass: 'dyju pxba misf qfuk' 
     }
 });
+
 
 // --- 5. SCHEMAS & MODELS ---
 
@@ -200,7 +202,7 @@ const noteSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', noteSchema);
 
 
-// 🟢 NEW: TEACHER ATTENDANCE SCHEMA 🟢
+// 🟢 TEACHER ATTENDANCE SCHEMA 🟢
 const teacherAttendanceSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
     teacherName: { type: String, required: true },
@@ -218,7 +220,7 @@ teacherAttendanceSchema.index({ teacherId: 1, dateStr: 1 }, { unique: true });
 const TeacherAttendance = mongoose.model('TeacherAttendance', teacherAttendanceSchema);
 
 
-// STUDENT ATTENDANCE SCHEMA
+// 🔵 STUDENT ATTENDANCE SCHEMA 🔵
 const attendanceSchema = new mongoose.Schema({
     fullDate: { type: Date, required: true },
     day: { type: Number, required: true },
@@ -280,7 +282,9 @@ const generateFeeStructure = (courseName) => {
     return { feeHeads: processedHeads, totalAmount: total, totalDue: total, totalPaid: 0, totalDiscount: 0 };
 };
 
-// --- 6. API ROUTES ---
+// ==========================================
+// 🚀 6. API ROUTES
+// ==========================================
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -353,7 +357,9 @@ app.post('/api/login', async (req, res) => {
 });
 
 
+// ==========================================
 // Admin & Student Core APIs
+// ==========================================
 app.post('/api/add-student', async (req, res) => {
     try {
         const newStudent = new Student({
@@ -423,7 +429,7 @@ app.post('/api/forgot-password', async (req, res) => {
 
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
     } catch (err) {
-        console.log("❌ OTP Bhejney mein error aya:", err);
+        console.log("❌ OTP Error:", err);
         res.status(500).json({ success: false, message: "Error sending email!" });
     }
 });
@@ -443,7 +449,9 @@ app.post('/api/reset-password', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: "Server error!" }); }
 });
 
+// ==========================================
 // FINANCE API ROUTES
+// ==========================================
 app.get('/api/finance/search-student', async (req, res) => {
     try {
         const { q, course, sem, batch } = req.query;
@@ -541,7 +549,9 @@ app.post('/api/finance/expense', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
+// ==========================================
 // GLOBAL NOTICE APIs
+// ==========================================
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
         const { title, message, priority, audience } = req.body;
@@ -604,7 +614,9 @@ app.delete('/api/notices/:id', async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
+// ==========================================
 // STAFF (USERS & ROLES) APIs
+// ==========================================
 app.post('/api/staff', uploadStaff.fields([
     { name: 'profilePic', maxCount: 1 }, 
     { name: 'resumeFile', maxCount: 1 }, 
@@ -691,7 +703,9 @@ app.delete('/api/staff/:id', async (req, res) => {
     }
 });
 
+// ==========================================
 // NOTES (STUDY MATERIAL) APIs
+// ==========================================
 app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     try {
         const { date, semester, subject, title } = req.body;
@@ -746,7 +760,9 @@ app.delete('/api/notes/:id', async (req, res) => {
     }
 });
 
+// ==========================================
 // ROUTINE (TIMETABLE) APIs 
+// ==========================================
 app.post('/api/routines', async (req, res) => {
     try {
         const newRoutine = new Routine(req.body);
@@ -798,34 +814,21 @@ app.delete('/api/routines/:id', async (req, res) => {
 });
 
 // ==========================================
-// 🟢 TEACHER SELF-ATTENDANCE APIs 🟢
+// 🟢 TEACHER ATTENDANCE (FACULTY PUNCH) APIs 🟢
 // ==========================================
-
-// 1. Mark Punch In / Out
 app.post('/api/teacher-attendance/punch', async (req, res) => {
     try {
         const { teacherId, teacherName, action, timeStr, dateStr, monthVal, dayName } = req.body;
 
         if (action === 'IN') {
-            // Upsert (Agar date/teacher already hai to just return, otherwise create)
             const newLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
-                { 
-                    teacherId, 
-                    teacherName, 
-                    dateStr, 
-                    monthVal, 
-                    dayName, 
-                    punchIn: timeStr, 
-                    status: 'Present', 
-                    remarks: 'On Time' 
-                },
+                { teacherId, teacherName, dateStr, monthVal, dayName, punchIn: timeStr, status: 'Present', remarks: 'On Time' },
                 { new: true, upsert: true }
             );
             res.status(200).json({ success: true, message: "Punched In Successfully", data: newLog });
         } 
         else if (action === 'OUT') {
-            // Update Punch Out
             const updatedLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
                 { punchOut: timeStr, remarks: 'Shift Completed' },
@@ -844,7 +847,6 @@ app.post('/api/teacher-attendance/punch', async (req, res) => {
     }
 });
 
-// 2. Get specific Teacher's Attendance (For Teacher's Own Dashboard)
 app.get('/api/teacher-attendance/:teacherId', async (req, res) => {
     try {
         const logs = await TeacherAttendance.find({ teacherId: req.params.teacherId }).sort({ dateStr: 1 });
@@ -854,7 +856,6 @@ app.get('/api/teacher-attendance/:teacherId', async (req, res) => {
     }
 });
 
-// 3. Get ALL Teachers Attendance (For HOD/Admin Dashboard view)
 app.get('/api/teacher-attendance', async (req, res) => {
     try {
         const { dateStr, monthVal } = req.query;
@@ -863,7 +864,6 @@ app.get('/api/teacher-attendance', async (req, res) => {
         if (dateStr) filter.dateStr = dateStr;
         if (monthVal) filter.monthVal = monthVal;
 
-        // Fetching records with teacher details
         const logs = await TeacherAttendance.find(filter).populate('teacherId', 'name empId dept').sort({ dateStr: -1 });
         res.status(200).json({ success: true, data: logs });
     } catch (error) {
@@ -871,10 +871,12 @@ app.get('/api/teacher-attendance', async (req, res) => {
     }
 });
 
+
 // ==========================================
-// 🟢 STUDENT ATTENDANCE APIs 🟢
+// 🔵 STUDENT ATTENDANCE APIs 🔵
 // ==========================================
 
+// Helper functions
 app.get('/api/get-courses', async (req, res) => {
     try {
         const courses = await Student.distinct('course');
@@ -912,15 +914,18 @@ app.get('/api/get-teacher-skills', async (req, res) => {
     }
 });
 
+// Teacher Dashboard (Class list for Mark Attendance)
 app.get('/api/get-students', async (req, res) => {
     try {
         const { course, batch, semester, date, isEdit, subject } = req.query;
 
-        const students = await Student.find({
+        let query = {
             course: new RegExp(`^${course}$`, 'i'),
-            sessionBatch: batch,
             semester: semester
-        }).select('_id studentName collegeRegNo');
+        };
+        if (batch) query.sessionBatch = batch;
+
+        const students = await Student.find(query).select('_id studentName collegeRegNo');
 
         if (!students || students.length === 0) {
             return res.status(200).json({ success: true, students: [] });
@@ -933,11 +938,11 @@ app.get('/api/get-students', async (req, res) => {
             prevAtt: 100 
         }));
 
-        if (isEdit === 'true') {
+        if (isEdit === 'true' && date && subject) {
             const existingAtt = await Attendance.findOne({
-                course: course,
+                course: new RegExp(`^${course}$`, 'i'),
                 semester: semester,
-                subject: subject,
+                subject: new RegExp(`^${subject}$`, 'i'),
                 fullDate: new Date(date) 
             });
 
@@ -958,6 +963,7 @@ app.get('/api/get-students', async (req, res) => {
     }
 });
 
+// Save Student Attendance (From Teacher Dashboard)
 app.post('/api/save-attendance', async (req, res) => {
     try {
         const payload = req.body;
@@ -995,7 +1001,7 @@ app.post('/api/save-attendance', async (req, res) => {
     }
 });
 
-// GET ATTENDANCE (FOR ANDROID APP)
+// Student's Own Panel (App Side) - Fetch Attendance
 app.get('/api/attendance', async (req, res) => {
     try {
         const { studentId } = req.query;
@@ -1022,6 +1028,54 @@ app.get('/api/attendance', async (req, res) => {
         });
 
         res.status(200).json({ success: true, data: formattedData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// 🔴 NEW HOD APIs FOR LIVE TRACKING (HTML FETCHING FIXED) 🔴
+
+// HOD Dashboard -> GET All records for a course/sem/subject 
+app.get('/api/attendances', async (req, res) => {
+    try {
+        const { course, semester, subject, date } = req.query;
+        let query = {};
+        
+        if (course) query.course = new RegExp(`^${course}$`, 'i');
+        if (semester) query.semester = semester;
+        if (subject) query.subject = new RegExp(`^${subject}$`, 'i');
+        if (date) query.fullDate = new Date(date);
+
+        const records = await Attendance.find(query).populate('records.studentId'); 
+        res.status(200).json({ success: true, data: records });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// HOD Dashboard -> Detailed single student history
+app.get('/api/attendance/student-history/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const { course, semester } = req.query;
+
+        const attendanceDocs = await Attendance.find({
+            'records.studentId': studentId,
+            course: new RegExp(`^${course}$`, 'i'),
+            semester: semester
+        }).sort({ fullDate: -1 });
+
+        const history = attendanceDocs.map(doc => {
+            const studentRecord = doc.records.find(r => r.studentId.toString() === studentId);
+            return {
+                date: doc.fullDate,
+                subject: doc.subject,
+                status: studentRecord ? studentRecord.status : 'A'
+            };
+        });
+
+        res.status(200).json({ success: true, data: history });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
