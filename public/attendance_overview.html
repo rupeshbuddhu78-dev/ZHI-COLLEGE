@@ -396,9 +396,11 @@
 
                 // 🔴 SOLUTION FOR 'DATE' vs 'FULLDATE'
                 let monthRecords = allRecords.filter(record => {
-                    // Check karo date hai ya fullDate (Server error fix)
-                    if(!record.fullDate) return false;
-                    return record.fullDate.startsWith(monthStr); 
+                    let recordDate = record.fullDate || record.date; // Server field dono me se koi bhi ho
+                    if(!recordDate) return false;
+                    
+                    // ISO format handle karne ke liye
+                    return recordDate.substring(0, 7) === monthStr || recordDate.startsWith(monthStr);
                 });
                 
                 let totalClasses = monthRecords.length;
@@ -411,14 +413,14 @@
 
                 // 🔴 SOLUTION FOR 'STUDENTS' vs 'RECORDS'
                 monthRecords.forEach(record => {
-                    // Database field 'records' hai, 'students' nahi
-                    if (record.records && Array.isArray(record.records)) { 
-                        record.records.forEach(rs => {
+                    let attendanceArray = record.records || record.students || []; // Dono possibilities
+                    
+                    if (attendanceArray && Array.isArray(attendanceArray)) {
+                        attendanceArray.forEach(rs => {
                             let sid = (rs.studentId && rs.studentId._id) ? rs.studentId._id : rs.studentId;
                             
-                            // Agar galti se baccha API se nahi aaya par attendance mein hai, toh yahan jodd lo
                             if (!studentStats[sid]) {
-                                studentStats[sid] = { roll: rs.rollNumber, name: rs.studentName, present: 0, absent: 0 };
+                                studentStats[sid] = { roll: rs.rollNumber || "N/A", name: rs.studentName || "Unknown", present: 0, absent: 0 };
                             }
 
                             if (rs.status === 'P') studentStats[sid].present++;
