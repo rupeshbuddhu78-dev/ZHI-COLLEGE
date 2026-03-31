@@ -2,11 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const nodemailer = require('nodemailer'); 
+const nodemailer = require('nodemailer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const https = require('https'); 
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +54,16 @@ const staffStorage = new CloudinaryStorage({
     },
 });
 const uploadStaff = multer({ storage: staffStorage });
+
+// 🟢 NEW: Study Notes ke liye storage 🟢
+const noteStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ZhiNotes', 
+        resource_type: 'auto' 
+    },
+});
+const uploadNote = multer({ storage: noteStorage });
 
 
 // --- 3. DATABASE CONNECTION ---
@@ -111,7 +121,6 @@ const feeHeadSchema = new mongoose.Schema({
     fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 }, 
     due: Number, status: { type: String, default: "Due" }
 });
-
 const studentFeeSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
     totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
@@ -179,7 +188,19 @@ const routineSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
 
-// 🟢 ATTENDANCE SCHEMA (Section removed) 🟢
+// 🟢 NEW: NOTES SCHEMA 🟢
+const noteSchema = new mongoose.Schema({
+    date: { type: String, required: true },
+    semester: { type: String, required: true },
+    subject: { type: String, required: true },
+    title: { type: String, required: true },
+    fileUrl: { type: String, required: true }, 
+    cloudinaryId: { type: String, required: true }, 
+}, { timestamps: true });
+const Note = mongoose.model('Note', noteSchema);
+
+
+// ATTENDANCE SCHEMA
 const attendanceSchema = new mongoose.Schema({
     fullDate: { type: Date, required: true },
     day: { type: Number, required: true },
@@ -188,7 +209,6 @@ const attendanceSchema = new mongoose.Schema({
     batch: { type: String, required: true },
     course: { type: String, required: true },
     semester: { type: String, required: true },
-    // Section hata diya gaya hai yahan se
     subject: { type: String, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
@@ -206,10 +226,8 @@ const attendanceSchema = new mongoose.Schema({
         attendancePercentage: { type: Number, required: true }
     }
 }, { timestamps: true });
-
 attendanceSchema.index({ 'records.studentId': 1, subject: 1, fullDate: 1 });
 attendanceSchema.index({ batch: 1, course: 1, semester: 1, fullDate: 1 });
-
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
 
@@ -239,12 +257,10 @@ const generateFeeStructure = (courseName) => {
         { headName: "6th Sem Tuition Fees - 2nd Installment", amount: baseTuition, dueDate: "20-05-2028" },
         { headName: "Examination Fees (Sem 6)", amount: 3700, dueDate: "20-05-2028" }
     ];
-
     let processedHeads = heads.map(h => ({ ...h, discount: 0, fine: 0, paid: 0, due: h.amount, status: "Due" }));
     let total = processedHeads.reduce((sum, h) => sum + h.amount, 0);
     return { feeHeads: processedHeads, totalAmount: total, totalDue: total, totalPaid: 0, totalDiscount: 0 };
 };
-
 
 // --- 6. API ROUTES ---
 
@@ -290,13 +306,12 @@ app.post('/api/login', async (req, res) => {
         } 
         
         else if (['hod', 'accountant', 'staff', 'teacher'].includes(role.toLowerCase())) {
-            let dbCategory = 'management'; 
+            let dbCategory = 'management';
             if (role.toLowerCase() === 'teacher') {
                 dbCategory = 'teacher';
             }
             
             const staffUser = await Staff.findOne({ email, password, category: dbCategory });
-            
             if (staffUser) {
                 if (staffUser.status === 'Disabled') {
                     return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Director." });
@@ -313,10 +328,9 @@ app.post('/api/login', async (req, res) => {
         }
 
         res.status(401).json({ success: false, message: "Invalid Email or Password!" });
-
     } catch (err) { 
         console.error(err);
-        res.status(500).json({ success: false, message: "Server Error!" }); 
+        res.status(500).json({ success: false, message: "Server Error!" });
     }
 });
 
@@ -410,7 +424,6 @@ app.post('/api/reset-password', async (req, res) => {
         res.status(200).json({ success: true, message: "Password updated successfully!" });
     } catch (err) { res.status(500).json({ success: false, message: "Server error!" }); }
 });
-
 
 // FINANCE API ROUTES
 app.get('/api/finance/search-student', async (req, res) => {
@@ -510,7 +523,6 @@ app.post('/api/finance/expense', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-
 // GLOBAL NOTICE APIs
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
@@ -573,7 +585,6 @@ app.delete('/api/notices/:id', async (req, res) => {
         res.status(200).json({ success: true, message: "Notice deleted permanently!" });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
-
 
 // STAFF (USERS & ROLES) APIs
 app.post('/api/staff', uploadStaff.fields([
@@ -645,7 +656,6 @@ app.put('/api/staff/:id', uploadStaff.fields([
 
         const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedStaff) return res.status(404).json({ success: false, message: "Staff not found!" });
-
         res.status(200).json({ success: true, message: "Staff Details Updated!", data: updatedStaff });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -658,6 +668,70 @@ app.delete('/api/staff/:id', async (req, res) => {
         if (!deletedStaff) return res.status(404).json({ success: false, message: "Staff not found!" });
 
         res.status(200).json({ success: true, message: "Staff Data Deleted!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==========================================
+// 🟢 NEW: NOTES (STUDY MATERIAL) APIs 🟢
+// ==========================================
+
+// 1. Upload Note API (PDF converted to PNG URL for rendering)
+app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
+    try {
+        const { date, semester, subject, title } = req.body;
+        let fileUrl = "";
+        let cloudinaryId = "";
+
+        if (req.file) {
+            let tempUrl = req.file.secure_url || req.file.path;
+            // .pdf ko .png mein convert karna taki app/web mein asani se dikhe
+            fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
+            cloudinaryId = req.file.filename;
+        } else {
+            return res.status(400).json({ success: false, message: "No file provided!" });
+        }
+
+        const newNote = new Note({ date, semester, subject, title, fileUrl, cloudinaryId });
+        await newNote.save();
+        
+        res.status(201).json({ success: true, message: "Study Material uploaded successfully!", data: newNote });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Fetch Notes API (For App & Web Panel - supports filtering by semester)
+app.get('/api/notes', async (req, res) => {
+    try {
+        const { semester, subject } = req.query;
+        let filter = {};
+
+        // App filter karne ke liye use karegi
+        if (semester) filter.semester = new RegExp(`^${semester}$`, 'i');
+        if (subject) filter.subject = new RegExp(`^${subject}$`, 'i');
+
+        const notes = await Note.find(filter).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: notes });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Delete Note API
+app.delete('/api/notes/:id', async (req, res) => {
+    try {
+        const note = await Note.findById(req.params.id);
+        if (!note) return res.status(404).json({ success: false, message: "Note not found!" });
+
+        // Cloudinary se original file delete karo
+        if (note.cloudinaryId) {
+            await cloudinary.uploader.destroy(note.cloudinaryId);
+        }
+
+        await Note.findByIdAndDelete(req.params.id);
+        res.status(200).json({ success: true, message: "Note deleted permanently!" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -738,7 +812,6 @@ app.get('/api/get-courses', async (req, res) => {
 app.get('/api/get-batches', async (req, res) => {
     try {
         const { course } = req.query;
-        // Database field name sessionBatch hai aapke schema mein
         const batches = await Student.distinct('sessionBatch', { course: new RegExp(`^${course}$`, 'i') });
         res.status(200).json({ success: true, batches: batches.filter(Boolean) });
     } catch (error) {
@@ -755,7 +828,6 @@ app.get('/api/get-teacher-skills', async (req, res) => {
         const teacher = await Staff.findById(staffId);
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
 
-        // Agar skills comma-separated hain (e.g., "Python, Java") toh unhe array mein convert karna
         let skillsArray = [];
         if (teacher.skills) {
             skillsArray = teacher.skills.split(',').map(s => s.trim());
@@ -769,10 +841,8 @@ app.get('/api/get-teacher-skills', async (req, res) => {
 // 4. Fetch Students List for Attendance
 app.get('/api/get-students', async (req, res) => {
     try {
-        // Section nikal diya gaya hai request query se
         const { course, batch, semester, date, isEdit, subject } = req.query;
 
-        // Fetch students from the specific course, batch, and semester
         const students = await Student.find({
             course: new RegExp(`^${course}$`, 'i'),
             sessionBatch: batch,
@@ -783,17 +853,14 @@ app.get('/api/get-students', async (req, res) => {
             return res.status(200).json({ success: true, students: [] });
         }
 
-        // Format data for frontend
         let studentsData = students.map(s => ({
             _id: s._id,
             roll: s.collegeRegNo || 'N/A',
             name: s.studentName,
-            prevAtt: 100 // Future feature: yahan average attendance calculate hoke aayegi
+            prevAtt: 100 
         }));
 
-        // 🟢 Edit Mode: Purani attendance status (P/A) attach karo
         if (isEdit === 'true') {
-            // Section ko find/filter se bhi nikal diya
             const existingAtt = await Attendance.findOne({
                 course: course,
                 semester: semester,
@@ -806,14 +873,13 @@ app.get('/api/get-students', async (req, res) => {
                     const record = existingAtt.records.find(r => r.studentId.toString() === s._id.toString());
                     return {
                         ...s,
-                        recordedStatus: record ? record.status : 'A' // Agar record nai hai toh Absent show karo
+                        recordedStatus: record ? record.status : 'A' 
                     };
                 });
             }
         }
 
         res.status(200).json({ success: true, students: studentsData });
-
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -825,7 +891,6 @@ app.post('/api/save-attendance', async (req, res) => {
         const payload = req.body;
 
         if (payload.mode === 'UPDATE') {
-            // Edit Existing Attendance (Bina Section ke)
             const updated = await Attendance.findOneAndUpdate(
                 { 
                     fullDate: new Date(payload.fullDate), 
@@ -838,7 +903,6 @@ app.post('/api/save-attendance', async (req, res) => {
             );
             return res.status(200).json({ success: true, message: "Attendance updated!", data: updated });
         } else {
-            // Check if New Attendance already exists (Bina section ke)
             const existing = await Attendance.findOne({
                 fullDate: new Date(payload.fullDate), 
                 course: payload.course, 
@@ -859,7 +923,7 @@ app.post('/api/save-attendance', async (req, res) => {
     }
 });
 
-// 🟢 GET ATTENDANCE (FOR ANDROID APP) 🟢
+// GET ATTENDANCE (FOR ANDROID APP)
 app.get('/api/attendance', async (req, res) => {
     try {
         const { studentId } = req.query;
@@ -868,12 +932,10 @@ app.get('/api/attendance', async (req, res) => {
             return res.status(400).json({ success: false, message: "Student ID is required" });
         }
 
-        // Database mein us student ka attendance find karo
         let attendanceData = await Attendance.find({ 'records.studentId': studentId })
             .populate('teacherId', 'name')
             .sort({ fullDate: -1 });
 
-        // App ke mutabiq data format karna
         const formattedData = attendanceData.map(record => {
             const studentRecord = record.records.find(r => r.studentId.toString() === studentId);
             return {
@@ -883,7 +945,7 @@ app.get('/api/attendance', async (req, res) => {
                 subject: record.subject,
                 date: record.fullDate,
                 teacher: record.teacherId ? record.teacherId.name : "N/A",
-                studentStatus: studentRecord ? studentRecord.status : "A" // P or A
+                studentStatus: studentRecord ? studentRecord.status : "A" 
             };
         });
 
@@ -910,8 +972,7 @@ seedAdmin();
 
 // --- 8. SELF-PING LOGIC (Anti-Sleep) ---
 const keepAlive = () => {
-    const SERVER_URL = 'https://zhi-college-rtya.onrender.com'; 
-    
+    const SERVER_URL = 'https://zhi-college-rtya.onrender.com';
     https.get(SERVER_URL, (res) => {
         if (res.statusCode === 200) {
             console.log('⏰ Server khud ko ping kar raha hai taaki soye nahi! (Status: 200)');
