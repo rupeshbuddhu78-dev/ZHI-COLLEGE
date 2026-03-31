@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            <div class="section-header"><i class='bx bx-group'></i> Class & Subject Wise Student Attendance</div>
+            <div class="section-header"><i class='bx bx-group'></i> Class & Subject Wise Monthly Report</div>
 
             <div class="filter-card">
                 <div class="form-group">
@@ -171,30 +171,30 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" class="form-control" id="filterDate">
+                    <label>Select Month</label>
+                    <input type="month" class="form-control" id="filterMonth">
                 </div>
-                <button class="btn-primary" onclick="fetchClassAttendance()"><i class='bx bx-search'></i> Get Subject Report</button>
+                <button class="btn-primary" onclick="fetchMonthlyStudentReport()"><i class='bx bx-bar-chart-alt-2'></i> Get Monthly Report</button>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-face'></i></div>
-                    <div class="stat-info"><h4>Class Strength</h4><h2 id="studTotal">0</h2></div>
+                    <div class="stat-info"><h4>Total Students</h4><h2 id="studTotal">0</h2></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-user-check'></i></div>
-                    <div class="stat-info"><h4>Present</h4><h2 id="studPresent">0</h2></div>
+                    <div class="stat-icon" style="background: #fef3c7; color: var(--warning);"><i class='bx bx-chalkboard'></i></div>
+                    <div class="stat-info"><h4>Classes Held (This Month)</h4><h2 id="studClassesHeld">0</h2></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
-                    <div class="stat-info"><h4>Absent</h4><h2 id="studAbsent" style="color: var(--danger);">0</h2></div>
+                    <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-line-chart'></i></div>
+                    <div class="stat-info"><h4>Avg Monthly Attendance</h4><h2 id="studAvgAtt">0%</h2></div>
                 </div>
             </div>
 
             <div class="table-card">
                 <div class="table-header">
-                    <span id="studentTableTitle"><i class='bx bx-list-ul'></i> Student List</span>
+                    <span id="studentTableTitle"><i class='bx bx-list-ul'></i> Student Monthly Percentage List</span>
                 </div>
                 <div style="overflow-x: auto;">
                     <table>
@@ -202,13 +202,15 @@
                             <tr>
                                 <th>Roll No</th>
                                 <th>Student Name</th>
-                                <th>Course & Sem</th>
-                                <th>Subject</th>
-                                <th>Attendance Status</th>
+                                <th>Total Classes</th>
+                                <th>Present (Days)</th>
+                                <th>Absent (Days)</th>
+                                <th>Monthly %</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
-                            <tr><td colspan="5" style="text-align: center;">Please select filters and click 'Get Subject Report'</td></tr>
+                            <tr><td colspan="7" style="text-align: center;">Please select filters and click 'Get Monthly Report'</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -224,9 +226,13 @@
         window.onload = () => {
             const today = new Date();
             document.getElementById('currentDateDisplay').innerText = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-            document.getElementById('filterDate').value = getTodayStr();
+            
+            // Set current month in input type="month"
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filterMonth').value = `${year}-${month}`;
 
-            // Fetch live data initially
+            // Fetch initial data
             fetchTeacherTodayStatus();
             fetchSubjectsForFilter(); 
         };
@@ -242,7 +248,7 @@
         }
 
         // ==========================================
-        // 🟢 TEACHER LOGIC: COMBINING PUNCH & SUBJECTS
+        // 🟢 TEACHER LOGIC: COMBINING PUNCH & SUBJECTS (UNCHANGED)
         // ==========================================
         async function fetchTeacherTodayStatus() {
             const tbody = document.getElementById('teacherTableBody');
@@ -250,11 +256,9 @@
             const todayName = getDayName();
 
             try {
-                // 1. Fetch Teacher Attendance
                 const attRes = await fetch(`${API_BASE_URL}/teacher-attendance?dateStr=${todayStr}`);
                 const attResult = await attRes.json();
                 
-                // 2. Fetch Today's Routine to get what subjects they teach today
                 const routineRes = await fetch(`${API_BASE_URL}/routines?dayOfWeek=${todayName}`);
                 const routineResult = await routineRes.json();
 
@@ -269,16 +273,13 @@
 
                 updateTeacherStats(logs.length, logs.filter(l => l.punchIn).length);
 
-                // Mapping Teacher Attendance with their Subjects Today
                 tbody.innerHTML = logs.map(log => {
                     const statusClass = log.punchIn ? 'status-present' : 'status-absent';
                     const statusText = log.punchIn ? 'Present' : 'Absent';
                     
-                    // Find all subjects this teacher is assigned to today
                     let teacherIdStr = log.teacherId ? log.teacherId._id : null;
                     let myRoutines = routines.filter(r => r.teacherId && r.teacherId._id === teacherIdStr);
                     
-                    // Make a unique list of subjects
                     let subjectsSet = new Set(myRoutines.map(r => r.subject));
                     let subjectsTeaching = subjectsSet.size > 0 ? Array.from(subjectsSet).join(', ') : 'No classes today';
 
@@ -308,10 +309,10 @@
         }
 
         // ==========================================
-        // 🔵 STUDENT LOGIC (Course -> Subject -> Attendance)
+        // 🔵 STUDENT MONTHLY PERCENTAGE LOGIC
         // ==========================================
         
-        // Populate Subjects Dropdown dynamically based on Routine
+        // Populate Subjects Dropdown dynamically
         async function fetchSubjectsForFilter() {
             const course = document.getElementById('filterCourse').value;
             const semester = document.getElementById('filterSemester').value;
@@ -335,77 +336,109 @@
             }
         }
 
-        // Fetch Exact Student Attendance for specific Date and Subject
-        async function fetchClassAttendance() {
+        // Fetch and Calculate Monthly Percentage
+        async function fetchMonthlyStudentReport() {
             const course = document.getElementById('filterCourse').value;
             const semester = document.getElementById('filterSemester').value;
             const subject = document.getElementById('filterSubject').value;
-            const date = document.getElementById('filterDate').value;
+            const monthStr = document.getElementById('filterMonth').value; // Format: "YYYY-MM"
             
             const tbody = document.getElementById('studentTableBody');
 
-            if(!subject) {
-                alert("Please select a subject to fetch attendance!");
+            if(!subject || !monthStr) {
+                alert("Please select both a Subject and a Month!");
                 return;
             }
 
-            document.getElementById('studentTableTitle').innerText = `${course} - Sem ${semester} | ${subject} (${date})`;
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Fetching live student records...</td></tr>`;
+            document.getElementById('studentTableTitle').innerHTML = `<i class='bx bx-list-ul'></i> ${course} - Sem ${semester} | ${subject} (${monthStr})`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Calculating Monthly Percentage...</td></tr>`;
 
             try {
-                // Tumhara API jisme isEdit=true karne par uss date ki attendance milti hai
-                const url = `${API_BASE_URL}/get-students?course=${course}&semester=${semester}&subject=${subject}&date=${date}&isEdit=true`;
-                const response = await fetch(url);
-                const result = await response.json();
+                // Step 1: Pehle saare students mangwate hain us class ke
+                const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&semester=${semester}`);
+                const studentData = await studentRes.json();
+                let students = studentData.students || studentData.data || [];
 
-                if (!result.success || result.students.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No students found in this batch.</td></tr>`;
-                    updateStudentStats(0, 0, 0);
+                if (students.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No students found in this batch.</td></tr>`;
+                    updateStudentStats(0, 0, '0%');
                     return;
                 }
 
-                let students = result.students;
-                let present = 0;
-                let absent = 0;
+                // Step 2: Us particular subject ki saari attendance mangwate hain
+                const attRes = await fetch(`${API_BASE_URL}/attendance?course=${course}&semester=${semester}&subject=${subject}`);
+                const attData = await attRes.json();
+                let allRecords = attData.data || [];
 
-                let tableRows = students.map(s => {
-                    let statusHtml = '';
-                    
-                    if (s.recordedStatus === 'P') {
-                        present++;
-                        statusHtml = `<span class="status-badge status-present">Present</span>`;
-                    } else if (s.recordedStatus === 'A') {
-                        absent++;
-                        statusHtml = `<span class="status-badge status-absent">Absent</span>`;
-                    } else {
-                        // Agar backend se attendance marked nahi mili
-                        statusHtml = `<span class="status-badge status-pending">Not Marked Yet</span>`;
+                // Step 3: Sirf selected Month ke records filter karte hain
+                let monthRecords = allRecords.filter(record => record.date.startsWith(monthStr));
+                
+                let totalClasses = monthRecords.length;
+
+                // Step 4: Har student ka dictionary/map ready karte hain (Initial value 0)
+                let studentStats = {};
+                students.forEach(s => {
+                    let sId = s._id || s.id;
+                    studentStats[sId] = { roll: s.roll, name: s.name, present: 0, absent: 0 };
+                });
+
+                // Step 5: Records ko loop karke Present/Absent count badhate hain
+                monthRecords.forEach(record => {
+                    if (record.students && Array.isArray(record.students)) {
+                        record.students.forEach(rs => {
+                            let sid = rs.studentId._id || rs.studentId;
+                            if (studentStats[sid]) {
+                                if (rs.status === 'P') studentStats[sid].present++;
+                                if (rs.status === 'A') studentStats[sid].absent++;
+                            }
+                        });
                     }
+                });
+
+                // Step 6: Table generate karna aur Percentage nikalna
+                let totalPercentageSum = 0;
+                let activeStudentsCount = Object.keys(studentStats).length;
+
+                let tableRows = Object.values(studentStats).map(s => {
+                    let percentage = totalClasses > 0 ? ((s.present / totalClasses) * 100).toFixed(1) : 0;
+                    totalPercentageSum += parseFloat(percentage);
+
+                    // Badge color logic based on percentage
+                    let badgeHTML = '';
+                    if(percentage >= 75) badgeHTML = `<span class="status-badge status-present">Excellent</span>`;
+                    else if(percentage >= 50) badgeHTML = `<span class="status-badge" style="background:#fef08a; color:#a16207;">Average</span>`;
+                    else badgeHTML = `<span class="status-badge status-absent">Poor</span>`;
 
                     return `
                         <tr>
                             <td><b>${s.roll}</b></td>
                             <td>${s.name}</td>
-                            <td>${course} - Sem ${semester}</td>
-                            <td>${subject}</td>
-                            <td>${statusHtml}</td>
+                            <td>${totalClasses}</td>
+                            <td style="color: var(--success); font-weight: 600;">${s.present}</td>
+                            <td style="color: var(--danger); font-weight: 600;">${s.absent}</td>
+                            <td><b>${percentage}%</b></td>
+                            <td>${badgeHTML}</td>
                         </tr>
                     `;
                 }).join('');
 
-                tbody.innerHTML = tableRows;
-                updateStudentStats(students.length, present, absent);
+                tbody.innerHTML = tableRows || `<tr><td colspan="7" style="text-align: center;">No attendance data found for this month.</td></tr>`;
+
+                // Calculate Top Cards Averages
+                let avgClassPercentage = activeStudentsCount > 0 ? (totalPercentageSum / activeStudentsCount).toFixed(1) : 0;
+                
+                updateStudentStats(activeStudentsCount, totalClasses, `${avgClassPercentage}%`);
 
             } catch (error) {
                 console.error("Student Fetch Error:", error);
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Server Error. Failed to fetch student data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Server Error. Failed to calculate attendance.</td></tr>`;
             }
         }
 
-        function updateStudentStats(total, present, absent) {
-            document.getElementById('studTotal').innerText = total;
-            document.getElementById('studPresent').innerText = present;
-            document.getElementById('studAbsent').innerText = absent;
+        function updateStudentStats(totalStuds, classesHeld, avgPercentage) {
+            document.getElementById('studTotal').innerText = totalStuds;
+            document.getElementById('studClassesHeld').innerText = classesHeld;
+            document.getElementById('studAvgAtt').innerText = avgPercentage;
         }
 
     </script>
