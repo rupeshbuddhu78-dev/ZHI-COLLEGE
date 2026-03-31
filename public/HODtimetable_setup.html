@@ -13,7 +13,9 @@
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --bg: #f8fafc;
-            --sidebar: #1e293b;
+            /* Sidebar updated to match HOD Screenshot */
+            --sidebar: #1b2132; 
+            --sidebar-active: #2a3143;
             --text-main: #1e293b;
             --text-light: #64748b;
             --white: #ffffff;
@@ -26,19 +28,30 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; }
-        .sidebar-header { padding: 24px; background: #0f172a; display: flex; align-items: center; gap: 12px; }
-        .logo-box { width: 35px; height: 35px; background: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--primary);}
+        /* Sidebar Styling Updated */
+        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; }
+        .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
         
-        .nav-menu { padding: 20px 0; flex: 1; }
-        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; transition: 0.3s; font-size: 14px; border-left: 4px solid transparent; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: white; border-left-color: var(--primary); }
-        .nav-item i { font-size: 20px; }
+        .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; }
+        .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: 0.3s; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
+        .nav-item i { font-size: 18px; color: #94a3b8; }
+        .nav-item.active i { color: var(--primary); }
 
         /* Main Content */
         .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        
+        /* Header Updated */
+        header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+        .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .profile-section { display: flex; align-items: center; gap: 12px; text-align: right; }
+        .profile-name { font-weight: 600; font-size: 14px; color: var(--text-main); line-height: 1.2; }
+        .profile-role { font-size: 11px; color: var(--text-light); }
+        .profile-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
         
         .container { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
 
@@ -59,7 +72,7 @@
         .btn-outline:hover { background: var(--bg); }
 
         /* Table Design */
-        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); display: none; }
+        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); display: block; } /* Default display block kiya to show empty grid automatically */
         .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fcfcfd; }
         
         .table-wrapper { overflow-x: auto; padding: 15px; }
@@ -67,7 +80,7 @@
         th { background: #f1f5f9; color: var(--text-light); font-weight: 600; font-size: 12px; text-transform: uppercase; padding: 15px; border: 1px solid var(--border); text-align: center;}
         td { border: 1px solid var(--border); vertical-align: top; height: 100px; padding: 8px; position: relative; }
 
-        .day-cell { background: #f8fafc; font-weight: 700; text-align: center; vertical-align: middle !important; width: 120px; }
+        .day-cell { background: #f8fafc; font-weight: 700; text-align: center; vertical-align: middle !important; width: 120px; color: #1e293b;}
         .day-cell span { display: block; font-size: 11px; color: var(--text-light); font-weight: 500; margin-top: 4px; }
 
         /* Lunch Break */
@@ -101,25 +114,39 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-box"><i class='bx bxs-graduation'></i></div>
+            <div class="logo-box"><i class='bx bxs-book-alt'></i></div>
             <div>
-                <h4 style="font-size: 14px;">ZHI Academics</h4>
-                <p style="font-size: 10px; color: #94a3b8;">HOD DASHBOARD</p>
+                <h4 style="font-size: 15px; font-weight: 700; color: white;">ZHI Academics</h4>
+                <p style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">HOD / CO-ORDINATOR</p>
             </div>
         </div>
         <nav class="nav-menu">
-            <a href="#" class="nav-item"><i class='bx bx-home-alt'></i> Dashboard</a>
+            <a href="#" class="nav-item"><i class='bx bxs-dashboard'></i> Dashboard Home</a>
+            
+            <div class="nav-category">MANAGEMENT</div>
             <a href="#" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
-            <a href="#" class="nav-item"><i class='bx bx-user-voice'></i> Faculty Mgmt</a>
-            <a href="#" class="nav-item"><i class='bx bx-file-blank'></i> Reports</a>
+            <a href="#" class="nav-item"><i class='bx bx-desktop'></i> Assign Teachers</a>
+            <a href="#" class="nav-item"><i class='bx bx-transfer'></i> Substitute Mgmt.</a>
+            
+            <div class="nav-category">ACADEMICS & TRACKING</div>
+            <a href="#" class="nav-item"><i class='bx bx-book-open'></i> Subjects & Syllabus</a>
+            <a href="#" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
+            <a href="#" class="nav-item"><i class='bx bx-line-chart'></i> Student Performance</a>
         </nav>
     </aside>
 
     <main class="main-content">
         <header>
-            <h3 style="font-weight: 700; font-size: 18px;">Routine Management System</h3>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light);"></span>
+            <h3 class="header-title">Academic Department</h3>
+            <div class="header-right">
+                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light); border-right: 1px solid #e2e8f0; padding-right: 15px;"></span>
+                <div class="profile-section">
+                    <div>
+                        <div class="profile-name">Karan Mishara</div>
+                        <div class="profile-role">Head of Department</div>
+                    </div>
+                    <div class="profile-avatar">HO</div>
+                </div>
             </div>
         </header>
 
@@ -152,7 +179,7 @@
                 </div>
                 <div class="form-group">
                     <label>Week Starting (Monday)</label>
-                    <input type="date" class="form-control" id="ttDate">
+                    <input type="date" class="form-control" id="ttDate" onchange="fetchAndRenderTimetable(true)">
                 </div>
                 <button class="btn btn-primary" onclick="fetchAndRenderTimetable()">
                     <i class='bx bx-sync'></i> Load Grid
@@ -161,7 +188,7 @@
 
             <div class="table-container" id="ttContainer">
                 <div class="table-header">
-                    <h4 id="ttTitle" style="font-size: 16px;">Weekly Schedule</h4>
+                    <h4 id="ttTitle" style="font-size: 16px;">Current Week Routine</h4>
                 </div>
                 <div class="table-wrapper">
                     <table>
@@ -192,7 +219,7 @@
                 <i class='bx bx-x' style="cursor:pointer; font-size:24px; color: var(--text-light);" onclick="closeModal()"></i>
             </div>
             <div class="modal-body">
-                <div id="slotContext" style="font-size: 12px; color: var(--text-dark); font-weight: 700; background: var(--bg); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid var(--border);"></div>
+                <div id="slotContext" style="font-size: 12px; color: #1e293b; font-weight: 700; background: var(--bg); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid var(--border);"></div>
                 
                 <div class="form-group">
                     <label>Subject Name</label>
@@ -221,31 +248,48 @@
 
     <script>
         // --- 🟢 API CONFIGURATION 🟢 ---
-        // Apna Render URL yahan daalein (local testing ke liye 'http://localhost:5000/api' kar dein)
         const API_BASE = 'https://zhi-college-rtya.onrender.com/api'; 
         
-        let currentSchedule = {}; // Local memory for fetched routines
-        let teachersList = []; // Fetched from /api/staff
+        let currentSchedule = {}; 
+        let teachersList = []; 
         
-        // Active click trackers
-        let activeEditId = null; // MongoDB _id (if editing existing)
+        let activeEditId = null; 
         let activeDay = '';
         let activeStartTime = '';
         let activeEndTime = '';
 
-        // Pre-fill Date
-        document.getElementById('ttDate').valueAsDate = new Date();
+        // --- 🟢 DATE LOGIC (Always get Current Monday) 🟢 ---
+        function getMondayOfCurrentWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            // In JS, Sunday is 0, Monday is 1. If Sunday(0), we go back 6 days, else (day - 1)
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+            return new Date(d.setDate(diff));
+        }
+
+        // Set the default date to the most recent Monday automatically
+        const currentMonday = getMondayOfCurrentWeek(new Date());
+        
+        // Format to YYYY-MM-DD for the date input
+        const yyyy = currentMonday.getFullYear();
+        const mm = String(currentMonday.getMonth() + 1).padStart(2, '0');
+        const dd = String(currentMonday.getDate()).padStart(2, '0');
+        document.getElementById('ttDate').value = `${yyyy}-${mm}-${dd}`;
+
+        // Initial empty grid render on page load so dates are already visible
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGrid(document.getElementById('ttDate').value);
+        });
 
         // Clock
         setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN'); }, 1000);
 
-        // Fetch Teachers on Page Load
+        // Fetch Teachers
         async function fetchTeachers() {
             try {
                 const res = await fetch(`${API_BASE}/staff`);
                 const data = await res.json();
                 if(data.success) {
-                    // Filter out only teachers
                     teachersList = data.data.filter(staff => staff.category === 'teacher' || staff.role.toLowerCase().includes('teacher'));
                     
                     const selectEl = document.getElementById('mTeach');
@@ -258,17 +302,22 @@
                 console.error("Failed to load teachers", err);
             }
         }
-        fetchTeachers(); // Call immediately
+        fetchTeachers(); 
 
         // --- 🟢 1. FETCH ROUTINES FROM SERVER 🟢 ---
-        async function fetchAndRenderTimetable() {
+        async function fetchAndRenderTimetable(onlyRenderDates = false) {
             const course = document.getElementById('ttCourse').value;
             const sem = document.getElementById('ttSem').value;
             const sec = document.getElementById('ttSec').value;
             const startDate = document.getElementById('ttDate').value;
 
-            if(!course || !sem || !sec || !startDate) {
-                return alert("Please fill Course, Semester, Section, and Date!");
+            // If triggered by date change but course/sem missing, just update dates grid visually
+            if(!course || !sem || !sec) {
+                if(onlyRenderDates) {
+                    renderGrid(startDate);
+                    return;
+                }
+                return alert("Please fill Course, Semester, and Section to load routine!");
             }
 
             document.getElementById('ttContainer').style.display = 'block';
@@ -276,16 +325,13 @@
             document.getElementById('ttBody').innerHTML = `<tr><td colspan="8" class="loading-spinner"><i class='bx bx-loader-alt bx-spin'></i> Loading Timetable from Server...</td></tr>`;
 
             try {
-                // Fetch from Server database
                 const response = await fetch(`${API_BASE}/routines?course=${course}&semester=${sem}`);
                 const data = await response.json();
                 
-                currentSchedule = {}; // Reset memory
+                currentSchedule = {}; 
                 
                 if(data.success) {
-                    // Map arrays into object format: key = "Monday_09:00"
                     data.data.forEach(routine => {
-                        // Matching your exact schema
                         let key = `${routine.dayOfWeek}_${routine.startTime}`;
                         currentSchedule[key] = routine;
                     });
@@ -294,7 +340,7 @@
                 renderGrid(startDate);
             } catch (err) {
                 alert("Failed to fetch from server!");
-                renderGrid(startDate); // Render empty grid if fail
+                renderGrid(startDate); 
             }
         }
 
@@ -308,7 +354,7 @@
                 { start: "09:00", end: "10:00" },
                 { start: "10:00", end: "11:00" },
                 { start: "11:00", end: "12:00" },
-                { break: true }, // 4th column is break
+                { break: true }, 
                 { start: "12:30", end: "01:30" },
                 { start: "01:30", end: "02:30" },
                 { start: "02:30", end: "03:30" }
@@ -327,14 +373,13 @@
                 periods.forEach((p, pIdx) => {
                     if (p.break) {
                         if (dIdx === 0) html += `<td rowspan="6" class="lunch-break">L U N C H &nbsp; B R E A K</td>`;
-                        return; // Skip rendering td for break on other days
+                        return; 
                     }
 
                     const key = `${day}_${p.start}`;
                     const slotData = currentSchedule[key];
 
                     if (slotData) {
-                        // Display filled slot
                         html += `<td>
                             <div class="slot filled" onclick="openEditor('${key}', '${day}', '${p.start}', '${p.end}')">
                                 <div class="sub">${slotData.subject}</div>
@@ -343,7 +388,6 @@
                             </div>
                         </td>`;
                     } else {
-                        // Display empty slot
                         html += `<td>
                             <div class="slot empty" onclick="openEditor('${key}', '${day}', '${p.start}', '${p.end}')">
                                 <i class='bx bx-plus'></i>
@@ -367,17 +411,15 @@
             const existing = currentSchedule[key];
             
             if(existing) {
-                // Edit Mode
                 activeEditId = existing._id;
-                document.getElementById('mTitle').innerText = "Edit Class Slot";
+                document.getElementById('mTitle').innerHTML = "<i class='bx bx-edit' style='color: var(--primary);'></i> Edit Class Slot";
                 document.getElementById('mSub').value = existing.subject;
                 document.getElementById('mTeach').value = existing.teacherId ? existing.teacherId._id : "";
                 document.getElementById('mRoom').value = existing.roomNumber || "";
                 document.getElementById('mDelBtn').style.display = "block";
             } else {
-                // New Mode
                 activeEditId = null;
-                document.getElementById('mTitle').innerText = "Assign New Class";
+                document.getElementById('mTitle').innerHTML = "<i class='bx bx-plus-circle' style='color: var(--primary);'></i> Assign New Class";
                 document.getElementById('mSub').value = "";
                 document.getElementById('mTeach').value = "";
                 document.getElementById('mRoom').value = "";
@@ -400,9 +442,15 @@
             const teacherId = document.getElementById('mTeach').value;
             const roomNumber = document.getElementById('mRoom').value;
 
+            // Extra Validation Prompt
+            if(!course || !semester) {
+                alert("Please select Course and Semester from the background filter first!");
+                closeModal();
+                return;
+            }
+
             if(!subject || !teacherId) return alert("Subject and Teacher are required!");
 
-            // Prepare Schema matching Payload
             const payload = {
                 course,
                 semester,
@@ -420,14 +468,12 @@
             try {
                 let response;
                 if(activeEditId) {
-                    // Update Existing (PUT)
                     response = await fetch(`${API_BASE}/routines/${activeEditId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                 } else {
-                    // Create New (POST)
                     response = await fetch(`${API_BASE}/routines`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -438,7 +484,7 @@
                 const result = await response.json();
                 if(result.success) {
                     closeModal();
-                    fetchAndRenderTimetable(); // Refresh grid from server
+                    fetchAndRenderTimetable(); 
                 } else {
                     alert("Error: " + result.message);
                 }
@@ -465,7 +511,7 @@
                     
                     if(result.success) {
                         closeModal();
-                        fetchAndRenderTimetable(); // Refresh grid
+                        fetchAndRenderTimetable(); 
                     }
                 } catch (err) {
                     alert("Failed to delete from server.");
