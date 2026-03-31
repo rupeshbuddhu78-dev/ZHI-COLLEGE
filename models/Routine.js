@@ -6,6 +6,7 @@ const routineSchema = new mongoose.Schema({
     section: { type: String, required: true }, // 🔥 Naya Section field add kiya (e.g., A, B)
     subject: { type: String, required: true },
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
+    teacherName: { type: String, required: true }, // 🔥 Naya Teacher Name field add kiya gaya
     date: { type: String, required: true }, 
     dayOfWeek: { type: String, required: true }, 
     startTime: { type: String, required: true }, 
