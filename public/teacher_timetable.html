@@ -137,7 +137,7 @@
         </div>
     </main>
 
-    <script>
+ <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
         function formatToAMPM(timeStr) {
@@ -176,7 +176,16 @@
                 const teacherRoutinesResult = await teacherRoutinesRes.json();
 
                 if (allRoutinesResult.success && teacherRoutinesResult.success) {
-                    renderTeacherRoutine(allRoutinesResult.data, teacherRoutinesResult.data);
+                    
+                    // 🔴 FIX 1: Strict Teacher ID Filter
+                    // Yahan check kar rahe hain ki class pakka isi teacher ki hai na
+                    const strictTeacherRoutines = teacherRoutinesResult.data.filter(r => {
+                        if (!r.teacherId) return false;
+                        const idFromDB = r.teacherId._id ? r.teacherId._id.toString() : r.teacherId.toString();
+                        return idFromDB === staffId; // ID exact match honi chahiye
+                    });
+
+                    renderTeacherRoutine(allRoutinesResult.data, strictTeacherRoutines);
                 } else {
                     document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Failed to load data!</td></tr>`;
                 }
@@ -199,8 +208,11 @@
             allRoutines.forEach(r => {
                 const key = `${r.startTime}-${r.endTime}`;
                 if(!timeSlotsMap.has(key)) {
-                    // Sorting logic ke liye minutes me convert kar rahe
-                    const [h, m] = r.startTime.split(':').map(Number);
+                    // 🔴 FIX 2: Time Sorting (1 PM to 7 PM automatically fixed for sorting)
+                    let [h, m] = r.startTime.split(':').map(Number);
+                    if (h >= 1 && h <= 7) {
+                        h += 12; // Dopehar ki classes ko PM maan kar +12 add kiya gaya hai
+                    }
                     const sortValue = h * 60 + m;
                     timeSlotsMap.set(key, { start: r.startTime, end: r.endTime, sortValue });
                 }
