@@ -19,7 +19,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR (Exactly matching the screenshot provided) */
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
@@ -52,30 +52,17 @@
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;}
-        .btn-secondary { background: #e2e8f0; color: var(--text-dark); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;}
-
+        
         .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); overflow: hidden; margin-bottom: 30px;}
         .table-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
         th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
         
-        .progress-bar { width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; display: inline-block; margin-right: 10px; vertical-align: middle;}
-        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s;}
-        .progress-fill.low { background: var(--danger); }
-        .progress-fill.good { background: var(--success); }
-
-        /* MODAL FOR HISTORY */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000;}
-        .modal-content { background: var(--white); width: 90%; max-width: 700px; border-radius: var(--card-curve); overflow: hidden; display: flex; flex-direction: column; max-height: 80vh;}
-        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;}
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--danger);}
-        .modal-body { padding: 20px; overflow-y: auto;}
-
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .status-present { background: #d1fae5; color: var(--success); }
         .status-absent { background: #fef2f2; color: var(--danger); }
-        .status-leave { background: #fef3c7; color: var(--warning); }
+        .status-pending { background: #f1f5f9; color: var(--text-light); }
 
         @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
     </style>
@@ -120,15 +107,15 @@
             <div class="stats-grid" id="teacherStatsGrid">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-group'></i></div>
-                    <div class="stat-info"><h4>Total Teachers</h4><h2 id="teachTotal">...</h2></div>
+                    <div class="stat-info"><h4>Total Teachers</h4><h2 id="teachTotal">0</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-check-circle'></i></div>
-                    <div class="stat-info"><h4>Present Today</h4><h2 id="teachPresent">...</h2></div>
+                    <div class="stat-info"><h4>Present Today</h4><h2 id="teachPresent">0</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-error-circle'></i></div>
-                    <div class="stat-info"><h4>On Leave / Absent</h4><h2 id="teachAbsent" style="color: var(--danger);">...</h2></div>
+                    <div class="stat-info"><h4>Absent / Not Punched</h4><h2 id="teachAbsent" style="color: var(--danger);">0</h2></div>
                 </div>
             </div>
 
@@ -141,39 +128,25 @@
                                 <th>Emp ID</th>
                                 <th>Teacher Name</th>
                                 <th>Department</th>
+                                <th>Subjects Teaching Today</th>
                                 <th>Punch IN</th>
                                 <th>Punch OUT</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="teacherTableBody">
-                            <tr><td colspan="6" style="text-align: center;">Fetching live faculty data...</td></tr>
+                            <tr><td colspan="7" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Fetching live faculty data...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="section-header"><i class='bx bx-group'></i> Student Attendance Monitoring (Monthly)</div>
-
-            <div class="stats-grid" id="studentStatsGrid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-face'></i></div>
-                    <div class="stat-info"><h4>Total Students</h4><h2 id="studTotal">...</h2></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-check-circle'></i></div>
-                    <div class="stat-info"><h4>Avg Dept Attendance</h4><h2 id="studAvg">...</h2></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-error-circle'></i></div>
-                    <div class="stat-info"><h4>Defaulters (< 75%)</h4><h2 id="studDefaulters" style="color: var(--danger);">...</h2></div>
-                </div>
-            </div>
+            <div class="section-header"><i class='bx bx-group'></i> Class & Subject Wise Student Attendance</div>
 
             <div class="filter-card">
                 <div class="form-group">
                     <label>Course</label>
-                    <select class="form-control" id="filterCourse">
+                    <select class="form-control" id="filterCourse" onchange="fetchSubjectsForFilter()">
                         <option value="BCA">BCA</option>
                         <option value="BBA">BBA</option>
                         <option value="MCA">MCA</option>
@@ -182,7 +155,7 @@
                 </div>
                 <div class="form-group">
                     <label>Semester</label>
-                    <select class="form-control" id="filterSemester">
+                    <select class="form-control" id="filterSemester" onchange="fetchSubjectsForFilter()">
                         <option value="1">Sem 1</option>
                         <option value="2">Sem 2</option>
                         <option value="3">Sem 3</option>
@@ -192,19 +165,36 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>View Type</label>
-                    <select class="form-control" id="filterView">
-                        <option value="all">Full Class List</option>
-                        <option value="defaulter">Defaulter List (< 75%)</option>
+                    <label>Subject</label>
+                    <select class="form-control" id="filterSubject">
+                        <option value="">Select Course & Sem first</option>
                     </select>
                 </div>
-                <button class="btn-primary" onclick="fetchFilteredStudents()"><i class='bx bx-filter'></i> Get Report</button>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" class="form-control" id="filterDate">
+                </div>
+                <button class="btn-primary" onclick="fetchClassAttendance()"><i class='bx bx-search'></i> Get Subject Report</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-face'></i></div>
+                    <div class="stat-info"><h4>Class Strength</h4><h2 id="studTotal">0</h2></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-user-check'></i></div>
+                    <div class="stat-info"><h4>Present</h4><h2 id="studPresent">0</h2></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
+                    <div class="stat-info"><h4>Absent</h4><h2 id="studAbsent" style="color: var(--danger);">0</h2></div>
+                </div>
             </div>
 
             <div class="table-card">
                 <div class="table-header">
-                    <span id="studentTableTitle"><i class='bx bx-list-ul'></i> Student Performance List</span>
-                    <button class="btn-primary" style="background: var(--warning); color: #000; padding: 6px 12px; font-size: 12px;"><i class='bx bx-envelope'></i> Email Defaulters</button>
+                    <span id="studentTableTitle"><i class='bx bx-list-ul'></i> Student List</span>
                 </div>
                 <div style="overflow-x: auto;">
                     <table>
@@ -212,15 +202,13 @@
                             <tr>
                                 <th>Roll No</th>
                                 <th>Student Name</th>
-                                <th>Class</th>
-                                <th>Total Classes</th>
-                                <th>Attended</th>
-                                <th>Percentage</th>
-                                <th>Action</th>
+                                <th>Course & Sem</th>
+                                <th>Subject</th>
+                                <th>Attendance Status</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
-                            <tr><td colspan="7" style="text-align: center;">Fetching student data...</td></tr>
+                            <tr><td colspan="5" style="text-align: center;">Please select filters and click 'Get Subject Report'</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -228,86 +216,78 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="historyModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h3 id="modalName">Name</h3>
-                    <p style="font-size: 12px; color: var(--text-light);" id="modalDetails">Details</p>
-                </div>
-                <button class="close-btn" onclick="closeModal()"><i class='bx bx-x'></i></button>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <thead id="modalTableHead">
-                        </thead>
-                    <tbody id="modalTableBody">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Server URL Setup (Tunare shared context ke hisaab se)
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api"; 
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
         window.onload = () => {
-            // Set current date
             const today = new Date();
             document.getElementById('currentDateDisplay').innerText = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            document.getElementById('filterDate').value = getTodayStr();
 
-            // 🔴 LIVE: Fetch Initial Data from MongoDB
+            // Fetch live data initially
             fetchTeacherTodayStatus();
-            fetchInitialStudentSummary(); 
+            fetchSubjectsForFilter(); 
         };
 
-        // Date String helper YYYY-MM-DD
         function getTodayStr() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
+        
+        function getDayName() {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[new Date().getDay()];
+        }
 
         // ==========================================
-        // 🟢 TEACHER (FACULTY) LIVE LOGIC
+        // 🟢 TEACHER LOGIC: COMBINING PUNCH & SUBJECTS
         // ==========================================
         async function fetchTeacherTodayStatus() {
             const tbody = document.getElementById('teacherTableBody');
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Connecting to live database...</td></tr>`;
+            const todayStr = getTodayStr();
+            const todayName = getDayName();
 
             try {
-                const todayStr = getTodayStr();
+                // 1. Fetch Teacher Attendance
+                const attRes = await fetch(`${API_BASE_URL}/teacher-attendance?dateStr=${todayStr}`);
+                const attResult = await attRes.json();
                 
-                // Tunare shared endpoint assumptions ke hisaab se call:
-                // GET /api/teacher-attendance (Aaj ka live status sabhi teachers ka)
-                const response = await fetch(`${API_BASE_URL}/teacher-attendance?dateStr=${todayStr}`);
-                const result = await response.json();
+                // 2. Fetch Today's Routine to get what subjects they teach today
+                const routineRes = await fetch(`${API_BASE_URL}/routines?dayOfWeek=${todayName}`);
+                const routineResult = await routineRes.json();
 
-                if (!result.success || result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No biometric data available for today yet.</td></tr>`;
+                let routines = routineResult.success ? routineResult.data : [];
+                let logs = attResult.success ? attResult.data : [];
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No faculty punch data for today yet.</td></tr>`;
                     updateTeacherStats(0, 0);
                     return;
                 }
 
-                const logs = result.data;
-                
-                // Calculate Stats live from database array
-                let total = logs.length;
-                let present = logs.filter(l => l.punchIn && l.punchIn !== "").length;
-                updateTeacherStats(total, present);
+                updateTeacherStats(logs.length, logs.filter(l => l.punchIn).length);
 
-                // Render Table live
+                // Mapping Teacher Attendance with their Subjects Today
                 tbody.innerHTML = logs.map(log => {
-                    const statusClass = (log.punchIn && log.punchIn !== "") ? 'status-present' : 'status-absent';
-                    const statusText = (log.punchIn && log.punchIn !== "") ? 'Present' : 'Absent';
+                    const statusClass = log.punchIn ? 'status-present' : 'status-absent';
+                    const statusText = log.punchIn ? 'Present' : 'Absent';
                     
+                    // Find all subjects this teacher is assigned to today
+                    let teacherIdStr = log.teacherId ? log.teacherId._id : null;
+                    let myRoutines = routines.filter(r => r.teacherId && r.teacherId._id === teacherIdStr);
+                    
+                    // Make a unique list of subjects
+                    let subjectsSet = new Set(myRoutines.map(r => r.subject));
+                    let subjectsTeaching = subjectsSet.size > 0 ? Array.from(subjectsSet).join(', ') : 'No classes today';
+
                     return `
                         <tr>
                             <td><b>${log.teacherId ? log.teacherId.empId : '-'}</b></td>
                             <td>${log.teacherName}</td>
                             <td>${log.teacherId ? log.teacherId.dept : 'N/A'}</td>
+                            <td style="color: var(--primary); font-weight: 500;">${subjectsTeaching}</td>
                             <td style="color:var(--success); font-weight:600;">${log.punchIn || '-'}</td>
                             <td style="color:var(--warning); font-weight:600;">${log.punchOut || '-'}</td>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
@@ -317,7 +297,7 @@
 
             } catch (error) {
                 console.error("Teacher Fetch Error:", error);
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Server Error. Check Internet or wait for server to wake up.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Failed to fetch live faculty data.</td></tr>`;
             }
         }
 
@@ -328,142 +308,106 @@
         }
 
         // ==========================================
-        // 🔵 STUDENT LIVE LOGIC (Detailed Monthly)
+        // 🔵 STUDENT LOGIC (Course -> Subject -> Attendance)
         // ==========================================
-        // Initial load for BCA Sem 1
-        async function fetchInitialStudentSummary() {
-            fetchFilteredStudents(); // Default values handle kar lega (BCA Sem 1)
-        }
-
-        async function fetchFilteredStudents() {
+        
+        // Populate Subjects Dropdown dynamically based on Routine
+        async function fetchSubjectsForFilter() {
             const course = document.getElementById('filterCourse').value;
             const semester = document.getElementById('filterSemester').value;
-            const viewType = document.getElementById('filterView').value;
+            const subjectSelect = document.getElementById('filterSubject');
             
-            document.getElementById('studentTableTitle').innerText = `${course} - Sem ${semester} Performance List`;
-            const tbody = document.getElementById('studentTableBody');
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Loading performance records...</td></tr>`;
+            subjectSelect.innerHTML = `<option value="">Loading subjects...</option>`;
 
             try {
-                // Tunare shared endpoint assumptions ke hisaab se call:
-                // GET /api/attendance/summary (Monthly summary data course/sem ke hisaab se)
-                // Note: Agar exact endpoint alag hai to JS mein change karna hoga, 
-                // but main standard structure use kar raha hu jo MongoDB data ko iterate kare.
-                const response = await fetch(`${API_BASE_URL}/attendance/summary?course=${course}&semester=${semester}`);
+                const response = await fetch(`${API_BASE_URL}/routines?course=${course}&semester=${semester}`);
                 const result = await response.json();
 
-                if (!result.success || result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No attendance records found for ${course} Sem ${semester}.</td></tr>`;
+                if(result.success && result.data.length > 0) {
+                    let uniqueSubjects = [...new Set(result.data.map(r => r.subject))];
+                    subjectSelect.innerHTML = `<option value="">-- Select Subject --</option>` + 
+                                              uniqueSubjects.map(sub => `<option value="${sub}">${sub}</option>`).join('');
+                } else {
+                    subjectSelect.innerHTML = `<option value="">No subjects assigned</option>`;
+                }
+            } catch (e) {
+                subjectSelect.innerHTML = `<option value="">Error loading subjects</option>`;
+            }
+        }
+
+        // Fetch Exact Student Attendance for specific Date and Subject
+        async function fetchClassAttendance() {
+            const course = document.getElementById('filterCourse').value;
+            const semester = document.getElementById('filterSemester').value;
+            const subject = document.getElementById('filterSubject').value;
+            const date = document.getElementById('filterDate').value;
+            
+            const tbody = document.getElementById('studentTableBody');
+
+            if(!subject) {
+                alert("Please select a subject to fetch attendance!");
+                return;
+            }
+
+            document.getElementById('studentTableTitle').innerText = `${course} - Sem ${semester} | ${subject} (${date})`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Fetching live student records...</td></tr>`;
+
+            try {
+                // Tumhara API jisme isEdit=true karne par uss date ki attendance milti hai
+                const url = `${API_BASE_URL}/get-students?course=${course}&semester=${semester}&subject=${subject}&date=${date}&isEdit=true`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success || result.students.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No students found in this batch.</td></tr>`;
                     updateStudentStats(0, 0, 0);
                     return;
                 }
 
-                let students = result.data; // Array of student summary objects
+                let students = result.students;
+                let present = 0;
+                let absent = 0;
 
-                // LIVE DYNAMIC STATS CALCULATION
-                let totalStudents = students.length;
-                let sumPercentage = students.reduce((sum, s) => sum + s.percentage, 0);
-                let avgPercentage = totalStudents === 0 ? 0 : Math.round(sumPercentage / totalStudents);
-                let defaultersList = students.filter(s => s.percentage < 75);
-                let defaulterCount = defaultersList.length;
-
-                updateStudentStats(totalStudents, avgPercentage, defaulterCount);
-
-                // Filter table view based on dropdown (All or Defaulters)
-                let displayList = viewType === 'defaulter' ? defaultersList : students;
-
-                if (displayList.length === 0) {
-                     tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No students found matching current filter.</td></tr>`;
-                     return;
-                }
-
-                // Render Student Table live
-                tbody.innerHTML = displayList.map(s => {
-                    const percentClass = s.percentage < 75 ? 'low' : 'good';
-                    const textClass = s.percentage < 75 ? 'color: var(--danger);' : 'color: var(--success);';
+                let tableRows = students.map(s => {
+                    let statusHtml = '';
                     
+                    if (s.recordedStatus === 'P') {
+                        present++;
+                        statusHtml = `<span class="status-badge status-present">Present</span>`;
+                    } else if (s.recordedStatus === 'A') {
+                        absent++;
+                        statusHtml = `<span class="status-badge status-absent">Absent</span>`;
+                    } else {
+                        // Agar backend se attendance marked nahi mili
+                        statusHtml = `<span class="status-badge status-pending">Not Marked Yet</span>`;
+                    }
+
                     return `
                         <tr>
-                            <td><b>${s.rollNumber}</b></td>
+                            <td><b>${s.roll}</b></td>
                             <td>${s.name}</td>
                             <td>${course} - Sem ${semester}</td>
-                            <td>${s.totalClasses}</td>
-                            <td>${s.attendedClasses}</td>
-                            <td>
-                                <div class="progress-bar"><div class="progress-fill ${percentClass}" style="width: ${s.percentage}%;"></div></div>
-                                <span style="${textClass} font-weight: 600;">${s.percentage}%</span>
-                            </td>
-                            <td><button class="btn-secondary" onclick="viewStudentHistory('${s.studentId}', '${s.name}', '${course}', '${semester}')">View History</button></td>
+                            <td>${subject}</td>
+                            <td>${statusHtml}</td>
                         </tr>
                     `;
                 }).join('');
+
+                tbody.innerHTML = tableRows;
+                updateStudentStats(students.length, present, absent);
 
             } catch (error) {
                 console.error("Student Fetch Error:", error);
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Server Error. Failed to fetch student data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Server Error. Failed to fetch student data.</td></tr>`;
             }
         }
 
-        function updateStudentStats(total, avg, defaulters) {
+        function updateStudentStats(total, present, absent) {
             document.getElementById('studTotal').innerText = total;
-            document.getElementById('studAvg').innerText = avg + "%";
-            document.getElementById('studDefaulters').innerText = defaulters;
+            document.getElementById('studPresent').innerText = present;
+            document.getElementById('studAbsent').innerText = absent;
         }
 
-        // ==========================================
-        // 📝 MODAL: VIEW STUDENT DAILY HISTORY
-        // ==========================================
-        async function viewStudentHistory(studentId, name, course, sem) {
-            document.getElementById('modalName').innerText = name;
-            document.getElementById('modalDetails').innerText = `${course} - Sem ${sem} | ID: ${studentId}`;
-            document.getElementById('historyModal').style.display = 'flex';
-            
-            const head = document.getElementById('modalTableHead');
-            const tbody = document.getElementById('modalTableBody');
-            
-            head.innerHTML = `<tr><th>Date</th><th>Day</th><th>Subject</th><th>Status</th></tr>`;
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;"><i class='bx bx-loader bx-spin'></i> Fetching daily logs...</td></tr>`;
-
-            try {
-                // Tunare shared endpoint structure for detailed logs:
-                // GET /api/attendance/history/:studentId (Pura daily record standard format mein)
-                const res = await fetch(`${API_BASE_URL}/attendance/history/${studentId}?course=${course}&semester=${sem}`);
-                const result = await res.json();
-
-                if(!result.success || result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No daily logs available.</td></tr>`;
-                    return;
-                }
-
-                // Render History live
-                tbody.innerHTML = result.data.map(log => {
-                    const statusClass = log.status === 'P' ? 'status-present' : 'status-absent';
-                    const statusText = log.status === 'P' ? 'Present' : 'Absent';
-                    
-                    // Convert date string YYYY-MM-DD to standard nice format
-                    const d = new Date(log.date);
-                    const niceDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                    const dayName = d.toLocaleDateString('en-GB', { weekday: 'short' });
-
-                    return `
-                        <tr>
-                            <td><b>${niceDate}</b></td>
-                            <td>${dayName}</td>
-                            <td>${log.subject || 'N/A'}</td>
-                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch(e) {
-                console.error("Modal History Error:", e);
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error loading history.</td></tr>`;
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('historyModal').style.display = 'none';
-        }
     </script>
 </body>
 </html>
