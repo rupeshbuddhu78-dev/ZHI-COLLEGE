@@ -13,7 +13,6 @@
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --bg: #f8fafc;
-            /* Sidebar updated to match HOD Screenshot */
             --sidebar: #1b2132; 
             --sidebar-active: #2a3143;
             --text-main: #1e293b;
@@ -35,10 +34,13 @@
         
         .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; }
         .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: 0.3s; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        
+        /* 🔥 Nav Hover Effects Added Here 🔥 */
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 32px; border-left-color: var(--primary); }
         .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
-        .nav-item i { font-size: 18px; color: #94a3b8; }
+        .nav-item i { font-size: 18px; color: #94a3b8; transition: all 0.3s ease; }
+        .nav-item:hover i { color: var(--primary); transform: scale(1.1); }
         .nav-item.active i { color: var(--primary); }
 
         /* Main Content */
@@ -72,7 +74,7 @@
         .btn-outline:hover { background: var(--bg); }
 
         /* Table Design */
-        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); display: block; } /* Default display block kiya to show empty grid automatically */
+        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); display: block; }
         .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fcfcfd; }
         
         .table-wrapper { overflow-x: auto; padding: 15px; }
