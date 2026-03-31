@@ -366,7 +366,7 @@
                 }
 
                 // Step 2: Us particular subject ki saari attendance mangwate hain
-                const attRes = await fetch(`${API_BASE_URL}/attendance?course=${course}&semester=${semester}&subject=${subject}`);
+                const attRes = await fetch(`${API_BASE_URL}/attendances?course=${course}&semester=${semester}&subject=${subject}`);
                 const attData = await attRes.json();
                 let allRecords = attData.data || [];
 
