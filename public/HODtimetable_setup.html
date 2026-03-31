@@ -22,77 +22,89 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --success: #10b981;
             --danger: #ef4444;
-            --today-bg: #f0f4ff; /* Aaj ke din ke liye color */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; }
+        /* --- SIDEBAR STYLING --- */
+        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0; }
         .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
         
         .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; }
         .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 32px; border-left-color: var(--primary); }
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; cursor: pointer; }
+        .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 30px; border-left-color: var(--primary); }
         .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
         .nav-item i { font-size: 18px; color: #94a3b8; transition: all 0.3s ease; }
+        .nav-item:hover i, .nav-item.active i { color: var(--primary); }
 
+        /* --- MAIN CONTENT --- */
         .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        
         header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-        .header-title { font-weight: 700; font-size: 18px; }
+        .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
         .header-right { display: flex; align-items: center; gap: 20px; }
-        .profile-section { display: flex; align-items: center; gap: 12px; }
-        .profile-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        
+        .profile-section { display: flex; align-items: center; gap: 12px; text-align: right; }
+        .profile-name { font-weight: 600; font-size: 14px; color: var(--text-main); line-height: 1.2; }
+        .profile-role { font-size: 11px; color: var(--text-light); }
+        .profile-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
         
         .container { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
 
+        /* --- FILTER SECTION --- */
         .filter-card { background: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end; }
         
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
-        .form-control { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: var(--bg);}
+        .form-control { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; background: var(--bg);}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); background: #fff;}
 
-        .btn { padding: 11px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; justify-content: center;}
+        .btn { padding: 11px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; justify-content: center;}
         .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn-outline { background: white; border: 1px solid var(--border); }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
 
-        /* Table */
+        /* --- TABLE DESIGN --- */
         .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+        .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fcfcfd; }
+        
         .table-wrapper { overflow-x: auto; padding: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #f1f5f9; color: var(--text-light); font-size: 11px; text-transform: uppercase; padding: 15px; border: 1px solid var(--border); }
-        td { border: 1px solid var(--border); height: 100px; padding: 5px; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
+        th { background: #f1f5f9; color: var(--text-light); font-weight: 700; font-size: 11px; text-transform: uppercase; padding: 15px; border: 1px solid var(--border); text-align: center;}
+        td { border: 1px solid var(--border); vertical-align: top; height: 110px; padding: 8px; position: relative; }
 
-        /* Today Highlighting Row */
-        .row-today { background-color: var(--today-bg) !important; border-left: 4px solid var(--primary) !important; }
-        .row-today .day-cell { background-color: #e0e7ff !important; color: var(--primary) !important; }
+        .day-cell { background: #f8fafc; font-weight: 700; text-align: center; vertical-align: middle !important; width: 130px; color: #1e293b;}
+        .day-cell span { display: block; font-size: 11px; color: var(--text-light); font-weight: 500; margin-top: 4px; }
 
-        .day-cell { background: #f8fafc; font-weight: 700; text-align: center; vertical-align: middle !important; width: 110px; }
-        .day-cell span { display: block; font-size: 11px; color: var(--text-light); margin-top: 4px; }
+        .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; letter-spacing: 4px; width: 45px !important; vertical-align: middle; font-size: 12px;}
 
-        .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; width: 40px !important; vertical-align: middle;}
+        /* --- SLOT STYLING --- */
+        .slot { height: 100%; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; padding: 8px; position: relative;}
+        .slot.empty { border: 1px dashed #cbd5e1; color: #94a3b8; }
+        .slot.empty:hover { background: #f1f5f9; border-color: var(--primary); color: var(--primary); }
+        .slot.empty i { font-size: 20px; }
 
-        .slot { height: 100%; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; cursor: pointer; transition: 0.2s; padding: 5px; border: 1px solid transparent;}
-        .slot.empty { border: 1px dashed #cbd5e1; color: #cbd5e1; }
-        .slot.empty:hover { border-color: var(--primary); color: var(--primary); background: #fff; }
-        .slot.filled { background: #fff; border-color: #e2e8f0; border-left: 3px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .slot .sub { font-weight: 700; font-size: 12px; text-align: center; color: var(--text-main); }
-        .slot .teach { font-size: 11px; color: var(--primary); font-weight: 600; }
-        .slot .room { font-size: 10px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; margin-top: 3px; }
+        .slot.filled { background: #eef2ff; border-color: #c7d2fe; border-left: 4px solid var(--primary); }
+        .slot.filled:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(99,102,241,0.1); z-index: 5;}
+        .slot .sub { font-weight: 800; font-size: 12px; color: var(--text-main); text-align: center; line-height: 1.2; text-transform: uppercase;}
+        .slot .teach { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;}
+        .slot .room { font-size: 10px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); margin-top: 5px; font-weight: 700;}
 
-        /* Modal */
+        /* --- MODAL --- */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
-        .modal { background: white; width: 100%; max-width: 400px; border-radius: 12px; overflow: hidden; animation: slideUp 0.3s ease; }
+        .modal { background: white; width: 100%; max-width: 420px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-head { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .modal-foot { padding: 15px 20px; background: #f8fafc; display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+        .modal-foot { padding: 15px 20px; background: #f8fafc; display: flex; justify-content: space-between; border-top: 1px solid var(--border);}
         
-        .loading-spinner { text-align: center; padding: 40px; font-size: 18px; color: var(--primary); }
+        .loading-spinner { text-align: center; padding: 50px; font-size: 16px; color: var(--primary); font-weight: 600;}
 
     </style>
 </head>
@@ -100,26 +112,41 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-box"><i class='bx bxs-book-alt'></i></div>
+            <div class="logo-box"><i class='bx bxs-graduation'></i></div>
             <div>
-                <h4 style="font-size: 15px; font-weight: 700;">ZHI Academics</h4>
-                <p style="font-size: 10px; color: #94a3b8;">TIMETABLE MANAGER</p>
+                <h4 style="font-size: 15px; font-weight: 800; color: white; letter-spacing: 0.5px;">ZHI ACADEMICS</h4>
+                <p style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">MANAGEMENT PORTAL</p>
             </div>
         </div>
-        <nav class="nav-menu">
-            <a href="#" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
-            <a href="#" class="nav-item"><i class='bx bx-desktop'></i> Assign Teachers</a>
-            <a href="#" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Attendance Records</a>
+        <nav class="nav-menu" id="mainNav">
+            <div class="nav-category">MAIN DASHBOARD</div>
+            <a href="#" class="nav-item" onclick="setActive(this)"><i class='bx bxs-dashboard'></i> Overview</a>
+            
+            <div class="nav-category">TIMETABLE MGMT</div>
+            <a href="#" class="nav-item active" onclick="setActive(this)"><i class='bx bx-calendar-edit'></i> Class Routine</a>
+            <a href="#" class="nav-item" onclick="setActive(this)"><i class='bx bx-user-check'></i> Faculty Load</a>
+            <a href="#" class="nav-item" onclick="setActive(this)"><i class='bx bx-git-branch'></i> Substitutions</a>
+            
+            <div class="nav-category">REPORTS & LOGS</div>
+            <a href="#" class="nav-item" onclick="setActive(this)"><i class='bx bx-bar-chart-square'></i> Attendance Analysis</a>
+            <a href="#" class="nav-item" onclick="setActive(this)"><i class='bx bx-history'></i> Revision History</a>
         </nav>
+        <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <a href="#" class="nav-item" style="padding: 0; color: #ef4444;"><i class='bx bx-log-out-circle'></i> Logout</a>
+        </div>
     </aside>
 
     <main class="main-content">
         <header>
-            <h3 class="header-title">Routine Dashboard</h3>
+            <h3 class="header-title">Routine Configuration</h3>
             <div class="header-right">
-                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light);"></span>
+                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light); border-right: 1px solid #e2e8f0; padding-right: 15px;"></span>
                 <div class="profile-section">
-                    <div class="profile-avatar">AD</div>
+                    <div>
+                        <div class="profile-name">Karan Mishra</div>
+                        <div class="profile-role">HOD Academics</div>
+                    </div>
+                    <div class="profile-avatar">KM</div>
                 </div>
             </div>
         </header>
@@ -129,7 +156,8 @@
                 <div class="form-group">
                     <label>Course</label>
                     <select class="form-control" id="ttCourse">
-                        <option value="BCA">BCA</option>
+                        <option value="">Select Course</option>
+                        <option value="BCA" selected>BCA</option>
                         <option value="MCA">MCA</option>
                         <option value="BBA">BBA</option>
                     </select>
@@ -137,8 +165,9 @@
                 <div class="form-group">
                     <label>Semester</label>
                     <select class="form-control" id="ttSem">
+                        <option value="">Select</option>
                         <option value="1">1st Sem</option>
-                        <option value="2">2nd Sem</option>
+                        <option value="2" selected>2nd Sem</option>
                         <option value="3">3rd Sem</option>
                         <option value="4">4th Sem</option>
                         <option value="5">5th Sem</option>
@@ -147,18 +176,24 @@
                 </div>
                 <div class="form-group">
                     <label>Section</label>
-                    <input type="text" class="form-control" id="ttSec" value="A">
+                    <input type="text" class="form-control" id="ttSec" placeholder="e.g. A" value="A">
                 </div>
                 <div class="form-group">
-                    <label>Week View (Monday)</label>
-                    <input type="date" class="form-control" id="ttDate" onchange="fetchAndRenderTimetable()">
+                    <label>Monday Date</label>
+                    <input type="date" class="form-control" id="ttDate" onchange="fetchAndRenderTimetable(true)">
                 </div>
                 <button class="btn btn-primary" onclick="fetchAndRenderTimetable()">
-                    <i class='bx bx-sync'></i> Load Routine
+                    <i class='bx bx-refresh'></i> Load Timetable
                 </button>
             </div>
 
-            <div class="table-container">
+            <div class="table-container" id="ttContainer">
+                <div class="table-header">
+                    <h4 id="ttTitle" style="font-size: 15px; color: var(--primary); font-weight: 700;">Academic Grid</h4>
+                    <button class="btn btn-outline" onclick="window.print()" style="padding: 6px 12px; font-size: 12px;">
+                        <i class='bx bx-printer'></i> Print
+                    </button>
+                </div>
                 <div class="table-wrapper">
                     <table>
                         <thead>
@@ -173,7 +208,8 @@
                                 <th>02:30 - 03:30</th>
                             </tr>
                         </thead>
-                        <tbody id="ttBody"></tbody>
+                        <tbody id="ttBody">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -183,152 +219,155 @@
     <div class="modal-overlay" id="slotModal">
         <div class="modal">
             <div class="modal-head">
-                <h4 id="mTitle">Assign Class</h4>
-                <i class='bx bx-x' style="cursor:pointer; font-size:24px;" onclick="closeModal()"></i>
+                <h4 id="mTitle" style="display: flex; align-items: center; gap: 8px;">Assign Class</h4>
+                <i class='bx bx-x' style="cursor:pointer; font-size:24px; color: var(--text-light);" onclick="closeModal()"></i>
             </div>
             <div class="modal-body">
-                <div id="slotContext" style="font-size: 12px; font-weight: 700; text-align: center; background: #f8fafc; padding: 8px; border-radius: 6px;"></div>
+                <div id="slotContext" style="font-size: 11px; color: var(--primary); font-weight: 800; background: #eef2ff; padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #c7d2fe;"></div>
+                
                 <div class="form-group">
-                    <label>Teacher</label>
+                    <label>Faculty Name</label>
                     <select class="form-control" id="mTeach" onchange="autoFillSubject()">
-                        <option value="">Loading...</option>
+                        <option value="">Loading Staff...</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Subject</label>
-                    <input type="text" class="form-control" id="mSub">
+                    <input type="text" class="form-control" id="mSub" placeholder="e.g. Operating Systems">
                 </div>
                 <div class="form-group">
-                    <label>Room</label>
-                    <input type="text" class="form-control" id="mRoom" placeholder="Room 101">
+                    <label>Room / Lab</label>
+                    <input type="text" class="form-control" id="mRoom" placeholder="e.g. Lab 3 / Room 104">
                 </div>
             </div>
             <div class="modal-foot">
-                <button class="btn btn-danger" id="mDelBtn" onclick="deleteSlot()"><i class='bx bx-trash'></i></button>
+                <button class="btn btn-danger" id="mDelBtn" onclick="deleteSlot()" title="Delete Slot"><i class='bx bx-trash'></i></button>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-primary" id="mSaveBtn" onclick="saveSlot()">Save</button>
+                    <button class="btn btn-primary" id="mSaveBtn" onclick="saveSlot()">Save Slot</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE = 'https://zhi-college-rtya.onrender.com/api';
-        let currentSchedule = {};
-        let teachersList = [];
-        let activeEditId = null;
-        let activeDay = '', activeStartTime = '', activeEndTime = '';
+        const API_BASE = 'https://zhi-college-rtya.onrender.com/api'; 
+        
+        let currentSchedule = {}; 
+        let teachersList = []; 
+        let activeEditId = null; 
+        let activeDay = '';
+        let activeStartTime = '';
+        let activeEndTime = '';
 
-        // --- 🟢 DATE LOGIC 🟢 ---
-        // Yeh function hamesha aaj ki date ke hisab se "Current Monday" nikalega
-        function getMonday(d) {
-            d = new Date(d);
-            let day = d.getDay(),
-                diff = d.getDate() - day + (day == 0 ? -6:1); 
+        // --- 1. INITIALIZATION ---
+        function getMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
             return new Date(d.setDate(diff));
         }
 
-        function initDate() {
+        window.addEventListener('DOMContentLoaded', () => {
             const monday = getMonday(new Date());
-            const formatted = monday.toISOString().split('T')[0];
-            document.getElementById('ttDate').value = formatted;
+            document.getElementById('ttDate').value = monday.toISOString().split('T')[0];
+            fetchTeachers();
+            renderGrid(document.getElementById('ttDate').value);
+        });
+
+        setInterval(() => { 
+            document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN', { hour12: true }); 
+        }, 1000);
+
+        function setActive(el) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        // Clock
-        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN'); }, 1000);
-
-        // Fetch Teachers
+        // --- 2. DATA FETCHING ---
         async function fetchTeachers() {
             try {
                 const res = await fetch(`${API_BASE}/staff`);
                 const data = await res.json();
                 if(data.success) {
-                    teachersList = data.data.filter(s => s.category === 'teacher' || s.role.toLowerCase().includes('teacher'));
-                    const sel = document.getElementById('mTeach');
-                    sel.innerHTML = '<option value="">-- Select Teacher --</option>';
-                    teachersList.forEach(t => sel.innerHTML += `<option value="${t._id}">${t.name}</option>`);
+                    teachersList = data.data;
+                    const selectEl = document.getElementById('mTeach');
+                    selectEl.innerHTML = '<option value="">-- Choose Faculty --</option>';
+                    teachersList.forEach(t => {
+                        selectEl.innerHTML += `<option value="${t._id}">${t.name}</option>`;
+                    });
                 }
-            } catch(e) { console.log("Staff Load Failed"); }
+            } catch (err) { console.error("Staff fetch failed"); }
         }
 
         function autoFillSubject() {
-            const t = teachersList.find(x => x._id === document.getElementById('mTeach').value);
-            if(t) document.getElementById('mSub').value = t.skills || t.subject || "";
+            const teacher = teachersList.find(t => t._id === document.getElementById('mTeach').value);
+            if(teacher) document.getElementById('mSub').value = teacher.skills || teacher.department || "";
         }
 
-        // --- 🟢 RENDER LOGIC 🟢 ---
-        async function fetchAndRenderTimetable() {
+        async function fetchAndRenderTimetable(onlyRender = false) {
             const course = document.getElementById('ttCourse').value;
             const sem = document.getElementById('ttSem').value;
             const sec = document.getElementById('ttSec').value;
             const date = document.getElementById('ttDate').value;
 
-            if(!course || !sem) return;
+            if(!course || !sem || !sec) {
+                if(!onlyRender) alert("Please select Course, Semester and Section");
+                return renderGrid(date);
+            }
 
-            document.getElementById('ttBody').innerHTML = `<tr><td colspan="8" class="loading-spinner">Loading...</td></tr>`;
+            const tbody = document.getElementById('ttBody');
+            tbody.innerHTML = `<tr><td colspan="8" class="loading-spinner"><i class='bx bx-loader-alt bx-spin'></i> Loading Database...</td></tr>`;
 
             try {
                 const res = await fetch(`${API_BASE}/routines?course=${course}&semester=${sem}&section=${sec}`);
-                const data = await res.json();
+                const result = await res.json();
                 currentSchedule = {};
-                if(data.success) {
-                    data.data.forEach(r => { currentSchedule[`${r.dayOfWeek}_${r.startTime}`] = r; });
+                if(result.success) {
+                    result.data.forEach(r => { currentSchedule[`${r.dayOfWeek}_${r.startTime}`] = r; });
                 }
                 renderGrid(date);
-            } catch(e) { renderGrid(date); }
+            } catch (e) {
+                alert("Server error");
+                renderGrid(date);
+            }
         }
 
+        // --- 3. GRID RENDERING ---
         function renderGrid(startDateStr) {
             const tbody = document.getElementById('ttBody');
             tbody.innerHTML = '';
-            
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const periods = [
-                { s: "09:00", e: "10:00" }, { s: "10:00", e: "11:00" }, { s: "11:00", e: "12:00" },
+                { start: "09:00", end: "10:00" }, { start: "10:00", end: "11:00" }, { start: "11:00", end: "12:00" },
                 { break: true },
-                { s: "12:30", e: "01:30" }, { s: "01:30", e: "02:30" }, { s: "02:30", e: "03:30" }
+                { start: "12:30", end: "01:30" }, { start: "01:30", end: "02:30" }, { start: "02:30", end: "03:30" }
             ];
 
             const start = new Date(startDateStr);
-            const today = new Date().toDateString(); // Aaj ki date check karne ke liye
-
             days.forEach((day, dIdx) => {
                 let rowDate = new Date(start);
                 rowDate.setDate(start.getDate() + dIdx);
                 let dateStr = rowDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                
-                // 🔥 CHECK IF THIS ROW IS TODAY 🔥
-                const isToday = rowDate.toDateString() === today;
 
                 let tr = document.createElement('tr');
-                if(isToday) tr.className = 'row-today'; // CSS apply hogi
-
                 let html = `<td class="day-cell">${day} <span>${dateStr}</span></td>`;
 
                 periods.forEach(p => {
-                    if(p.break) {
-                        if(dIdx === 0) html += `<td rowspan="6" class="lunch-break">L U N C H</td>`;
+                    if (p.break) {
+                        if (dIdx === 0) html += `<td rowspan="6" class="lunch-break">L U N C H &nbsp; B R E A K</td>`;
                         return;
                     }
-
-                    const key = `${day}_${p.s}`;
+                    const key = `${day}_${p.start}`;
                     const slot = currentSchedule[key];
-
-                    if(slot) {
-                        html += `<td>
-                            <div class="slot filled" onclick="openEditor('${key}','${day}','${p.s}','${p.e}')">
-                                <div class="sub">${slot.subject}</div>
-                                <div class="teach">${slot.teacherName || 'Faculty'}</div>
-                                <div class="room">${slot.roomNumber || '-'}</div>
-                            </div>
-                        </td>`;
+                    if (slot) {
+                        html += `<td><div class="slot filled" onclick="openEditor('${key}','${day}','${p.start}','${p.end}')">
+                            <div class="sub">${slot.subject}</div>
+                            <div class="teach">${slot.teacherName || (slot.teacherId?.name)}</div>
+                            <div class="room">${slot.roomNumber || 'N/A'}</div>
+                        </div></td>`;
                     } else {
-                        html += `<td>
-                            <div class="slot empty" onclick="openEditor('${key}','${day}','${p.s}','${p.e}')">
-                                <i class='bx bx-plus'></i>
-                            </div>
-                        </td>`;
+                        html += `<td><div class="slot empty" onclick="openEditor('${key}','${day}','${p.start}','${p.end}')"><i class='bx bx-plus'></i></div></td>`;
                     }
                 });
                 tr.innerHTML = html;
@@ -336,23 +375,22 @@
             });
         }
 
-        // --- 🟢 MODAL & SAVE 🟢 ---
-        function openEditor(key, day, s, e) {
-            activeDay = day; activeStartTime = s; activeEndTime = e;
-            document.getElementById('slotContext').innerText = `${day} | ${s} - ${e}`;
-            const ex = currentSchedule[key];
-            if(ex) {
-                activeEditId = ex._id;
-                document.getElementById('mSub').value = ex.subject;
-                document.getElementById('mTeach').value = ex.teacherId?._id || ex.teacherId || "";
-                document.getElementById('mRoom').value = ex.roomNumber || "";
-                document.getElementById('mDelBtn').style.display = 'block';
+        // --- 4. ACTIONS ---
+        function openEditor(key, day, start, end) {
+            activeDay = day; activeStartTime = start; activeEndTime = end;
+            const existing = currentSchedule[key];
+            document.getElementById('slotContext').innerText = `${day} (${start} - ${end})`;
+            
+            if(existing) {
+                activeEditId = existing._id;
+                document.getElementById('mSub').value = existing.subject;
+                document.getElementById('mTeach').value = existing.teacherId?._id || existing.teacherId || "";
+                document.getElementById('mRoom').value = existing.roomNumber || "";
+                document.getElementById('mDelBtn').style.display = "block";
             } else {
                 activeEditId = null;
-                document.getElementById('mSub').value = "";
-                document.getElementById('mTeach').value = "";
-                document.getElementById('mRoom').value = "";
-                document.getElementById('mDelBtn').style.display = 'none';
+                document.getElementById('mSub').value = ""; document.getElementById('mTeach').value = ""; document.getElementById('mRoom').value = "";
+                document.getElementById('mDelBtn').style.display = "none";
             }
             document.getElementById('slotModal').style.display = 'flex';
         }
@@ -361,50 +399,41 @@
 
         async function saveSlot() {
             const teacherId = document.getElementById('mTeach').value;
-            const teacherName = document.getElementById('mTeach').options[document.getElementById('mTeach').selectedIndex].text;
-            
+            const subject = document.getElementById('mSub').value;
+            if(!teacherId || !subject) return alert("Fill Teacher and Subject");
+
+            const teacher = teachersList.find(t => t._id === teacherId);
             const payload = {
                 course: document.getElementById('ttCourse').value,
                 semester: document.getElementById('ttSem').value,
                 section: document.getElementById('ttSec').value,
-                subject: document.getElementById('mSub').value,
-                teacherId, teacherName,
+                date: document.getElementById('ttDate').value,
                 dayOfWeek: activeDay,
                 startTime: activeStartTime,
                 endTime: activeEndTime,
-                roomNumber: document.getElementById('mRoom').value,
-                date: document.getElementById('ttDate').value
+                subject, teacherId,
+                teacherName: teacher ? teacher.name : "Unknown",
+                roomNumber: document.getElementById('mRoom').value
             };
 
             try {
-                let url = `${API_BASE}/routines`;
-                let method = 'POST';
-                if(activeEditId) { url += `/${activeEditId}`; method = 'PUT'; }
-
+                const url = activeEditId ? `${API_BASE}/routines/${activeEditId}` : `${API_BASE}/routines`;
                 const res = await fetch(url, {
-                    method,
-                    headers: {'Content-Type': 'application/json'},
+                    method: activeEditId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const result = await res.json();
-                if(result.success) { closeModal(); fetchAndRenderTimetable(); }
-                else alert(result.message);
-            } catch(e) { alert("Server Error"); }
+                if((await res.json()).success) { closeModal(); fetchAndRenderTimetable(); }
+            } catch (e) { alert("Save failed"); }
         }
 
         async function deleteSlot() {
-            if(!activeEditId || !confirm("Delete this slot?")) return;
-            await fetch(`${API_BASE}/routines/${activeEditId}`, { method: 'DELETE' });
-            closeModal();
-            fetchAndRenderTimetable();
+            if(!confirm("Delete this entry?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/routines/${activeEditId}`, { method: 'DELETE' });
+                if((await res.json()).success) { closeModal(); fetchAndRenderTimetable(); }
+            } catch (e) { alert("Delete failed"); }
         }
-
-        // --- 🟢 ON LOAD 🟢 ---
-        window.onload = () => {
-            initDate();
-            fetchTeachers();
-            fetchAndRenderTimetable(); // Initial load
-        };
     </script>
 </body>
 </html>
