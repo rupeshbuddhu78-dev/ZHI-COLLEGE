@@ -174,18 +174,52 @@ const staffSchema = new mongoose.Schema({
 const Staff = mongoose.model('Staff', staffSchema);
 
 
-// 🟢 NEW: ROUTINE SCHEMA 🟢
+// 🟢 ROUTINE SCHEMA 🟢
 const routineSchema = new mongoose.Schema({
-    course: { type: String, required: true }, // e.g., BCA, BBA
-    semester: { type: String, required: true }, // e.g., 1st, 2nd
+    course: { type: String, required: true }, 
+    semester: { type: String, required: true }, 
     subject: { type: String, required: true },
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, // Teacher link
-    dayOfWeek: { type: String, required: true }, // Monday, Tuesday, etc.
-    startTime: { type: String, required: true }, // e.g., "10:00 AM"
-    endTime: { type: String, required: true },   // e.g., "11:00 AM"
-    roomNumber: { type: String } // Optional: Class kaha hogi
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, 
+    dayOfWeek: { type: String, required: true }, 
+    startTime: { type: String, required: true }, 
+    endTime: { type: String, required: true },   
+    roomNumber: { type: String } 
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
+
+// 🟢 NEW: ATTENDANCE SCHEMA (FULLY DETAILED) 🟢
+const attendanceSchema = new mongoose.Schema({
+    fullDate: { type: Date, required: true },
+    day: { type: Number, required: true },
+    month: { type: String, required: true },
+    year: { type: Number, required: true },
+    batch: { type: String, required: true },
+    course: { type: String, required: true },
+    semester: { type: String, required: true },
+    section: { type: String, required: true },
+    subject: { type: String, required: true },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, // Reference to Staff/Teacher
+    records: [{
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+        rollNumber: { type: String, required: true },
+        studentName: { type: String, required: true },
+        status: { type: String, enum: ['P', 'A'], required: true }
+    }],
+    summary: {
+        totalStudents: { type: Number, required: true },
+        presentCount: { type: Number, required: true },
+        absentCount: { type: Number, required: true },
+        attendancePercentage: { type: Number, required: true }
+    }
+}, { timestamps: true });
+
+// Indexing for faster app queries later
+attendanceSchema.index({ 'records.studentId': 1, subject: 1, fullDate: 1 });
+attendanceSchema.index({ batch: 1, course: 1, semester: 1, fullDate: 1 });
+
+const Attendance = mongoose.model('Attendance', attendanceSchema);
 
 
 // FEE GENERATOR HELPER FUNCTION
@@ -640,10 +674,9 @@ app.delete('/api/staff/:id', async (req, res) => {
 
 
 // ==========================================
-// 🟢 NEW: ROUTINE (TIMETABLE) APIs 🟢
+// ROUTINE (TIMETABLE) APIs 
 // ==========================================
 
-// 1. ADD NEW ROUTINE (POST)
 app.post('/api/routines', async (req, res) => {
     try {
         const newRoutine = new Routine(req.body);
@@ -654,20 +687,18 @@ app.post('/api/routines', async (req, res) => {
     }
 });
 
-// 2. GET ROUTINE (GET)
 app.get('/api/routines', async (req, res) => {
     try {
         const { course, semester, teacherId, dayOfWeek } = req.query;
         let filter = {};
 
-        // Query filters taaki App pe easily call lag sake
         if (course) filter.course = new RegExp(`^${course}$`, 'i'); 
         if (semester) filter.semester = semester;
         if (teacherId) filter.teacherId = teacherId;
         if (dayOfWeek) filter.dayOfWeek = new RegExp(`^${dayOfWeek}$`, 'i');
 
         const routines = await Routine.find(filter)
-            .populate('teacherId', 'name empId') // Teacher ka naam fetch karke bhejega
+            .populate('teacherId', 'name empId') 
             .sort({ dayOfWeek: 1, startTime: 1 });
 
         res.status(200).json({ success: true, data: routines });
@@ -676,7 +707,6 @@ app.get('/api/routines', async (req, res) => {
     }
 });
 
-// 3. EDIT/UPDATE ROUTINE (PUT)
 app.put('/api/routines/:id', async (req, res) => {
     try {
         const updatedRoutine = await Routine.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -688,13 +718,152 @@ app.put('/api/routines/:id', async (req, res) => {
     }
 });
 
-// 4. DELETE ROUTINE (DELETE)
 app.delete('/api/routines/:id', async (req, res) => {
     try {
         const deletedRoutine = await Routine.findByIdAndDelete(req.params.id);
         if (!deletedRoutine) return res.status(404).json({ success: false, message: "Routine not found!" });
         
         res.status(200).json({ success: true, message: "Routine deleted permanently!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==========================================
+// 🟢 ATTENDANCE SYSTEM APIs 🟢
+// ==========================================
+
+// 1. Get Dynamic Courses
+app.get('/api/get-courses', async (req, res) => {
+    try {
+        const courses = await Student.distinct('course');
+        res.status(200).json({ success: true, courses: courses.filter(Boolean) });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Get Dynamic Batches based on Course
+app.get('/api/get-batches', async (req, res) => {
+    try {
+        const { course } = req.query;
+        // Database field name sessionBatch hai aapke schema mein
+        const batches = await Student.distinct('sessionBatch', { course: new RegExp(`^${course}$`, 'i') });
+        res.status(200).json({ success: true, batches: batches.filter(Boolean) });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Get Logged-in Teacher's Subjects (Skills)
+app.get('/api/get-teacher-skills', async (req, res) => {
+    try {
+        const { staffId } = req.query;
+        if (!staffId) return res.status(400).json({ success: false, message: "Staff ID required" });
+        
+        const teacher = await Staff.findById(staffId);
+        if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+
+        // Agar skills comma-separated hain (e.g., "Python, Java") toh unhe array mein convert karna
+        let skillsArray = [];
+        if (teacher.skills) {
+            skillsArray = teacher.skills.split(',').map(s => s.trim());
+        }
+        res.status(200).json({ success: true, skills: skillsArray });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 4. Fetch Students List for Attendance
+app.get('/api/get-students', async (req, res) => {
+    try {
+        const { course, batch, semester, section, date, isEdit, subject } = req.query;
+
+        // Fetch students from the specific course, batch, and semester
+        const students = await Student.find({
+            course: new RegExp(`^${course}$`, 'i'),
+            sessionBatch: batch,
+            semester: semester
+        }).select('_id studentName collegeRegNo');
+
+        if (!students || students.length === 0) {
+            return res.status(200).json({ success: true, students: [] });
+        }
+
+        // Format data for frontend
+        let studentsData = students.map(s => ({
+            _id: s._id,
+            roll: s.collegeRegNo || 'N/A',
+            name: s.studentName,
+            prevAtt: 100 // Future feature: yahan average attendance calculate hoke aayegi
+        }));
+
+        // 🟢 Edit Mode: Purani attendance status (P/A) attach karo
+        if (isEdit === 'true') {
+            const existingAtt = await Attendance.findOne({
+                course: course,
+                semester: semester,
+                section: section,
+                subject: subject,
+                fullDate: new Date(date) 
+            });
+
+            if (existingAtt) {
+                studentsData = studentsData.map(s => {
+                    const record = existingAtt.records.find(r => r.studentId.toString() === s._id.toString());
+                    return {
+                        ...s,
+                        recordedStatus: record ? record.status : 'A' // Agar record nai hai toh Absent show karo
+                    };
+                });
+            }
+        }
+
+        res.status(200).json({ success: true, students: studentsData });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 5. Save or Update Attendance Record
+app.post('/api/save-attendance', async (req, res) => {
+    try {
+        const payload = req.body;
+
+        if (payload.mode === 'UPDATE') {
+            // Edit Existing Attendance
+            const updated = await Attendance.findOneAndUpdate(
+                { 
+                    fullDate: new Date(payload.fullDate), 
+                    course: payload.course, 
+                    semester: payload.semester, 
+                    section: payload.section, 
+                    subject: payload.subject 
+                },
+                payload,
+                { new: true, upsert: true }
+            );
+            return res.status(200).json({ success: true, message: "Attendance updated!", data: updated });
+        } else {
+            // Check if New Attendance already exists
+            const existing = await Attendance.findOne({
+                fullDate: new Date(payload.fullDate), 
+                course: payload.course, 
+                semester: payload.semester, 
+                section: payload.section, 
+                subject: payload.subject
+            });
+
+            if (existing) {
+                return res.status(400).json({ success: false, message: "Attendance already exists for this Date & Subject. Use 'Edit Existing' button." });
+            }
+
+            const newAttendance = new Attendance(payload);
+            await newAttendance.save();
+            res.status(201).json({ success: true, message: "Attendance saved!", data: newAttendance });
+        }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
