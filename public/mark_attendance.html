@@ -133,22 +133,21 @@
                     <label>Date</label>
                     <input type="date" class="form-control" id="attDate">
                 </div>
+                
                 <div class="form-group">
                     <label>Course</label>
-                    <select class="form-control" id="attCourse">
-                        <option value="BCA">BCA</option>
-                        <option value="MCA">MCA</option>
-                        <option value="BBA">BBA</option>
+                    <select class="form-control" id="attCourse" onchange="fetchDynamicBatches()">
+                        <option value="">Loading...</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label>Batch</label>
                     <select class="form-control" id="attBatch">
-                        <option value="2023-2026">2023-2026</option>
-                        <option value="2024-2027">2024-2027</option>
-                        <option value="2025-2028">2025-2028</option>
+                        <option value="">Select Course First</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label>Semester</label>
                     <select class="form-control" id="attSem">
@@ -160,13 +159,11 @@
                         <option value="Sem 6">Semester 6</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label>Section</label>
                     <select class="form-control" id="attSec">
-                        <option value="A">Section A</option>
-                        <option value="B">Section B</option>
-                        <option value="C">Section C</option>
-                    </select>
+                        <option value="A">Section A</option> </select>
                 </div>
                 
                 <div class="form-group">
@@ -256,21 +253,80 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
         let isEditModeActive = false;
-        let loadedStudentsData = []; // To hold the students temporarily
+        let loadedStudentsData = []; 
 
         // ==========================================
-        // 1. FETCH DYNAMIC SUBJECTS (TEACHER SKILLS)
+        // 1. FETCH DYNAMIC COURSES FROM DATABASE
+        // ==========================================
+        async function fetchDynamicCourses() {
+            try {
+                const response = await fetch('/api/get-courses');
+                const data = await response.json();
+                const courseSelect = document.getElementById('attCourse');
+                courseSelect.innerHTML = '';
+                
+                if(data.success && data.courses.length > 0) {
+                    data.courses.forEach(c => {
+                        let opt = document.createElement('option');
+                        opt.value = c;
+                        opt.innerHTML = c;
+                        courseSelect.appendChild(opt);
+                    });
+                    // Course aane ke baad by-default uska batch load kardo
+                    fetchDynamicBatches();
+                } else {
+                    courseSelect.innerHTML = '<option value="">No Courses Found</option>';
+                }
+            } catch (error) {
+                console.error("Error fetching courses:", error);
+                // Fallback option in case API is not working yet
+                const courseSelect = document.getElementById('attCourse');
+                courseSelect.innerHTML = '<option value="BCA">BCA</option><option value="MCA">MCA</option><option value="BBA">BBA</option>';
+                fetchDynamicBatches();
+            }
+        }
+
+        // ==========================================
+        // 2. FETCH DYNAMIC BATCHES BASED ON COURSE
+        // ==========================================
+        async function fetchDynamicBatches() {
+            const course = document.getElementById('attCourse').value;
+            const batchSelect = document.getElementById('attBatch');
+            batchSelect.innerHTML = '<option value="">Fetching...</option>';
+
+            if(!course) return;
+
+            try {
+                const response = await fetch(`/api/get-batches?course=${course}`);
+                const data = await response.json();
+                batchSelect.innerHTML = '';
+
+                if(data.success && data.batches.length > 0) {
+                    data.batches.forEach(b => {
+                        let opt = document.createElement('option');
+                        opt.value = b;
+                        opt.innerHTML = b;
+                        batchSelect.appendChild(opt);
+                    });
+                } else {
+                    batchSelect.innerHTML = '<option value="">No Batches in Database</option>';
+                }
+            } catch (error) {
+                console.error("Error fetching batches:", error);
+                // Fallback for testing
+                batchSelect.innerHTML = '<option value="2025-2028">2025-2028</option><option value="2024-2027">2024-2027</option>';
+            }
+        }
+
+        // ==========================================
+        // 3. FETCH DYNAMIC SUBJECTS (TEACHER SKILLS)
         // ==========================================
         async function fetchTeacherSubjects() {
             try {
-                // TODO: Replace with your actual Backend API endpoint for fetching logged-in teacher's subjects
                 const response = await fetch('/api/get-teacher-skills'); 
-                
-                // Assumption: Backend returns { success: true, skills: ["C++", "Java", "Web Dev"] }
                 const data = await response.json();
-                
                 const subjectSelect = document.getElementById('attSubject');
-                subjectSelect.innerHTML = ''; // Clear loading text
+                subjectSelect.innerHTML = ''; 
                 
                 if(data.success && data.skills) {
                     data.skills.forEach(sub => {
@@ -284,17 +340,18 @@
                 }
             } catch (error) {
                 console.error("Error fetching subjects:", error);
-                document.getElementById('attSubject').innerHTML = '<option value="">Error Loading Subjects</option>';
+                document.getElementById('attSubject').innerHTML = '<option value="Default Subject">Default Subject</option>';
             }
         }
 
-        // Window load par subjects mangwao database se
+        // Window load par saari APIs trigger karo
         window.onload = function() {
+            fetchDynamicCourses();
             fetchTeacherSubjects();
         };
 
         // ==========================================
-        // 2. FETCH STUDENTS (BASED ON FILTERS)
+        // 4. FETCH STUDENTS (BASED ON FILTERS)
         // ==========================================
         async function fetchStudents(isEdit) {
             isEditModeActive = isEdit;
@@ -306,6 +363,11 @@
             const date = document.getElementById('attDate').value;
             const subject = document.getElementById('attSubject').value;
             
+            if(!batch) {
+                alert("Please wait or select a valid batch first!");
+                return;
+            }
+
             document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem} (Sec ${sec})`;
             document.getElementById('editBadge').style.display = isEdit ? 'inline-block' : 'none';
             document.getElementById('submitBtn').innerHTML = isEdit ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
@@ -315,16 +377,12 @@
             document.getElementById('loadingIndicator').style.display = 'block';
 
             try {
-                // TODO: Build your query params here. Replace endpoint with your actual DB Route
-                // It sends course, batch, sem, sec so database filters and gives specific students
                 const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&section=${sec}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
                 const response = await fetch(`/api/get-students${queryStr}`); 
-                
-                // Assumption: Backend returns { success: true, students: [{_id: "1", roll: "...", name: "...", prevAtt: 85, recordedStatus: "P" (if edit)}] }
                 const data = await response.json();
                 
                 if (data.success) {
-                    loadedStudentsData = data.students; // Store globally for form submission
+                    loadedStudentsData = data.students; 
                     renderStudentTable(data.students, isEdit);
                 } else {
                     alert("No students found for this selection!");
@@ -350,7 +408,6 @@
             students.forEach((student) => {
                 let colorClass = student.prevAtt >= 75 ? 'var(--success)' : (student.prevAtt > 65 ? 'var(--warning)' : 'var(--danger)');
                 
-                // If isEdit is true, the backend should ideally send `recordedStatus` as 'P' or 'A' based on existing record
                 let pChecked = (isEdit && student.recordedStatus === 'P') ? "checked" : "";
                 let aChecked = (isEdit && student.recordedStatus === 'A') ? "checked" : "";
 
@@ -382,7 +439,7 @@
         }
 
         // ==========================================
-        // 3. SUBMIT REAL DATA TO BACKEND API
+        // 5. SUBMIT REAL DATA TO BACKEND API
         // ==========================================
         async function submitAttendance(e) {
             e.preventDefault();
@@ -447,24 +504,19 @@
             };
 
             try {
-                // Change "Submitting..." text
                 const btn = document.getElementById('submitBtn');
                 btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Submitting...";
                 btn.disabled = true;
 
-                // TODO: Replace with your actual backend endpoint to process/save data
                 const response = await fetch('/api/save-attendance', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payloadData)
                 });
 
                 const result = await response.json();
 
                 if(result.success) {
-                    // Update UI Summary Box
                     document.getElementById('summaryTitle').innerHTML = isEditModeActive ? "<i class='bx bx-check-circle'></i> Attendance Updated Successfully!" : "<i class='bx bx-check-circle'></i> Attendance Saved Successfully!";
                     document.getElementById('sumTotal').innerText = totalStudents;
                     document.getElementById('sumPresent').innerText = presentCount;
