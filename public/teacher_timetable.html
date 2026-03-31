@@ -11,7 +11,6 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            /* 🟢 Changed Primary Color to match your Teacher Panel Green */
             --primary: #10b981; 
             --warning: #f59e0b; 
             --danger: #ef4444; 
@@ -37,7 +36,6 @@
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         
-        /* 🟢 Hover & Active States updated to Green */
         .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
 
@@ -58,11 +56,11 @@
         
         .table-res { overflow-x: auto; padding: 20px;}
         table { width: 100%; border-collapse: collapse; text-align: center; min-width: 800px;}
-        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #059669;} /* Green borders */
+        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #059669;} 
         td { padding: 15px; border: 1px solid var(--border); vertical-align: middle; height: 80px;}
         
-        /* 🟢 Class Blocks in Green Theme */
-        .class-block { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 8px; display: inline-block; width: 100%;}
+        /* Class Blocks */
+        .class-block { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 8px; display: inline-block; width: 100%; margin-bottom: 5px;}
         .class-block b { display: block; font-size: 13px; color: var(--text-dark); margin-bottom: 4px;}
         .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; display: block; margin-top: 3px;}
         .room-badge { display: inline-block; margin-top: 5px; font-size: 10px; color: var(--primary); font-weight: bold; }
@@ -142,7 +140,6 @@
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // Time ko "09:00" se "09:00 AM" me format karne ka helper function (optional but matches your design)
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
             let [hours, minutes] = timeStr.split(':');
@@ -154,14 +151,12 @@
             return `${hStr}:${minutes} ${ampm}`;
         }
 
-        // 🟢 LIVE SERVER FETCH LOGIC
         document.addEventListener("DOMContentLoaded", async () => {
             
-            // 1. Get logged in teacher's ID from LocalStorage
+            // 1. Get logged in teacher's ID
             const staffId = localStorage.getItem("staffId");
             const staffName = localStorage.getItem("staffName") || "Faculty";
 
-            // Update Topbar Profile Name & Image
             document.getElementById("teacherNameTxt").innerText = staffName;
             document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
 
@@ -171,15 +166,17 @@
                 return;
             }
 
-            // 2. Fetch routines specifically assigned to this teacher from the database
             try {
-                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/routines?teacherId=${staffId}`);
-                const result = await response.json();
+                // FETCH 1: Get ALL college routines to build standard dynamic periods (columns)
+                const allRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines`);
+                const allRoutinesResult = await allRoutinesRes.json();
 
-                if (result.success && result.data.length > 0) {
-                    renderTeacherRoutine(result.data);
-                } else if (result.success && result.data.length === 0) {
-                    document.getElementById("ttBody").innerHTML = `<tr><td style="padding: 30px;">No classes assigned to you yet.</td></tr>`;
+                // FETCH 2: Get only this Teacher's classes
+                const teacherRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines?teacherId=${staffId}`);
+                const teacherRoutinesResult = await teacherRoutinesRes.json();
+
+                if (allRoutinesResult.success && teacherRoutinesResult.success) {
+                    renderTeacherRoutine(allRoutinesResult.data, teacherRoutinesResult.data);
                 } else {
                     document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Failed to load data!</td></tr>`;
                 }
@@ -189,69 +186,83 @@
             }
         });
 
-        // 3. Completely Dynamic Render Logic
-        function renderTeacherRoutine(routines) {
+        // Dynamic Render Logic with Current Day Highlight & All Time Slots
+        function renderTeacherRoutine(allRoutines, teacherRoutines) {
             const theadRow = document.getElementById("ttHeadRow");
             const tbody = document.getElementById("ttBody");
             
-            // Clear existing loading text
             tbody.innerHTML = ""; 
             theadRow.innerHTML = "<th>Day / Time</th>";
 
-            // 🟢 STEP 1: Extract Unique Time Slots from Database Data
+            // STEP 1: Extract all standard unique time slots from entire college data
             const timeSlotsMap = new Map();
-            routines.forEach(r => {
+            allRoutines.forEach(r => {
                 const key = `${r.startTime}-${r.endTime}`;
                 if(!timeSlotsMap.has(key)) {
-                    timeSlotsMap.set(key, { start: r.startTime, end: r.endTime });
+                    // Sorting logic ke liye minutes me convert kar rahe
+                    const [h, m] = r.startTime.split(':').map(Number);
+                    const sortValue = h * 60 + m;
+                    timeSlotsMap.set(key, { start: r.startTime, end: r.endTime, sortValue });
                 }
             });
 
-            // Sort time slots chronologically
-            const uniqueTimeSlots = Array.from(timeSlotsMap.values()).sort((a, b) => a.start.localeCompare(b.start));
+            // Sort periods from morning to evening
+            const uniqueTimeSlots = Array.from(timeSlotsMap.values()).sort((a, b) => a.sortValue - b.sortValue);
 
-            // 🟢 STEP 2: Dynamically Generate Table Headers (Columns)
+            // Create standard Columns dynamically
             uniqueTimeSlots.forEach(slot => {
                 let th = document.createElement("th");
-                // Uses the AMPM formatting to look exactly like your old design
                 th.innerText = `${formatToAMPM(slot.start)} - ${formatToAMPM(slot.end)}`;
                 theadRow.appendChild(th);
             });
 
-            // 🟢 STEP 3: Render Rows Data Dynamically
+            // STEP 2: Render Rows
             const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            
+            const today = new Date().toLocaleString('en-US', { weekday: 'long' });
+
             days.forEach(day => {
                 let tr = document.createElement("tr");
 
-                // Day Column
+                // Check if this row is the current day
+                let isToday = (day === today);
+                if (isToday) {
+                    tr.style.backgroundColor = "#f0fdf4"; // Halka green highlight for whole row
+                }
+
+                // Day Name Cell
                 let tdDay = document.createElement("td");
                 tdDay.style.fontWeight = "600";
-                tdDay.style.background = "var(--bg)";
-                tdDay.innerText = day;
+                tdDay.style.background = isToday ? "#d1fae5" : "var(--bg)"; // Thoda dark highlight
+                tdDay.innerHTML = isToday ? `${day} <br><span style="font-size:11px; color:var(--primary);">Today</span>` : day;
                 tr.appendChild(tdDay);
 
-                // Match classes for each dynamically generated time slot
+                // Fill class blocks per time slot
                 uniqueTimeSlots.forEach(slot => {
                     let td = document.createElement("td");
 
-                    // Check if teacher has class exactly on this day at this unique start & end time
-                    const cls = routines.find(r => 
+                    // Check if teacher has class at this exact time and day
+                    const classesAtThisTime = teacherRoutines.filter(r => 
                         r.dayOfWeek.toLowerCase() === day.toLowerCase() && 
                         r.startTime === slot.start &&
                         r.endTime === slot.end
                     );
 
-                    if (cls) {
-                        td.innerHTML = `
-                            <div class="class-block">
-                                <b>${cls.subject}</b>
-                                <span>${cls.course} - Sem ${cls.semester}</span>
-                                <span class="room-badge"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
-                            </div>
-                        `;
+                    if (classesAtThisTime.length > 0) {
+                        let cellHTML = "";
+                        // If multiple classes assigned same time (rare, but handled), loop through them
+                        classesAtThisTime.forEach(cls => {
+                            let sectionStr = cls.section ? cls.section : 'A'; // Fallback to A if not provided
+                            cellHTML += `
+                                <div class="class-block" style="${isToday ? 'background: #fff; border-color: var(--primary);' : ''}">
+                                    <b>${cls.subject}</b>
+                                    <span>${cls.course} - Sem ${cls.semester} (Sec: ${sectionStr})</span>
+                                    <span class="room-badge"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
+                                </div>
+                            `;
+                        });
+                        td.innerHTML = cellHTML;
                     } else {
-                        // Empty slot
+                        // Free Period
                         td.innerHTML = `<span style="color: #94a3b8; font-size: 13px;">- Free -</span>`;
                     }
 
