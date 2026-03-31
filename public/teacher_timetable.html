@@ -173,7 +173,7 @@
 
             // 2. Fetch routines specifically assigned to this teacher from the database
             try {
-                const response = await fetch(`https://zhi-college.onrender.com/api/routines?teacherId=${staffId}`);
+                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/routines?teacherId=${staffId}`);
                 const result = await response.json();
 
                 if (result.success && result.data.length > 0) {
