@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | My Attendance (Teacher)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #14b8a6; /* Teal Theme */
+            --primary-light: #ccfbf1;
+            --success: #10b981; 
+            --success-light: #d1fae5;
+            --warning: #f59e0b; 
+            --warning-light: #fef3c7;
+            --danger: #ef4444; 
+            --danger-light: #fee2e2;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* Basic Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a i { font-size: 20px; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-profile div { display: flex; flex-direction: column; }
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
+
+        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw;}
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
+        
+        /* ------------------ STATS CARDS ------------------ */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%; }
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
+        .stat-info { overflow: hidden; }
+        .stat-info h4 { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;}
+        .stat-info p { font-size: 13px; color: var(--text-light); font-weight: 500; white-space: nowrap;}
+
+        /* Overall Attendance Card Special Design */
+        .overall-card { grid-column: span 4; background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; padding: 25px; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3); margin-bottom: 20px;}
+        .overall-card h2 { font-size: 36px; font-weight: 800; margin-bottom: 5px;}
+        .overall-card p { font-size: 15px; opacity: 0.9;}
+        .overall-icon { font-size: 60px; opacity: 0.2; }
+
+        /* ------------------ TABLE & PANELS ------------------ */
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; max-width: 100%; margin-bottom: 25px;}
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;}
+        .panel-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text-dark);}
+        
+        .table-res { width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
+        th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 500;}
+        
+        /* Badges */
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; text-align: center;}
+        .badge-present { background: var(--success-light); color: var(--success); }
+        .badge-absent { background: var(--danger-light); color: var(--danger); }
+        .badge-leave { background: var(--warning-light); color: var(--warning); }
+
+        /* Mobile Responsiveness */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .topbar { padding: 0 15px; }
+            .user-profile b, .user-profile span { display: none; }
+            .content { padding: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 15px; gap: 10px; }
+            .stat-icon { width: 40px; height: 40px; font-size: 20px; }
+            .stat-info h4 { font-size: 18px; }
+            .overall-card { flex-direction: column; align-items: flex-start; gap: 15px; position: relative;}
+            .overall-icon { position: absolute; right: 20px; top: 20px; font-size: 50px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-img">
+                    <i class='bx bx-book-reader' style="color:var(--primary); font-size: 24px;"></i>
+                </div>
+                <div>
+                    <h2>ZHI Faculty</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
+            </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li class="active"><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">My Classes</li>
+            <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
+            <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
+            <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
+            <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Faculty Portal</div>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <b id="adminName">Loading...</b>
+                    <span id="adminDept">Faculty Member</span>
+                </div>
+                <img id="profileImage" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Admin">
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="page-title">
+                <div><i class='bx bx-fingerprint'></i> My Attendance Record</div>
+            </div>
+
+            <div class="overall-card">
+                <div>
+                    <h2 id="overallPercentage">92.5%</h2>
+                    <p>Overall Attendance Percentage (Current Session)</p>
+                </div>
+                <i class='bx bx-bar-chart-alt-2 overall-icon'></i>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);"><i class='bx bx-calendar'></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalDays">120</h4>
+                        <p>Total Working Days</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--success-light); color: var(--success);"><i class='bx bx-check-circle'></i></div>
+                    <div class="stat-info">
+                        <h4 id="presentDays">111</h4>
+                        <p>Days Present</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--danger-light); color: var(--danger);"><i class='bx bx-x-circle'></i></div>
+                    <div class="stat-info">
+                        <h4 id="absentDays">4</h4>
+                        <p>Days Absent</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--warning-light); color: var(--warning);"><i class='bx bx-calendar-minus'></i></div>
+                    <div class="stat-info">
+                        <h4 id="leaveDays">5</h4>
+                        <p>Approved Leaves</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-list-ul'></i> Daily Attendance Log (This Month)</h3>
+                </div>
+                <div class="table-res">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Punch In Time</th>
+                                <th>Punch Out Time</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <tr>
+                                <td>15 Apr 2026</td>
+                                <td>Wednesday</td>
+                                <td>08:50 AM</td>
+                                <td>04:15 PM</td>
+                                <td><span class="badge badge-present">Present</span></td>
+                                <td>On Time</td>
+                            </tr>
+                            <tr>
+                                <td>14 Apr 2026</td>
+                                <td>Tuesday</td>
+                                <td>09:15 AM</td>
+                                <td>04:05 PM</td>
+                                <td><span class="badge badge-present">Present</span></td>
+                                <td style="color: var(--warning);">Late Entry</td>
+                            </tr>
+                            <tr>
+                                <td>13 Apr 2026</td>
+                                <td>Monday</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span class="badge badge-leave">Leave</span></td>
+                                <td>Sick Leave (Approved)</td>
+                            </tr>
+                            <tr>
+                                <td>10 Apr 2026</td>
+                                <td>Friday</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span class="badge badge-absent">Absent</span></td>
+                                <td>Uninformed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        window.onload = () => {
+            // Profile Name Setup
+            const userName = localStorage.getItem('staffName') || localStorage.getItem('userName') || "Teacher";
+            if(userName) {
+                document.getElementById('adminName').innerText = userName;
+                document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${userName}&background=14b8a6&color=fff`;
+            }
+
+            // Future Live Fetch Logic yahan aayega
+            // fetchTeacherAttendance(); 
+        };
+
+        // Dummy Live Fetch Structure for backend
+        async function fetchTeacherAttendance() {
+            const staffId = localStorage.getItem('staffId');
+            if(!staffId) return;
+
+            try {
+                // Endpoint example: /api/staff-attendance/STAFF_ID
+                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/staff-attendance/${staffId}`);
+                const data = await response.json();
+
+                if(data.success) {
+                    // Update stats
+                    document.getElementById('overallPercentage').innerText = data.stats.percentage + "%";
+                    document.getElementById('totalDays').innerText = data.stats.total;
+                    document.getElementById('presentDays').innerText = data.stats.present;
+                    document.getElementById('absentDays').innerText = data.stats.absent;
+                    document.getElementById('leaveDays').innerText = data.stats.leave;
+
+                    // Update Table
+                    const tbody = document.getElementById('attendanceTableBody');
+                    tbody.innerHTML = "";
+                    data.logs.forEach(log => {
+                        let badgeClass = log.status === 'Present' ? 'badge-present' : (log.status === 'Absent' ? 'badge-absent' : 'badge-leave');
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${log.date}</td>
+                                <td>${log.dayName}</td>
+                                <td>${log.punchIn || '-'}</td>
+                                <td>${log.punchOut || '-'}</td>
+                                <td><span class="badge ${badgeClass}">${log.status}</span></td>
+                                <td>${log.remarks || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) {
+                console.log("Waiting for backend API to be ready...");
+            }
+        }
+    </script>
+</body>
+</html>
