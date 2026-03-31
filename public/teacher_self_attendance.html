@@ -180,7 +180,7 @@
             <div class="action-header">
                 <div class="page-title"><i class='bx bx-fingerprint'></i> My Attendance Record</div>
                 
-                <select class="month-selector" id="monthSelector" onchange="loadAttendanceData()">
+                <select class="month-selector" id="monthSelector" onchange="renderTableAndStats()">
                     </select>
             </div>
 
@@ -255,7 +255,8 @@
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody">
-                            </tbody>
+                            <tr><td colspan="6" style="text-align:center;">Fetching data from server...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -264,6 +265,15 @@
     </div>
 
     <script>
+        // Server URL Setup
+        const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/teacher-attendance";
+        
+        // Logged-in Teacher Details (Change keys according to your localStorage setup)
+        const staffId = localStorage.getItem('staffId') || ""; 
+        const staffName = localStorage.getItem('staffName') || localStorage.getItem('userName') || "Teacher";
+
+        let allLogs = []; // Global variable database se data store karne ke liye
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
@@ -276,8 +286,8 @@
             
             for(let i=0; i<6; i++) {
                 let d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                let monthStr = d.toLocaleString('default', { month: 'long', year: 'numeric' }); // e.g. "March 2026"
-                let monthVal = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`; // e.g. "2026-03"
+                let monthStr = d.toLocaleString('default', { month: 'long', year: 'numeric' }); 
+                let monthVal = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`; 
                 
                 let option = document.createElement('option');
                 option.value = monthVal;
@@ -286,25 +296,25 @@
             }
         }
 
-        // Global Variables
-        let allLogs = JSON.parse(localStorage.getItem('teacherLogs')) || [];
-        
         window.onload = () => {
-            // Setup Profile
-            const userName = localStorage.getItem('staffName') || localStorage.getItem('userName') || "Teacher";
-            document.getElementById('adminName').innerText = userName;
-            document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${userName}&background=14b8a6&color=fff`;
+            document.getElementById('adminName').innerText = staffName;
+            document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${staffName}&background=14b8a6&color=fff`;
 
-            // Set Today's Date in Punch Card
             const today = new Date();
             document.getElementById('todayDateText').innerText = today.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 
             setupMonthSelector();
-            checkTodayStatus();
-            loadAttendanceData();
+            
+            if(!staffId) {
+                alert("Teacher ID missing! Please login again.");
+                return;
+            }
+
+            // 🔴 LIVE: Fetch Attendance from MongoDB
+            fetchAttendanceData();
         };
 
-        // Format AM/PM Time
+        // Date and Time Formatters
         function formatTime(date) {
             let hours = date.getHours();
             let minutes = date.getMinutes();
@@ -315,13 +325,32 @@
             return hours + ':' + minutes + ' ' + ampm;
         }
 
-        // Get standard Date string YYYY-MM-DD
         function getStandardDate() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // Check buttons state for today
+        // 🔴 1. Fetch from Database
+        async function fetchAttendanceData() {
+            try {
+                // Fetch all records for this specific teacher
+                const response = await fetch(`${API_BASE_URL}/${staffId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allLogs = result.data; // Server se aaye hue array ko yaha set karo
+                    checkTodayStatus();
+                    renderTableAndStats();
+                } else {
+                    console.error("Failed to fetch data", result.message);
+                }
+            } catch (error) {
+                console.error("Server connection error:", error);
+                document.getElementById('attendanceTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Server connection failed! Please check internet or wait for server to wake up.</td></tr>`;
+            }
+        }
+
+        // Check Button Status (In / Out / Completed)
         function checkTodayStatus() {
             const todayStr = getStandardDate();
             const todayLog = allLogs.find(l => l.dateStr === todayStr);
@@ -334,12 +363,13 @@
                 btnIn.classList.remove('btn-disabled'); btnIn.disabled = false;
                 btnOut.classList.add('btn-disabled'); btnOut.disabled = true;
                 btnIn.innerHTML = "<i class='bx bx-log-in-circle'></i> Punch In";
-            } else if (todayLog.punchIn && !todayLog.punchOut) {
+            } else if (todayLog.punchIn && (!todayLog.punchOut || todayLog.punchOut === "")) {
                 // Punched in, waiting to punch out
                 btnIn.classList.add('btn-disabled'); btnIn.disabled = true;
                 btnIn.innerHTML = "<i class='bx bx-check-double'></i> In: " + todayLog.punchIn;
                 
                 btnOut.classList.remove('btn-disabled'); btnOut.disabled = false;
+                btnOut.innerHTML = "<i class='bx bx-log-out-circle'></i> Punch Out";
             } else if (todayLog.punchIn && todayLog.punchOut) {
                 // Shift completed
                 btnIn.classList.add('btn-disabled'); btnIn.disabled = true;
@@ -350,55 +380,67 @@
             }
         }
 
-        // Mark Punch In / Out
-        function markPunch(type) {
+        // 🔴 2. Post Punch In / Punch Out to Database
+        async function markPunch(actionType) {
             const now = new Date();
-            const todayStr = getStandardDate();
             const timeStr = formatTime(now);
-            const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
+            const dateStr = getStandardDate();
             const monthVal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
 
-            if (type === 'IN') {
-                allLogs.push({
-                    dateStr: todayStr,
-                    displayDate: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-                    monthVal: monthVal,
-                    dayName: dayName,
-                    punchIn: timeStr,
-                    punchOut: '',
-                    status: 'Present',
-                    remarks: 'On Time'
+            const payload = {
+                teacherId: staffId,
+                teacherName: staffName,
+                action: actionType, // 'IN' or 'OUT'
+                timeStr: timeStr,
+                dateStr: dateStr,
+                monthVal: monthVal,
+                dayName: dayName
+            };
+
+            // Loading state
+            const btn = actionType === 'IN' ? document.getElementById('btnPunchIn') : document.getElementById('btnPunchOut');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Saving...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/punch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                alert("Punched In Successfully at " + timeStr);
-            } else if (type === 'OUT') {
-                let log = allLogs.find(l => l.dateStr === todayStr);
-                if(log) {
-                    log.punchOut = timeStr;
-                    log.remarks = 'Shift Completed';
-                    alert("Punched Out Successfully at " + timeStr);
-                }
-            }
 
-            // Save to LocalStorage
-            localStorage.setItem('teacherLogs', JSON.stringify(allLogs));
-            
-            checkTodayStatus();
-            loadAttendanceData(); // Refresh table and stats
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Punched ${actionType} Successfully at ` + timeStr);
+                    fetchAttendanceData(); // Database se fresh data reload karo
+                } else {
+                    alert("Failed to save: " + result.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Error pushing punch:", error);
+                alert("Server error! Cannot save attendance.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
-        // Load Data based on Selected Month
-        function loadAttendanceData() {
-            const selectedMonthVal = document.getElementById('monthSelector').value; // e.g. "2026-03"
+        // Render Table and Stats depending on Dropdown Month
+        function renderTableAndStats() {
+            const selectedMonthVal = document.getElementById('monthSelector').value; 
             const selectedMonthText = document.getElementById('monthSelector').options[document.getElementById('monthSelector').selectedIndex].text;
             
             document.getElementById('currentMonthText').innerText = selectedMonthText;
 
-            // Filter logs for this month
+            // Filter
             const monthlyLogs = allLogs.filter(log => log.monthVal === selectedMonthVal);
 
-            // Calculate Stats
+            // Calculations
             let present = 0, absent = 0, leave = 0;
-            
             monthlyLogs.forEach(log => {
                 if(log.status === 'Present') present++;
                 else if(log.status === 'Absent') absent++;
@@ -414,22 +456,28 @@
             document.getElementById('leaveDays').innerText = leave;
             document.getElementById('overallPercentage').innerText = percentage + "%";
 
-            // Render Table
+            // Draw Table
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = "";
 
             if (monthlyLogs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">No attendance recorded for ${selectedMonthText} yet.</td></tr>`;
             } else {
-                // Reverse to show latest first
-                monthlyLogs.slice().reverse().forEach(log => {
+                // Reverse array manually to show newest dates at the top
+                let displayLogs = [...monthlyLogs].reverse(); 
+                
+                displayLogs.forEach(log => {
                     let badgeClass = 'badge-leave';
                     if(log.status === 'Present') badgeClass = 'badge-present';
                     if(log.status === 'Absent') badgeClass = 'badge-absent';
 
+                    // Convert standard date string (YYYY-MM-DD) to nice format
+                    let d = new Date(log.dateStr);
+                    let niceDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
                     tbody.innerHTML += `
                         <tr>
-                            <td><b>${log.displayDate}</b></td>
+                            <td><b>${niceDate}</b></td>
                             <td>${log.dayName}</td>
                             <td style="color:var(--primary); font-weight:600;">${log.punchIn || '-'}</td>
                             <td style="color:var(--warning); font-weight:600;">${log.punchOut || '-'}</td>
