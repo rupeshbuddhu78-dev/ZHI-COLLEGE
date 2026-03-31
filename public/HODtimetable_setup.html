@@ -398,7 +398,7 @@
                         html += `<td>
                             <div class="slot filled" onclick="openEditor('${key}', '${day}', '${p.start}', '${p.end}')">
                                 <div class="sub">${slotData.subject}</div>
-                                <div class="teach">${slotData.teacherId ? slotData.teacherId.name : 'N/A'}</div>
+                                <div class="teach">${slotData.teacherName || (slotData.teacherId ? slotData.teacherId.name : 'N/A')}</div>
                                 <div class="room">${slotData.roomNumber || 'TBA'}</div>
                             </div>
                         </td>`;
@@ -429,7 +429,7 @@
                 activeEditId = existing._id;
                 document.getElementById('mTitle').innerHTML = "<i class='bx bx-edit' style='color: var(--primary);'></i> Edit Class Slot";
                 document.getElementById('mSub').value = existing.subject;
-                document.getElementById('mTeach').value = existing.teacherId ? existing.teacherId._id : "";
+                document.getElementById('mTeach').value = existing.teacherId ? (existing.teacherId._id || existing.teacherId) : "";
                 document.getElementById('mRoom').value = existing.roomNumber || "";
                 document.getElementById('mDelBtn').style.display = "block";
             } else {
@@ -452,7 +452,8 @@
         async function saveSlot() {
             const course = document.getElementById('ttCourse').value;
             const semester = document.getElementById('ttSem').value;
-            const section = document.getElementById('ttSec').value; // Fetch Section
+            const section = document.getElementById('ttSec').value; 
+            const routineDate = document.getElementById('ttDate').value; // Fetch date for schema
             
             const subject = document.getElementById('mSub').value;
             const teacherId = document.getElementById('mTeach').value;
@@ -467,13 +468,22 @@
 
             if(!subject || !teacherId) return alert("Subject and Teacher are required!");
 
-            // Added 'section' to Payload
+            // 🔥 TEACHER KA NAAM NIKALNA 🔥
+            let teacherName = "Unknown Faculty";
+            const selectedTeacher = teachersList.find(t => t._id === teacherId);
+            if (selectedTeacher) {
+                teacherName = selectedTeacher.name; // Teacher ka asal naam list se nikal liya
+            }
+
+            // Payload me teacherName aur date bhi bheja
             const payload = {
                 course,
                 semester,
                 section, 
                 subject,
                 teacherId,
+                teacherName,  // 🔥 Ab schema ka validation fail nahi hoga
+                date: routineDate, // 🔥 Date bhi jaruri tha aapke schema ke hisab se
                 dayOfWeek: activeDay,
                 startTime: activeStartTime,
                 endTime: activeEndTime,
