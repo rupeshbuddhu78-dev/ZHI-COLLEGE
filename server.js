@@ -2,11 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer'); 
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const https = require('https');
+const https = require('https'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -55,7 +55,7 @@ const staffStorage = new CloudinaryStorage({
 });
 const uploadStaff = multer({ storage: staffStorage });
 
-// 🟢 NEW: Study Notes ke liye storage 🟢
+// Study Notes ke liye storage
 const noteStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -188,7 +188,7 @@ const routineSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
 
-// 🟢 NEW: NOTES SCHEMA 🟢
+// NOTES SCHEMA 
 const noteSchema = new mongoose.Schema({
     date: { type: String, required: true },
     semester: { type: String, required: true },
@@ -200,7 +200,25 @@ const noteSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', noteSchema);
 
 
-// ATTENDANCE SCHEMA
+// 🟢 NEW: TEACHER ATTENDANCE SCHEMA 🟢
+const teacherAttendanceSchema = new mongoose.Schema({
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
+    teacherName: { type: String, required: true },
+    dateStr: { type: String, required: true }, // "YYYY-MM-DD"
+    monthVal: { type: String, required: true }, // "YYYY-MM"
+    dayName: { type: String }, // "Monday"
+    punchIn: { type: String, default: "" }, // "09:00 AM"
+    punchOut: { type: String, default: "" }, // "04:00 PM"
+    status: { type: String, default: "Present", enum: ["Present", "Absent", "Leave", "Half Day"] },
+    remarks: { type: String, default: "On Time" }
+}, { timestamps: true });
+
+// Prevent duplicate punch records for same day
+teacherAttendanceSchema.index({ teacherId: 1, dateStr: 1 }, { unique: true });
+const TeacherAttendance = mongoose.model('TeacherAttendance', teacherAttendanceSchema);
+
+
+// STUDENT ATTENDANCE SCHEMA
 const attendanceSchema = new mongoose.Schema({
     fullDate: { type: Date, required: true },
     day: { type: Number, required: true },
@@ -673,11 +691,7 @@ app.delete('/api/staff/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// 🟢 NEW: NOTES (STUDY MATERIAL) APIs 🟢
-// ==========================================
-
-// 1. Upload Note API (PDF converted to PNG URL for rendering)
+// NOTES (STUDY MATERIAL) APIs
 app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     try {
         const { date, semester, subject, title } = req.body;
@@ -686,7 +700,6 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
 
         if (req.file) {
             let tempUrl = req.file.secure_url || req.file.path;
-            // .pdf ko .png mein convert karna taki app/web mein asani se dikhe
             fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
             cloudinaryId = req.file.filename;
         } else {
@@ -702,13 +715,11 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     }
 });
 
-// 2. Fetch Notes API (For App & Web Panel - supports filtering by semester)
 app.get('/api/notes', async (req, res) => {
     try {
         const { semester, subject } = req.query;
         let filter = {};
 
-        // App filter karne ke liye use karegi
         if (semester) filter.semester = new RegExp(`^${semester}$`, 'i');
         if (subject) filter.subject = new RegExp(`^${subject}$`, 'i');
 
@@ -719,13 +730,11 @@ app.get('/api/notes', async (req, res) => {
     }
 });
 
-// 3. Delete Note API
 app.delete('/api/notes/:id', async (req, res) => {
     try {
         const note = await Note.findById(req.params.id);
         if (!note) return res.status(404).json({ success: false, message: "Note not found!" });
 
-        // Cloudinary se original file delete karo
         if (note.cloudinaryId) {
             await cloudinary.uploader.destroy(note.cloudinaryId);
         }
@@ -737,11 +746,7 @@ app.delete('/api/notes/:id', async (req, res) => {
     }
 });
 
-
-// ==========================================
 // ROUTINE (TIMETABLE) APIs 
-// ==========================================
-
 app.post('/api/routines', async (req, res) => {
     try {
         const newRoutine = new Routine(req.body);
@@ -776,7 +781,6 @@ app.put('/api/routines/:id', async (req, res) => {
     try {
         const updatedRoutine = await Routine.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedRoutine) return res.status(404).json({ success: false, message: "Routine not found!" });
-        
         res.status(200).json({ success: true, message: "Routine updated successfully!", data: updatedRoutine });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -787,7 +791,6 @@ app.delete('/api/routines/:id', async (req, res) => {
     try {
         const deletedRoutine = await Routine.findByIdAndDelete(req.params.id);
         if (!deletedRoutine) return res.status(404).json({ success: false, message: "Routine not found!" });
-        
         res.status(200).json({ success: true, message: "Routine deleted permanently!" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -795,10 +798,83 @@ app.delete('/api/routines/:id', async (req, res) => {
 });
 
 // ==========================================
-// 🟢 ATTENDANCE SYSTEM APIs 🟢
+// 🟢 TEACHER SELF-ATTENDANCE APIs 🟢
 // ==========================================
 
-// 1. Get Dynamic Courses
+// 1. Mark Punch In / Out
+app.post('/api/teacher-attendance/punch', async (req, res) => {
+    try {
+        const { teacherId, teacherName, action, timeStr, dateStr, monthVal, dayName } = req.body;
+
+        if (action === 'IN') {
+            // Upsert (Agar date/teacher already hai to just return, otherwise create)
+            const newLog = await TeacherAttendance.findOneAndUpdate(
+                { teacherId, dateStr },
+                { 
+                    teacherId, 
+                    teacherName, 
+                    dateStr, 
+                    monthVal, 
+                    dayName, 
+                    punchIn: timeStr, 
+                    status: 'Present', 
+                    remarks: 'On Time' 
+                },
+                { new: true, upsert: true }
+            );
+            res.status(200).json({ success: true, message: "Punched In Successfully", data: newLog });
+        } 
+        else if (action === 'OUT') {
+            // Update Punch Out
+            const updatedLog = await TeacherAttendance.findOneAndUpdate(
+                { teacherId, dateStr },
+                { punchOut: timeStr, remarks: 'Shift Completed' },
+                { new: true }
+            );
+            if (!updatedLog) {
+                return res.status(400).json({ success: false, message: "Cannot punch out without punching in first!" });
+            }
+            res.status(200).json({ success: true, message: "Punched Out Successfully", data: updatedLog });
+        } 
+        else {
+            res.status(400).json({ success: false, message: "Invalid action type" });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Get specific Teacher's Attendance (For Teacher's Own Dashboard)
+app.get('/api/teacher-attendance/:teacherId', async (req, res) => {
+    try {
+        const logs = await TeacherAttendance.find({ teacherId: req.params.teacherId }).sort({ dateStr: 1 });
+        res.status(200).json({ success: true, data: logs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Get ALL Teachers Attendance (For HOD/Admin Dashboard view)
+app.get('/api/teacher-attendance', async (req, res) => {
+    try {
+        const { dateStr, monthVal } = req.query;
+        let filter = {};
+        
+        if (dateStr) filter.dateStr = dateStr;
+        if (monthVal) filter.monthVal = monthVal;
+
+        // Fetching records with teacher details
+        const logs = await TeacherAttendance.find(filter).populate('teacherId', 'name empId dept').sort({ dateStr: -1 });
+        res.status(200).json({ success: true, data: logs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==========================================
+// 🟢 STUDENT ATTENDANCE APIs 🟢
+// ==========================================
+
 app.get('/api/get-courses', async (req, res) => {
     try {
         const courses = await Student.distinct('course');
@@ -808,7 +884,6 @@ app.get('/api/get-courses', async (req, res) => {
     }
 });
 
-// 2. Get Dynamic Batches based on Course
 app.get('/api/get-batches', async (req, res) => {
     try {
         const { course } = req.query;
@@ -819,7 +894,6 @@ app.get('/api/get-batches', async (req, res) => {
     }
 });
 
-// 3. Get Logged-in Teacher's Subjects (Skills)
 app.get('/api/get-teacher-skills', async (req, res) => {
     try {
         const { staffId } = req.query;
@@ -838,7 +912,6 @@ app.get('/api/get-teacher-skills', async (req, res) => {
     }
 });
 
-// 4. Fetch Students List for Attendance
 app.get('/api/get-students', async (req, res) => {
     try {
         const { course, batch, semester, date, isEdit, subject } = req.query;
@@ -885,7 +958,6 @@ app.get('/api/get-students', async (req, res) => {
     }
 });
 
-// 5. Save or Update Attendance Record
 app.post('/api/save-attendance', async (req, res) => {
     try {
         const payload = req.body;
