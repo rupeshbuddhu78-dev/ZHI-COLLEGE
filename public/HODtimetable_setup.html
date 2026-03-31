@@ -35,7 +35,7 @@
         .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; }
         .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* 🔥 Nav Hover Effects Added Here 🔥 */
+        /* Nav Hover Effects Added Here */
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
         .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 32px; border-left-color: var(--primary); }
         .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
@@ -264,21 +264,17 @@
         function getMondayOfCurrentWeek(date) {
             const d = new Date(date);
             const day = d.getDay();
-            // In JS, Sunday is 0, Monday is 1. If Sunday(0), we go back 6 days, else (day - 1)
             const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
             return new Date(d.setDate(diff));
         }
 
-        // Set the default date to the most recent Monday automatically
         const currentMonday = getMondayOfCurrentWeek(new Date());
         
-        // Format to YYYY-MM-DD for the date input
         const yyyy = currentMonday.getFullYear();
         const mm = String(currentMonday.getMonth() + 1).padStart(2, '0');
         const dd = String(currentMonday.getDate()).padStart(2, '0');
         document.getElementById('ttDate').value = `${yyyy}-${mm}-${dd}`;
 
-        // Initial empty grid render on page load so dates are already visible
         window.addEventListener('DOMContentLoaded', () => {
             renderGrid(document.getElementById('ttDate').value);
         });
@@ -306,31 +302,30 @@
         }
         fetchTeachers(); 
 
-        // --- 🟢 NEW: AUTO-FILL SUBJECT ON TEACHER SELECT 🟢 ---
+        // Auto-fill Subject
         function autoFillSubject() {
             const teachId = document.getElementById('mTeach').value;
-            if(!teachId) return; // Kuch select nahi kiya toh waapas
+            if(!teachId) return; 
             
             const teacher = teachersList.find(t => t._id === teachId);
             if(teacher) {
-                // Aapke database se jo skills (jaise Python) ya properties aa rahi hain wo automatic fill hongi
                 const subjectVal = teacher.skills || teacher.subject || teacher.specialization || teacher.department;
                 if(subjectVal) {
                     document.getElementById('mSub').value = subjectVal;
                 } else {
-                    document.getElementById('mSub').value = ""; // Clear if not found
+                    document.getElementById('mSub').value = ""; 
                 }
             }
         }
 
-        // --- 🟢 1. FETCH ROUTINES FROM SERVER 🟢 ---
+        // --- 🟢 1. FETCH ROUTINES FROM SERVER (UPDATED) 🟢 ---
         async function fetchAndRenderTimetable(onlyRenderDates = false) {
             const course = document.getElementById('ttCourse').value;
             const sem = document.getElementById('ttSem').value;
-            const sec = document.getElementById('ttSec').value;
+            const sec = document.getElementById('ttSec').value; // Fetch Section
             const startDate = document.getElementById('ttDate').value;
 
-            // If triggered by date change but course/sem missing, just update dates grid visually
+            // Updated Validation to check for 'sec'
             if(!course || !sem || !sec) {
                 if(onlyRenderDates) {
                     renderGrid(startDate);
@@ -344,7 +339,8 @@
             document.getElementById('ttBody').innerHTML = `<tr><td colspan="8" class="loading-spinner"><i class='bx bx-loader-alt bx-spin'></i> Loading Timetable from Server...</td></tr>`;
 
             try {
-                const response = await fetch(`${API_BASE}/routines?course=${course}&semester=${sem}`);
+                // API Call with '&section=${sec}' Added
+                const response = await fetch(`${API_BASE}/routines?course=${course}&semester=${sem}&section=${sec}`);
                 const data = await response.json();
                 
                 currentSchedule = {}; 
@@ -452,27 +448,30 @@
             document.getElementById('slotModal').style.display = 'none';
         }
 
-        // --- 🟢 4. SAVE OR UPDATE TO SERVER 🟢 ---
+        // --- 🟢 4. SAVE OR UPDATE TO SERVER (UPDATED) 🟢 ---
         async function saveSlot() {
             const course = document.getElementById('ttCourse').value;
             const semester = document.getElementById('ttSem').value;
+            const section = document.getElementById('ttSec').value; // Fetch Section
             
             const subject = document.getElementById('mSub').value;
             const teacherId = document.getElementById('mTeach').value;
             const roomNumber = document.getElementById('mRoom').value;
 
-            // Extra Validation Prompt
-            if(!course || !semester) {
-                alert("Please select Course and Semester from the background filter first!");
+            // Updated Validation
+            if(!course || !semester || !section) {
+                alert("Please select Course, Semester, and Section from the background filter first!");
                 closeModal();
                 return;
             }
 
             if(!subject || !teacherId) return alert("Subject and Teacher are required!");
 
+            // Added 'section' to Payload
             const payload = {
                 course,
                 semester,
+                section, 
                 subject,
                 teacherId,
                 dayOfWeek: activeDay,
