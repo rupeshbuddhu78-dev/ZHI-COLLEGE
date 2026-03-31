@@ -90,23 +90,45 @@
                 <div class="card">
                     <div class="card-header"><i class='bx bx-cloud-upload' style="color: var(--primary);"></i> Upload New Note</div>
                     <form id="noteForm" class="card-body" onsubmit="handleUpload(event)">
+                        
                         <div class="form-group">
-                            <label>Select Class</label>
-                            <select class="form-control" id="nClass"><option>BCA Sem 1</option><option>BBA Sem 3</option></select>
+                            <label>Date</label>
+                            <input type="date" class="form-control" id="nDate" required>
                         </div>
+
+                        <div class="form-group">
+                            <label>Select Semester</label>
+                            <select class="form-control" id="nSemester" onchange="updateSubjects()" required>
+                                <option value="" disabled selected>Select Semester</option>
+                                <option value="Semester 1">Semester 1</option>
+                                <option value="Semester 2">Semester 2</option>
+                                <option value="Semester 3">Semester 3</option>
+                                <option value="Semester 4">Semester 4</option>
+                                <option value="Semester 5">Semester 5</option>
+                                <option value="Semester 6">Semester 6</option>
+                            </select>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Subject</label>
-                            <select class="form-control" id="nSub"><option>C Programming</option><option>Economics</option></select>
+                            <select class="form-control" id="nSubject" required>
+                                <option value="" disabled selected>First select a semester</option>
+                                </select>
                         </div>
+                        
                         <div class="form-group">
                             <label>Topic / Title</label>
                             <input type="text" class="form-control" id="nTitle" placeholder="e.g. Unit 1 - Introduction to C" required>
                         </div>
+                        
                         <div class="form-group">
-                            <label>Attach File (PDF/PPT)</label>
-                            <input type="file" class="form-control" accept=".pdf,.ppt,.pptx,.doc,.docx" required>
+                            <label>Attach File (PDF/Image/PPT)</label>
+                            <input type="file" class="form-control" id="nFile" accept=".pdf,.ppt,.pptx,.png,.jpg,.jpeg" required>
                         </div>
-                        <button type="submit" class="btn-submit"><i class='bx bx-upload'></i> Upload Note</button>
+                        
+                        <button type="submit" class="btn-submit" id="uploadBtn">
+                            <i class='bx bx-upload'></i> Upload Note
+                        </button>
                     </form>
                 </div>
 
@@ -114,13 +136,10 @@
                     <div class="card-header"><i class='bx bx-folder-open' style="color: var(--text-light);"></i> Previously Uploaded Materials</div>
                     <div style="overflow-x: auto;">
                         <table>
-                            <thead><tr><th>Date</th><th>Topic/Title</th><th>Class & Subject</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Date</th><th>Topic/Title</th><th>Semester & Subject</th><th>Action</th></tr></thead>
                             <tbody id="notesTable">
                                 <tr>
-                                    <td><b>Oct 12, 2023</b></td>
-                                    <td style="color: var(--primary); font-weight: 600;"><i class='bx bxs-file-pdf'></i> Pointers Notes</td>
-                                    <td>BCA Sem 1<br><small style="color: var(--text-light);">C Programming</small></td>
-                                    <td><button class="btn-danger" title="Delete"><i class='bx bx-trash'></i></button></td>
+                                    <td colspan="4" style="text-align: center; color: var(--text-light);">Loading notes...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -129,12 +148,159 @@
             </div>
         </div>
     </main>
+
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        function handleUpload(e) {
+        // Dummy data backend ki tarah: Semester ke hisab se subjects
+        const subjectsData = {
+            "Semester 1": ["C Programming", "Mathematics-I", "English", "Computer Fundamentals"],
+            "Semester 2": ["Data Structures", "Mathematics-II", "Environment Science", "Digital Electronics"],
+            "Semester 3": ["C++ Programming", "Database Management", "System Analysis", "Operating Systems"],
+            "Semester 4": ["Java Programming", "Computer Networks", "Software Engineering", "Web Technologies"],
+            "Semester 5": ["Python", "Machine Learning", "Cloud Computing", "Information Security"],
+            "Semester 6": ["Major Project", "Artificial Intelligence", "E-Commerce"]
+        };
+
+        // Sidebar toggle
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+        }
+
+        // On page load, set today's date and fetch existing notes
+        window.onload = function() {
+            document.getElementById('nDate').valueAsDate = new Date();
+            fetchNotes(); // Backend se notes lene ke liye
+        }
+
+        // Dropdown dynamic logic
+        function updateSubjects() {
+            const sem = document.getElementById('nSemester').value;
+            const subSelect = document.getElementById('nSubject');
+            
+            // Clear purane options
+            subSelect.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+            
+            if(subjectsData[sem]) {
+                subjectsData[sem].forEach(sub => {
+                    const opt = document.createElement('option');
+                    opt.value = sub;
+                    opt.innerHTML = sub;
+                    subSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // ==========================================
+        // API CALLS TO BACKEND (Tumhare routes ke hisab se change kar lena)
+        // ==========================================
+
+        const API_BASE_URL = "http://localhost:5000/api/notes"; // Apna actual backend URL yahan daalna
+
+        // 1. Upload Logic
+        async function handleUpload(e) {
             e.preventDefault();
-            alert("Study Material uploaded successfully! Students can now access it.");
-            document.getElementById('noteForm').reset();
+            
+            const btn = document.getElementById('uploadBtn');
+            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Uploading...";
+            btn.disabled = true;
+
+            const fileInput = document.getElementById('nFile');
+            
+            // Form Data Create karna (kyunki file bhej rahe hain)
+            const formData = new FormData();
+            formData.append('date', document.getElementById('nDate').value);
+            formData.append('semester', document.getElementById('nSemester').value);
+            formData.append('subject', document.getElementById('nSubject').value);
+            formData.append('title', document.getElementById('nTitle').value);
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                // Backend API hit karna
+                const response = await fetch(`${API_BASE_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if(response.ok) {
+                    alert("Study Material uploaded successfully on Cloudinary!");
+                    document.getElementById('noteForm').reset();
+                    document.getElementById('nDate').valueAsDate = new Date(); // Reset date
+                    updateSubjects(); // Reset subjects list
+                    fetchNotes(); // Naya note table me dikhane ke liye fetch karo
+                } else {
+                    alert("Failed to upload: " + data.message);
+                }
+            } catch (error) {
+                console.error("Error uploading:", error);
+                alert("Server error occurred!");
+            } finally {
+                btn.innerHTML = "<i class='bx bx-upload'></i> Upload Note";
+                btn.disabled = false;
+            }
+        }
+
+        // 2. Fetch Notes Logic
+        async function fetchNotes() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/all`);
+                const notes = await response.json();
+                
+                const tbody = document.getElementById('notesTable');
+                tbody.innerHTML = ""; // Clear loader
+
+                if(notes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes uploaded yet.</td></tr>';
+                    return;
+                }
+
+                notes.forEach(note => {
+                    // Checking if it's an image or pdf for the icon
+                    const isPdf = note.fileUrl.includes('.pdf');
+                    const iconClass = isPdf ? 'bx bxs-file-pdf' : 'bx bxs-image';
+
+                    const row = `
+                        <tr>
+                            <td><b>${note.date}</b></td>
+                            <td style="color: var(--primary); font-weight: 600;">
+                                <a href="${note.fileUrl}" target="_blank" style="text-decoration: none; color: inherit;">
+                                    <i class='${iconClass}'></i> ${note.title}
+                                </a>
+                            </td>
+                            <td>${note.semester}<br><small style="color: var(--text-light);">${note.subject}</small></td>
+                            <td>
+                                <button class="btn-danger" title="Delete" onclick="deleteNote('${note._id}')">
+                                    <i class='bx bx-trash'></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error fetching notes:", error);
+                document.getElementById('notesTable').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Failed to load data! Is Backend running?</td></tr>';
+            }
+        }
+
+        // 3. Delete Logic
+        async function deleteNote(id) {
+            if(confirm("Are you sure you want to delete this note?")) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/delete/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if(response.ok) {
+                        alert("Note deleted!");
+                        fetchNotes(); // Reload table
+                    } else {
+                        alert("Failed to delete note!");
+                    }
+                } catch (error) {
+                    console.error("Error deleting:", error);
+                }
+            }
         }
     </script>
 </body>
