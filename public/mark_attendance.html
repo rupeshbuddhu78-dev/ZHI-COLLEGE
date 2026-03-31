@@ -85,6 +85,9 @@
         /* Edit Mode Badge */
         .edit-badge { background: var(--warning); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-left: 10px; display: none; }
 
+        /* Loader */
+        .loader { text-align: center; padding: 20px; font-size: 16px; font-weight: 600; color: var(--primary); display: none; }
+
         @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
     </style>
 </head>
@@ -147,7 +150,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Semester (1 to 6)</label>
+                    <label>Semester</label>
                     <select class="form-control" id="attSem">
                         <option value="Sem 1">Semester 1</option>
                         <option value="Sem 2">Semester 2</option>
@@ -169,7 +172,8 @@
                 <div class="form-group">
                     <label>Your Subjects (Skills)</label>
                     <select class="form-control" id="attSubject">
-                        </select>
+                        <option>Loading subjects...</option>
+                    </select>
                 </div>
 
                 <div class="form-group" style="min-width: 220px;">
@@ -189,6 +193,10 @@
                     <button class="btn-primary" onclick="fetchStudents(false)"><i class='bx bx-search'></i> Take New</button>
                     <button class="btn-warning" onclick="fetchStudents(true)"><i class='bx bx-edit-alt'></i> Edit Existing</button>
                 </div>
+            </div>
+
+            <div id="loadingIndicator" class="loader">
+                <i class='bx bx-loader-alt bx-spin'></i> Fetching Data...
             </div>
 
             <div class="card" id="attendanceCard" style="display: none;">
@@ -247,55 +255,102 @@
         document.getElementById('attDate').valueAsDate = new Date();
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
+        let isEditModeActive = false;
+        let loadedStudentsData = []; // To hold the students temporarily
+
         // ==========================================
-        // 1. DYNAMIC SUBJECTS FROM TEACHER DB
+        // 1. FETCH DYNAMIC SUBJECTS (TEACHER SKILLS)
         // ==========================================
-        // Simulation: Yeh data backend se aayega ki teacher ne profile me kaunse skills/subjects dale hain
-        const teacherSkillsFromDB = ["C Programming", "Data Structures", "Java", "Web Development", "Computer Networks"];
-        
+        async function fetchTeacherSubjects() {
+            try {
+                // TODO: Replace with your actual Backend API endpoint for fetching logged-in teacher's subjects
+                const response = await fetch('/api/get-teacher-skills'); 
+                
+                // Assumption: Backend returns { success: true, skills: ["C++", "Java", "Web Dev"] }
+                const data = await response.json();
+                
+                const subjectSelect = document.getElementById('attSubject');
+                subjectSelect.innerHTML = ''; // Clear loading text
+                
+                if(data.success && data.skills) {
+                    data.skills.forEach(sub => {
+                        let opt = document.createElement('option');
+                        opt.value = sub;
+                        opt.innerHTML = sub;
+                        subjectSelect.appendChild(opt);
+                    });
+                } else {
+                    subjectSelect.innerHTML = '<option value="">No subjects found</option>';
+                }
+            } catch (error) {
+                console.error("Error fetching subjects:", error);
+                document.getElementById('attSubject').innerHTML = '<option value="">Error Loading Subjects</option>';
+            }
+        }
+
+        // Window load par subjects mangwao database se
         window.onload = function() {
-            const subjectSelect = document.getElementById('attSubject');
-            teacherSkillsFromDB.forEach(sub => {
-                let opt = document.createElement('option');
-                opt.value = sub;
-                opt.innerHTML = sub;
-                subjectSelect.appendChild(opt);
-            });
+            fetchTeacherSubjects();
         };
 
         // ==========================================
-        // 2. FETCH STUDENTS (NEW vs EDIT MODE)
+        // 2. FETCH STUDENTS (BASED ON FILTERS)
         // ==========================================
-        let isEditModeActive = false;
-
-        // Simulated Database Students
-        const dbStudents = [
-            { id: "65f1a1", roll: "BCA23001", name: "Aarav Singh", prevAtt: 90, recordedStatus: "P" }, // recordedStatus is for edit mode simulation
-            { id: "65f1a2", roll: "BCA23002", name: "Kavya Sharma", prevAtt: 72, recordedStatus: "A" },
-            { id: "65f1a3", roll: "BCA23003", name: "Rahul Verma", prevAtt: 85, recordedStatus: "P" },
-            { id: "65f1a4", roll: "BCA23004", name: "Priya Das", prevAtt: 60, recordedStatus: "A" },
-            { id: "65f1a5", roll: "BCA23005", name: "Amit Kumar", prevAtt: 95, recordedStatus: "P" }
-        ];
-
-        function fetchStudents(isEdit) {
+        async function fetchStudents(isEdit) {
             isEditModeActive = isEdit;
             
             const course = document.getElementById('attCourse').value;
+            const batch = document.getElementById('attBatch').value;
             const sem = document.getElementById('attSem').value;
             const sec = document.getElementById('attSec').value;
+            const date = document.getElementById('attDate').value;
+            const subject = document.getElementById('attSubject').value;
             
-            // Set Titles & Badges
             document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem} (Sec ${sec})`;
             document.getElementById('editBadge').style.display = isEdit ? 'inline-block' : 'none';
             document.getElementById('submitBtn').innerHTML = isEdit ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
             
+            document.getElementById('attendanceCard').style.display = 'none';
+            document.getElementById('summaryBox').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'block';
+
+            try {
+                // TODO: Build your query params here. Replace endpoint with your actual DB Route
+                // It sends course, batch, sem, sec so database filters and gives specific students
+                const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&section=${sec}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
+                const response = await fetch(`/api/get-students${queryStr}`); 
+                
+                // Assumption: Backend returns { success: true, students: [{_id: "1", roll: "...", name: "...", prevAtt: 85, recordedStatus: "P" (if edit)}] }
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadedStudentsData = data.students; // Store globally for form submission
+                    renderStudentTable(data.students, isEdit);
+                } else {
+                    alert("No students found for this selection!");
+                }
+            } catch (error) {
+                console.error("Error fetching students:", error);
+                alert("Failed to fetch data from database. Check console.");
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function renderStudentTable(students, isEdit) {
             const tbody = document.getElementById('studentTableBody');
             tbody.innerHTML = ''; 
 
-            dbStudents.forEach((student) => {
+            if(students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No students found matching these filters.</td></tr>';
+                document.getElementById('attendanceCard').style.display = 'block';
+                return;
+            }
+
+            students.forEach((student) => {
                 let colorClass = student.prevAtt >= 75 ? 'var(--success)' : (student.prevAtt > 65 ? 'var(--warning)' : 'var(--danger)');
                 
-                // Agar edit mode hai, toh pehle se jo submit tha wo selected dikhega
+                // If isEdit is true, the backend should ideally send `recordedStatus` as 'P' or 'A' based on existing record
                 let pChecked = (isEdit && student.recordedStatus === 'P') ? "checked" : "";
                 let aChecked = (isEdit && student.recordedStatus === 'A') ? "checked" : "";
 
@@ -303,14 +358,14 @@
                 tr.innerHTML = `
                     <td><b>${student.roll}</b></td>
                     <td>${student.name}</td>
-                    <td><span style="color: ${colorClass}; font-weight: 600;">${student.prevAtt}%</span></td>
+                    <td><span style="color: ${colorClass}; font-weight: 600;">${student.prevAtt || 0}%</span></td>
                     <td>
                         <div class="att-options">
                             <label class="radio-label text-p">
-                                <input type="radio" name="att_${student.id}" value="P" required ${pChecked}> Present
+                                <input type="radio" name="att_${student._id || student.id}" value="P" required ${pChecked}> Present
                             </label>
                             <label class="radio-label text-a">
-                                <input type="radio" name="att_${student.id}" value="A" required ${aChecked}> Absent
+                                <input type="radio" name="att_${student._id || student.id}" value="A" required ${aChecked}> Absent
                             </label>
                         </div>
                     </td>
@@ -319,7 +374,6 @@
             });
 
             document.getElementById('attendanceCard').style.display = 'block';
-            document.getElementById('summaryBox').style.display = 'none';
         }
 
         function markAll(status) {
@@ -328,9 +382,9 @@
         }
 
         // ==========================================
-        // 3. SUBMIT / UPDATE ALIGNED WITH SCHEMA
+        // 3. SUBMIT REAL DATA TO BACKEND API
         // ==========================================
-        function submitAttendance(e) {
+        async function submitAttendance(e) {
             e.preventDefault();
             
             const formData = new FormData(document.getElementById('attendanceForm'));
@@ -343,35 +397,35 @@
                     if (value === 'A') absentCount++;
                 }
             }
-            let percentage = ((presentCount / totalStudents) * 100).toFixed(1);
+            
+            let percentage = totalStudents === 0 ? 0 : ((presentCount / totalStudents) * 100).toFixed(1);
 
-            // Date Breakdown
             const dateInput = document.getElementById('attDate').value;
             const dateObj = new Date(dateInput);
             const day = dateObj.getDate();
             const month = dateObj.toLocaleString('default', { month: 'long' });
             const year = dateObj.getFullYear();
 
-            // Split Time Slot (e.g. "09:00 AM - 10:00 AM" => startTime: "09:00 AM", endTime: "10:00 AM")
             const timeSlotValue = document.getElementById('attTime').value;
             const timeParts = timeSlotValue.split(" - ");
-            const startTimeVal = timeParts[0];
-            const endTimeVal = timeParts[1];
-
+            
             const studentRecords = [];
-            dbStudents.forEach(student => {
-                const markedStatus = document.querySelector(`input[name="att_${student.id}"]:checked`).value;
-                studentRecords.push({
-                    studentId: student.id,
-                    rollNumber: student.roll,
-                    studentName: student.name,
-                    status: markedStatus
-                });
+            loadedStudentsData.forEach(student => {
+                const studentId = student._id || student.id;
+                const selectedRadio = document.querySelector(`input[name="att_${studentId}"]:checked`);
+                
+                if(selectedRadio) {
+                    studentRecords.push({
+                        studentId: studentId,
+                        rollNumber: student.roll,
+                        studentName: student.name,
+                        status: selectedRadio.value
+                    });
+                }
             });
 
-            // The JSON Payload matching your exact Mongoose Schema
             const payloadData = {
-                mode: isEditModeActive ? "UPDATE" : "CREATE", // Backend ke liye flag
+                mode: isEditModeActive ? "UPDATE" : "CREATE",
                 fullDate: dateInput,
                 day: day,
                 month: month,
@@ -381,8 +435,8 @@
                 semester: document.getElementById('attSem').value,
                 section: document.getElementById('attSec').value,
                 subject: document.getElementById('attSubject').value,
-                startTime: startTimeVal,  // Period start time
-                endTime: endTimeVal,      // Period end time
+                startTime: timeParts[0], 
+                endTime: timeParts[1],     
                 records: studentRecords,
                 summary: {
                     totalStudents: totalStudents,
@@ -392,18 +446,44 @@
                 }
             };
 
-            // Update UI Summary
-            document.getElementById('summaryTitle').innerHTML = isEditModeActive ? "<i class='bx bx-check-circle'></i> Attendance Updated Successfully!" : "<i class='bx bx-check-circle'></i> Attendance Saved Successfully!";
-            document.getElementById('sumTotal').innerText = totalStudents;
-            document.getElementById('sumPresent').innerText = presentCount;
-            document.getElementById('sumAbsent').innerText = absentCount;
-            document.getElementById('sumPercent').innerText = percentage + '%';
+            try {
+                // Change "Submitting..." text
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Submitting...";
+                btn.disabled = true;
 
-            document.getElementById('attendanceCard').style.display = 'none';
-            document.getElementById('summaryBox').style.display = 'block';
+                // TODO: Replace with your actual backend endpoint to process/save data
+                const response = await fetch('/api/save-attendance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payloadData)
+                });
 
-            // Console output dekh lo, tumhara schema ekdum fulfill ho raha hai
-            console.log("Database Payload:", JSON.stringify(payloadData, null, 2));
+                const result = await response.json();
+
+                if(result.success) {
+                    // Update UI Summary Box
+                    document.getElementById('summaryTitle').innerHTML = isEditModeActive ? "<i class='bx bx-check-circle'></i> Attendance Updated Successfully!" : "<i class='bx bx-check-circle'></i> Attendance Saved Successfully!";
+                    document.getElementById('sumTotal').innerText = totalStudents;
+                    document.getElementById('sumPresent').innerText = presentCount;
+                    document.getElementById('sumAbsent').innerText = absentCount;
+                    document.getElementById('sumPercent').innerText = percentage + '%';
+
+                    document.getElementById('attendanceCard').style.display = 'none';
+                    document.getElementById('summaryBox').style.display = 'block';
+                } else {
+                    alert("Backend Error: " + (result.message || "Could not save attendance."));
+                }
+            } catch(error) {
+                console.error("Submission Error:", error);
+                alert("Failed to submit to server. Check your connection / API.");
+            } finally {
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = isEditModeActive ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
