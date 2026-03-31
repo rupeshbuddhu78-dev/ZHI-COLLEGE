@@ -268,7 +268,7 @@
         // Server URL Setup
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/teacher-attendance";
         
-        // Logged-in Teacher Details (Change keys according to your localStorage setup)
+        // Logged-in Teacher Details (Id aur Name strictly match karenge backend ke liye)
         const staffId = localStorage.getItem('staffId') || ""; 
         const staffName = localStorage.getItem('staffName') || localStorage.getItem('userName') || "Teacher";
 
@@ -297,9 +297,11 @@
         }
 
         window.onload = () => {
+            // Profile Name set karega
             document.getElementById('adminName').innerText = staffName;
             document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${staffName}&background=14b8a6&color=fff`;
 
+            // Date text set karega
             const today = new Date();
             document.getElementById('todayDateText').innerText = today.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -310,7 +312,7 @@
                 return;
             }
 
-            // 🔴 LIVE: Fetch Attendance from MongoDB
+            // 🔴 LIVE: Fetch Attendance from MongoDB (Only for logged-in Staff ID)
             fetchAttendanceData();
         };
 
@@ -333,7 +335,7 @@
         // 🔴 1. Fetch from Database
         async function fetchAttendanceData() {
             try {
-                // Fetch all records for this specific teacher
+                // Fetch all records strictly for THIS teacher using staffId
                 const response = await fetch(`${API_BASE_URL}/${staffId}`);
                 const result = await response.json();
 
@@ -429,17 +431,17 @@
             }
         }
 
-        // Render Table and Stats depending on Dropdown Month
+        // 🔴 3. Live Percentage & Table Calculation based on Dropdown Month
         function renderTableAndStats() {
             const selectedMonthVal = document.getElementById('monthSelector').value; 
             const selectedMonthText = document.getElementById('monthSelector').options[document.getElementById('monthSelector').selectedIndex].text;
             
             document.getElementById('currentMonthText').innerText = selectedMonthText;
 
-            // Filter
+            // Database se aayi saari logs ko sirf us month ke hisaab se filter karega
             const monthlyLogs = allLogs.filter(log => log.monthVal === selectedMonthVal);
 
-            // Calculations
+            // Present, Absent aur Leave count karega
             let present = 0, absent = 0, leave = 0;
             monthlyLogs.forEach(log => {
                 if(log.status === 'Present') present++;
@@ -447,9 +449,11 @@
                 else if(log.status === 'Leave') leave++;
             });
 
+            // LIVE PERCENTAGE CALCULATION logic: (Present / Total Working Days) * 100
             const total = monthlyLogs.length;
             const percentage = total === 0 ? 0 : Math.round((present / total) * 100);
 
+            // Interface pe Live data display karega
             document.getElementById('totalDays').innerText = total;
             document.getElementById('presentDays').innerText = present;
             document.getElementById('absentDays').innerText = absent;
@@ -463,7 +467,7 @@
             if (monthlyLogs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">No attendance recorded for ${selectedMonthText} yet.</td></tr>`;
             } else {
-                // Reverse array manually to show newest dates at the top
+                // Latest dates ko table ke upar dikhane ke liye reverse kiya gaya hai
                 let displayLogs = [...monthlyLogs].reverse(); 
                 
                 displayLogs.forEach(log => {
@@ -471,7 +475,7 @@
                     if(log.status === 'Present') badgeClass = 'badge-present';
                     if(log.status === 'Absent') badgeClass = 'badge-absent';
 
-                    // Convert standard date string (YYYY-MM-DD) to nice format
+                    // String Date (YYYY-MM-DD) ko readable (15 Apr 2026) format mein change karega
                     let d = new Date(log.dateStr);
                     let niceDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
