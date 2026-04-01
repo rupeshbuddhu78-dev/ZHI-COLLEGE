@@ -174,13 +174,15 @@ const staffSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Staff = mongoose.model('Staff', staffSchema);
 
-
 // ROUTINE SCHEMA
 const routineSchema = new mongoose.Schema({
     course: { type: String, required: true }, 
-    semester: { type: String, required: true }, 
+    semester: { type: String, required: true },
+    section: { type: String, required: true }, // 🔥 Add ho gaya
     subject: { type: String, required: true },
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, 
+    teacherName: { type: String, required: true }, // 🔥 Add ho gaya
+    date: { type: String, required: true }, // 🔥 Yahan Date aa gayi
     dayOfWeek: { type: String, required: true }, 
     startTime: { type: String, required: true }, 
     endTime: { type: String, required: true },   
