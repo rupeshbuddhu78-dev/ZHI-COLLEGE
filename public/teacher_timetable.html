@@ -111,12 +111,12 @@
 
         <div class="content">
             <div class="page-header">
-                <div class="page-title">My Weekly Timetable</div>
+                <div class="page-title">Timetable : <span id="headerTeacherName" style="color: var(--primary);">Loading...</span></div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Semester Schedule</span>
+                    <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Week's Schedule</span>
                     <button style="background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;" onclick="window.print()">
                         <i class='bx bx-printer'></i> Print
                     </button>
@@ -125,7 +125,7 @@
                     <table>
                         <thead>
                             <tr id="ttHeadRow">
-                                <th>Day / Time</th>
+                                <th>Date & Day</th>
                             </tr>
                         </thead>
                         <tbody id="ttBody">
@@ -151,13 +151,32 @@
             return `${hStr}:${minutes} ${ampm}`;
         }
 
+        // Function to get current week's dates (Monday to Saturday)
+        function getCurrentWeekDates() {
+            let curr = new Date(); 
+            let day = curr.getDay() || 7; // Convert Sunday (0) to 7
+            if (day !== 1) {
+                curr.setHours(-24 * (day - 1)); // Backtrack to Monday
+            }
+            
+            let weekDates = [];
+            for (let i = 0; i < 6; i++) { // Generate Mon to Sat
+                let nextDay = new Date(curr.getTime());
+                nextDay.setDate(curr.getDate() + i);
+                weekDates.push(nextDay);
+            }
+            return weekDates;
+        }
+
         document.addEventListener("DOMContentLoaded", async () => {
             
-            // 1. Get logged in teacher's ID
+            // 1. Get logged in teacher's ID & Name
             const staffId = localStorage.getItem("staffId");
             const staffName = localStorage.getItem("staffName") || "Faculty";
 
+            // Update Name in UI
             document.getElementById("teacherNameTxt").innerText = staffName;
+            document.getElementById("headerTeacherName").innerText = staffName;
             document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
 
             if (!staffId) {
@@ -177,12 +196,11 @@
 
                 if (allRoutinesResult.success && teacherRoutinesResult.success) {
                     
-                    // 🔴 FIX 1: Strict Teacher ID Filter
-                    // Yahan check kar rahe hain ki class pakka isi teacher ki hai na
+                    // Filter: Make sure the ID strictly matches this teacher
                     const strictTeacherRoutines = teacherRoutinesResult.data.filter(r => {
                         if (!r.teacherId) return false;
                         const idFromDB = r.teacherId._id ? r.teacherId._id.toString() : r.teacherId.toString();
-                        return idFromDB === staffId; // ID exact match honi chahiye
+                        return idFromDB === staffId; 
                     });
 
                     renderTeacherRoutine(allRoutinesResult.data, strictTeacherRoutines);
@@ -195,23 +213,22 @@
             }
         });
 
-        // Dynamic Render Logic with Current Day Highlight & All Time Slots
+        // Dynamic Render Logic with Current Date & Day Mapping
         function renderTeacherRoutine(allRoutines, teacherRoutines) {
             const theadRow = document.getElementById("ttHeadRow");
             const tbody = document.getElementById("ttBody");
             
             tbody.innerHTML = ""; 
-            theadRow.innerHTML = "<th>Day / Time</th>";
+            theadRow.innerHTML = "<th>Date & Day</th>";
 
             // STEP 1: Extract all standard unique time slots from entire college data
             const timeSlotsMap = new Map();
             allRoutines.forEach(r => {
                 const key = `${r.startTime}-${r.endTime}`;
                 if(!timeSlotsMap.has(key)) {
-                    // 🔴 FIX 2: Time Sorting (1 PM to 7 PM automatically fixed for sorting)
                     let [h, m] = r.startTime.split(':').map(Number);
                     if (h >= 1 && h <= 7) {
-                        h += 12; // Dopehar ki classes ko PM maan kar +12 add kiya gaya hai
+                        h += 12; // PM adjustment for sorting
                     }
                     const sortValue = h * 60 + m;
                     timeSlotsMap.set(key, { start: r.startTime, end: r.endTime, sortValue });
@@ -228,42 +245,50 @@
                 theadRow.appendChild(th);
             });
 
-            // STEP 2: Render Rows
-            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            const today = new Date().toLocaleString('en-US', { weekday: 'long' });
+            // STEP 2: Render Rows for Current Week (Mon-Sat dynamically)
+            const currentWeekDates = getCurrentWeekDates();
+            const todayStr = new Date().toDateString();
 
-            days.forEach(day => {
+            currentWeekDates.forEach(dateObj => {
                 let tr = document.createElement("tr");
 
-                // Check if this row is the current day
-                let isToday = (day === today);
+                // Get Day Name (Monday, Tuesday...) and Date string (01 Apr, 02 Apr...)
+                let dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                let dateDisplay = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+                
+                let isToday = (dateObj.toDateString() === todayStr);
+                
                 if (isToday) {
                     tr.style.backgroundColor = "#f0fdf4"; // Halka green highlight for whole row
                 }
 
-                // Day Name Cell
+                // Date & Day Cell
                 let tdDay = document.createElement("td");
-                tdDay.style.fontWeight = "600";
-                tdDay.style.background = isToday ? "#d1fae5" : "var(--bg)"; // Thoda dark highlight
-                tdDay.innerHTML = isToday ? `${day} <br><span style="font-size:11px; color:var(--primary);">Today</span>` : day;
+                tdDay.style.background = isToday ? "#d1fae5" : "var(--bg)";
+                
+                // Set HTML: e.g., "Wednesday <br> 01 Apr"
+                if (isToday) {
+                    tdDay.innerHTML = `<b style="font-size: 14px;">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span><br><span style="font-size:11px; font-weight: bold; color:var(--primary); background: #fff; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;">Today</span>`;
+                } else {
+                    tdDay.innerHTML = `<b style="font-size: 14px;">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span>`;
+                }
                 tr.appendChild(tdDay);
 
                 // Fill class blocks per time slot
                 uniqueTimeSlots.forEach(slot => {
                     let td = document.createElement("td");
 
-                    // Check if teacher has class at this exact time and day
+                    // Check if teacher has class at this exact time and day (Match DB dayOfWeek with Current Day Name)
                     const classesAtThisTime = teacherRoutines.filter(r => 
-                        r.dayOfWeek.toLowerCase() === day.toLowerCase() && 
+                        r.dayOfWeek.toLowerCase() === dayName.toLowerCase() && 
                         r.startTime === slot.start &&
                         r.endTime === slot.end
                     );
 
                     if (classesAtThisTime.length > 0) {
                         let cellHTML = "";
-                        // If multiple classes assigned same time (rare, but handled), loop through them
                         classesAtThisTime.forEach(cls => {
-                            let sectionStr = cls.section ? cls.section : 'A'; // Fallback to A if not provided
+                            let sectionStr = cls.section ? cls.section : 'A'; 
                             cellHTML += `
                                 <div class="class-block" style="${isToday ? 'background: #fff; border-color: var(--primary);' : ''}">
                                     <b>${cls.subject}</b>
