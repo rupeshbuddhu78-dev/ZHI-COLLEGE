@@ -354,19 +354,65 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-
 // Admin & Student Core APIs
 app.post('/api/add-student', async (req, res) => {
     try {
-        const newStudent = new Student({
-            ...req.body,
-            password: req.body.studentMobile 
-        });
+        // 1. Student ki Profile banakar DB mein save karo
+        const newStudent = new Student({ ...req.body, password: req.body.studentMobile });
         const savedStudent = await newStudent.save();
-        res.status(201).json({ 
-            success: true, message: 'Student added successfully!', studentId: savedStudent._id 
+
+        // 2. Student ke Course ke hisaab se uski Fee Structure generate karo
+        let feeData = generateFeeStructure(savedStudent.course);
+        
+        // 3. Admission ke time kitna amount collect hua (e.g. 30000)
+        let collected = Number(req.body.amountCollected) || 0;
+        
+        if (collected > 0) {
+            feeData.totalPaid = collected;
+            feeData.totalDue = feeData.totalAmount - collected;
+            
+            // First Installment (Admission Fee) head me paise update karo
+            if (feeData.feeHeads.length > 0) {
+                if (collected >= feeData.feeHeads[0].due) {
+                    feeData.feeHeads[0].paid = feeData.feeHeads[0].due;
+                    feeData.feeHeads[0].due = 0;
+                    feeData.feeHeads[0].status = "Paid";
+                } else {
+                    feeData.feeHeads[0].paid = collected;
+                    feeData.feeHeads[0].due -= collected;
+                    feeData.feeHeads[0].status = "Partial";
+                }
+            }
+
+            // 4. Ek receipt (Transaction) generate karke Transaction Table me dalo
+            const newTxn = new Transaction({
+                receiptNo: "REC" + Date.now() + Math.floor(Math.random() * 100), 
+                studentId: savedStudent._id,
+                date: new Date(),
+                mode: req.body.paymentMode || "Cash",
+                amount: collected,
+                feeHeadName: "Admission Fee (Non Refundable)",
+                remarks: req.body.transactionId || "Admission Time Payment",
+                payerMobile: req.body.studentMobile || req.body.fatherMobile
+            });
+            await newTxn.save();
+        }
+
+        // 5. Final poora Fee Record 'StudentFee' collection me save kar do
+        const studentFee = new StudentFee({
+            studentId: savedStudent._id,
+            totalAmount: feeData.totalAmount,
+            totalDiscount: feeData.totalDiscount,
+            totalPaid: feeData.totalPaid,
+            totalDue: feeData.totalDue,
+            feeHeads: feeData.feeHeads
         });
+        await studentFee.save();
+
+        res.status(201).json({ success: true, message: 'Student & Fee Record added successfully!', studentId: savedStudent._id });
+        
     } catch (error) {
+        console.error(error);
         if (error.code === 11000) return res.status(400).json({ success: false, message: 'Email already exists!' });
         res.status(500).json({ success: false, message: 'Server error!' });
     }
