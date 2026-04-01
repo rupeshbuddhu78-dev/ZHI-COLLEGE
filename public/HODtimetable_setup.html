@@ -27,7 +27,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styling */
+        /* Sidebar Styling Exact Same */
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
         .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
@@ -45,7 +45,7 @@
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header */
+        /* Header Exact Same */
         header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; flex-shrink:0; }
         .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
         .header-right { display: flex; align-items: center; gap: 20px; }
@@ -169,7 +169,7 @@
                 <button onclick="fetchTeachers(true)" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight: 600; font-size: 12px;">Force Load All Faculty</button>
             </div>
             <div class="draggable-teachers" id="teacherPool">
-                <div style="color: #64748b; font-size: 13px;">Loading teachers...</div>
+                <div style="color: #64748b; font-size: 13px;"><i class='bx bx-loader-alt bx-spin'></i> Loading teachers...</div>
             </div>
         </div>
     </main>
@@ -178,7 +178,7 @@
         const API_BASE = 'https://zhi-college-rtya.onrender.com/api';
         
         let currentDayRoutines = []; 
-        let teacherList = []; 
+        let teacherList = []; // Array to store all staff members to fetch subjects
 
         const periods = [
             { s: "09:00", e: "10:00" }, { s: "10:00", e: "11:00" }, { s: "11:00", e: "12:00" },
@@ -258,7 +258,7 @@
 
             document.getElementById('displayDateText').innerHTML = `<i class='bx bx-calendar'></i> ${dayName}, ${dateObj.toLocaleDateString('en-GB')}`;
 
-            // Fetch Present Teachers first
+            // Fetch Present Teachers first (Bulletproof Logic)
             await fetchTeachers(false, dateVal);
 
             // Fetch classes
@@ -306,45 +306,53 @@
             });
         }
 
-        // --- 5. TEACHER TRAY (ONLY PRESENT TEACHERS) ---
+        // --- 5. TEACHER TRAY (ONLY PRESENT TEACHERS - BULLETPROOF LOGIC) ---
         async function fetchTeachers(forceAll = false, dateStr = "") {
             const pool = document.getElementById('teacherPool');
-            pool.innerHTML = "Loading...";
+            pool.innerHTML = "<span style='color: #64748b;'><i class='bx bx-loader-alt bx-spin'></i> Loading teachers...</span>";
             const selectedDate = dateStr || document.getElementById('ttDate').value;
 
             try {
-                let list = [];
-                
-                // Real API filtering check who is present
+                // Step 1: Fetch ALL staff from database to get their original subjects & details
+                const staffRes = await fetch(`${API_BASE}/staff`);
+                const staffData = await staffRes.json();
+                let allStaff = [];
+                if(staffData.success) {
+                    allStaff = staffData.data.filter(s => s.category === 'teacher' || (s.role && s.role.toLowerCase().includes('teacher')));
+                }
+
+                let displayList = [];
+
+                // Step 2: Fetch Attendance to check who is present
                 if(!forceAll) {
-                    // Yaha se database check karega ki kon teacher present (P) hai ya uska Punch In ho chuka hai
                     const attRes = await fetch(`${API_BASE}/teacher-attendance?dateStr=${selectedDate}`);
                     const attData = await attRes.json();
                     
                     if(attData.success && attData.data.length > 0) {
-                        // Filter for only present teachers based on 'status' or 'punchIn'
-                        list = attData.data
+                        // Extract IDs of teachers who are marked 'P', 'Present', or have a punchIn time
+                        const presentIds = attData.data
                             .filter(l => l.status === 'P' || l.status === 'Present' || l.punchIn)
-                            .map(l => l.teacherId)
-                            .filter(t => t != null); 
+                            .map(l => {
+                                // Extract string ID from object or direct string
+                                return typeof l.teacherId === 'object' && l.teacherId !== null ? l.teacherId._id.toString() : l.teacherId.toString();
+                            });
+                        
+                        // Intersect: Only keep staff members whose ID is in the presentIds array
+                        displayList = allStaff.filter(staff => presentIds.includes(staff._id.toString()));
                     }
+                } else {
+                    // Force load all teachers bypasses the attendance check
+                    displayList = allStaff;
                 }
 
-                // Agar forceAll pe click kiya ho tabhi sabko layega
-                if (forceAll) {
-                    const res = await fetch(`${API_BASE}/staff`);
-                    const data = await res.json();
-                    if(data.success) list = data.data.filter(s => s.category === 'teacher' || s.role.toLowerCase().includes('teacher'));
-                }
-
-                // Agar koi teacher present na ho
-                if(list.length === 0) {
+                // If no one is present or no attendance marked
+                if(displayList.length === 0) {
                     pool.innerHTML = "<span style='color:#ef4444; font-weight:600; font-size:13px;'>No faculty present today / Attendance not marked yet.</span>";
                     return;
                 }
 
-                // Render Present Teacher Cards (Name + Unka Original Subject)
-                pool.innerHTML = list.map(t => {
+                // Step 3: Render the Teacher Cards (Name + Real Subject from DB)
+                pool.innerHTML = displayList.map(t => {
                     const subjectName = t.skills || t.subject || t.department || t.specialization || "General";
                     return `
                     <div class="teacher-card" draggable="true" ondragstart="dragStart(event)" 
@@ -355,7 +363,8 @@
                 `}).join('');
 
             } catch(e) {
-                pool.innerHTML = "<span style='color:red;'>Error loading faculty</span>";
+                console.error("Error fetching teachers: ", e);
+                pool.innerHTML = "<span style='color:red;'>Error loading faculty. Check API connection.</span>";
             }
         }
 
@@ -385,7 +394,7 @@
 
             const tId = ev.dataTransfer.getData("tId");
             const tName = ev.dataTransfer.getData("tName");
-            const tSub = ev.dataTransfer.getData("tSub"); // Pre-defined subject
+            const tSub = ev.dataTransfer.getData("tSub"); // Sub pre-filled from card
             
             if(!tId) return;
 
@@ -395,7 +404,7 @@
             const dateVal = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
             
-            // Usi semester ka room number uthao
+            // Getting room number for that semester
             const roomNo = document.getElementById(`room_sem_${sem}`).value || "TBA";
 
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -408,7 +417,7 @@
                 return;
             }
 
-            // [PROMPT HATA DIYA GAYA HAI] - Direct database wala subject use hoga
+            // Automatically assigning original subject without asking via prompt
             let finalSub = tSub || "General";
 
             slot.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i>`;
