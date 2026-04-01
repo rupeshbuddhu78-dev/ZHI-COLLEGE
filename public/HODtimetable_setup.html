@@ -188,6 +188,7 @@
 
         // --- 1. INITIALIZATION & LIVE CLOCK ---
         window.addEventListener('DOMContentLoaded', () => {
+            // Yeh 100% Dynamic hai, aaj ka system date uthayega automatically
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -252,6 +253,7 @@
             const course = document.getElementById('ttCourse').value;
             if(!dateVal) return;
 
+            // Date & Day display (Fully Dynamic based on selected date)
             const dateObj = new Date(dateVal);
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = days[dateObj.getDay()];
@@ -292,10 +294,14 @@
                 
                 if(emptySlot) {
                     const parent = emptySlot.parentElement;
+                    // Room Number slot me display hone ka logic agar room assign kiya gaya ho
+                    let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
+                    
                     parent.innerHTML = `
                         <div class="slot filled" data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}" onclick="deleteSlot('${routine._id}')" title="Click to Delete">
                             <div class="sub">${routine.subject}</div>
                             <div class="teach">${routine.teacherName || (routine.teacherId ? routine.teacherId.name : 'Faculty')}</div>
+                            ${roomHTML}
                         </div>
                     `;
                     // Automatically fill room number box if exists
@@ -368,7 +374,7 @@
             }
         }
 
-        // --- 6. DRAG AND DROP LOGIC (PROMPT REMOVED) ---
+        // --- 6. DRAG AND DROP LOGIC (PROMPT REMOVED, TBA REMOVED) ---
         function dragStart(ev) {
             ev.dataTransfer.setData("tId", ev.target.dataset.tid);
             ev.dataTransfer.setData("tName", ev.target.dataset.tname);
@@ -404,8 +410,8 @@
             const dateVal = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
             
-            // Getting room number for that semester
-            const roomNo = document.getElementById(`room_sem_${sem}`).value || "TBA";
+            // Getting room number for that semester (TBA hata diya gaya hai)
+            const roomNo = document.getElementById(`room_sem_${sem}`).value || "";
 
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = days[new Date(dateVal).getDay()];
