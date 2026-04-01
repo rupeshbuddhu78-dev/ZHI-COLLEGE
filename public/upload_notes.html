@@ -194,7 +194,7 @@
         // Check if user is actually logged in and is a teacher
         if (!teacherId || userRole !== 'teacher') {
             alert("Unauthorized Access! Redirecting to login...");
-            window.location.href = "login.html"; // Change to your actual login page
+            window.location.href = "index.html"; // Change to your actual login page
         }
 
         const subjectsData = {
@@ -212,7 +212,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = "login.html"; // Redirect to login page
+            window.location.href = "index.html"; // Redirect to login page
         }
 
         window.onload = function() {
