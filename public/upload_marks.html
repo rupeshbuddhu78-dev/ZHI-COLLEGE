@@ -61,12 +61,13 @@
         .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; display: none; }
         .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
         
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;}
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;}
         th { padding: 15px 20px; background: var(--primary); font-size: 13px; text-transform: uppercase; color: #fff; font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 10px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
         
         .mark-input { width: 80px; padding: 8px; border: 2px solid #cbd5e1; border-radius: 6px; text-align: center; font-weight: 700; outline: none; transition: 0.2s; font-size: 15px;}
         .mark-input:focus { border-color: var(--primary); }
+        .mark-input:disabled, .mark-input[readonly] { background-color: #e2e8f0; color: #64748b; cursor: not-allowed; border-color: #cbd5e1; }
         
         .rank-badge { background: #f1f5f9; color: var(--text-light); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid #cbd5e1; }
         .rank-1 { background: #fef08a; color: #854d0e; border-color: #fde047; } 
@@ -145,6 +146,15 @@
                         <option value="MBA">MBA</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label>Select Batch</label>
+                    <select id="batchSelect" class="form-control">
+                        <option value="2023-2026">2023-2026</option>
+                        <option value="2024-2027">2024-2027</option>
+                        <option value="2025-2028">2025-2028</option>
+                    </select>
+                </div>
                 
                 <div class="form-group">
                     <label>Select Semester</label>
@@ -200,6 +210,7 @@
                                     <th style="width: 80px;">Rank</th>
                                     <th>Roll No</th>
                                     <th>Student Name</th>
+                                    <th>Attendance</th>
                                     <th>Marks Obtained</th>
                                     <th>Remarks (Optional)</th>
                                 </tr>
@@ -234,11 +245,9 @@
             
             document.getElementById('examDate').valueAsDate = new Date();
             
-            // 1. Fetch Teacher's specific subjects from API based on their ID
             fetchTeacherSubjects();
         }
 
-        // Fetch subjects assigned to this teacher from their profile/skills
         async function fetchTeacherSubjects() {
             try {
                 const subSelect = document.getElementById('subjectSelect');
@@ -262,9 +271,24 @@
             }
         }
 
-        // Fetch Actual Students List
+        // 🔴 NEW: Logic to disable marks input if absent/debarred
+        function handleAttendanceChange(selectElement) {
+            const row = selectElement.closest('tr');
+            const marksInput = row.querySelector('.mark-input');
+            
+            if (selectElement.value !== "Present") {
+                marksInput.value = 0;
+                marksInput.readOnly = true;
+            } else {
+                marksInput.readOnly = false;
+                marksInput.value = ""; // Clear so teacher can enter marks
+            }
+            calculateLiveRanks(); // Recalculate ranks since marks changed to 0
+        }
+
         async function loadStudentsList() {
             const course = document.getElementById('courseSelect').value;
+            const batch = document.getElementById('batchSelect').value; // 🔴 Fetch Batch
             const sem = document.getElementById('semSelect').value;
             const subject = document.getElementById('subjectSelect').value;
             const examName = document.getElementById('examName').value;
@@ -285,13 +309,13 @@
             btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Fetching...";
 
             try {
-                // Pehle check karte hain ki ye marks already to enter nahi hain (For Edit functionality)
-                const checkRes = await fetch(`${API_BASE_URL}/marks/check?course=${course}&semester=${sem}&subject=${subject}&examName=${examName}`);
+                // 🔴 API call me ab sessionBatch pass ho raha hai
+                const checkRes = await fetch(`${API_BASE_URL}/marks/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&examName=${examName}`);
                 const checkResult = await checkRes.json();
                 
                 let existingMarksData = null;
                 if(checkResult.exists) {
-                    if(confirm("Marks for this exam already exist! Do you want to edit them?")) {
+                    if(confirm("Marks for this exam and batch already exist! Do you want to edit them?")) {
                         existingMarksData = checkResult.data.studentsMarkList;
                     } else {
                         btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Class";
@@ -299,30 +323,33 @@
                     }
                 }
 
-                // Fetch actual students from database
-                const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&semester=${sem}`);
+                // 🔴 API call me sessionBatch pass ho raha hai for exact students
+                const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`);
                 const studentResult = await studentRes.json();
 
                 const tbody = document.getElementById('studentTableBody');
                 tbody.innerHTML = "";
 
                 if(studentResult.success && studentResult.students.length > 0) {
-                    document.getElementById('tableTitle').innerHTML = `<i class='bx bx-edit' style="color: var(--primary);"></i> Entering Marks for ${course} - Sem ${sem} (${subject})`;
+                    document.getElementById('tableTitle').innerHTML = `<i class='bx bx-edit' style="color: var(--primary);"></i> Entering Marks for ${course} (${batch}) - Sem ${sem}`;
                     
                     studentResult.students.forEach(student => {
                         let currentMark = "";
                         let currentRemark = "";
                         let currentRank = "-";
+                        let currentAttendance = "Present";
                         
-                        // If editing, fill the previous data
                         if(existingMarksData) {
                             let found = existingMarksData.find(m => m.studentId === student._id);
                             if(found) {
                                 currentMark = found.marksObtained;
                                 currentRemark = found.remarks;
                                 currentRank = `Rank ${found.rank}`;
+                                currentAttendance = found.attendanceStatus || "Present";
                             }
                         }
+
+                        let isReadOnly = currentAttendance !== "Present" ? "readonly" : "";
 
                         let tr = document.createElement('tr');
                         tr.dataset.studentid = student._id;
@@ -330,41 +357,45 @@
                             <td><span class="rank-badge rank-cell">${currentRank}</span></td>
                             <td class="roll-cell"><b>${student.roll}</b></td>
                             <td class="name-cell">${student.name}</td>
-                            <td><input type="number" class="mark-input" min="0" max="${maxMarks}" value="${currentMark}" onkeyup="calculateLiveRanks()" onchange="calculateLiveRanks()" required></td>
+                            <td>
+                                <select class="form-control attendance-select" onchange="handleAttendanceChange(this)" style="padding: 6px; width: 110px;">
+                                    <option value="Present" ${currentAttendance === 'Present' ? 'selected' : ''}>Present</option>
+                                    <option value="Absent" ${currentAttendance === 'Absent' ? 'selected' : ''}>Absent</option>
+                                    <option value="Debarred" ${currentAttendance === 'Debarred' ? 'selected' : ''}>Debarred</option>
+                                </select>
+                            </td>
+                            <td><input type="number" class="mark-input" min="0" max="${maxMarks}" value="${currentMark}" onkeyup="calculateLiveRanks()" onchange="calculateLiveRanks()" required ${isReadOnly}></td>
                             <td><input type="text" class="form-control remarks-input" value="${currentRemark}" placeholder="e.g. Good"></td>
                         `;
                         tbody.appendChild(tr);
                     });
 
                     document.getElementById('marksTableCard').style.display = 'block';
-                    if(existingMarksData) calculateLiveRanks(); // Set colors initially if editing
+                    if(existingMarksData) calculateLiveRanks(); 
 
                 } else {
-                    alert("No students found in this Class/Semester.");
+                    alert("No students found in this Course, Batch & Semester combination.");
                     document.getElementById('marksTableCard').style.display = 'none';
                 }
 
             } catch (error) {
                 alert("Server error connecting to database!");
+                console.error(error);
             } finally {
                 btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Class";
             }
         }
 
-        // Live Rank Calculation
         function calculateLiveRanks() {
             let rows = Array.from(document.querySelectorAll('#studentTableBody tr'));
             
-            // Store marks in rows dataset for sorting
             rows.forEach(row => {
                 let mark = row.querySelector('.mark-input').value;
-                row.dataset.mark = mark === "" ? -1 : parseFloat(mark); // -1 for empty
+                row.dataset.mark = mark === "" ? -1 : parseFloat(mark); 
             });
 
-            // Clone and sort descending
             let sortedRows = [...rows].filter(r => r.dataset.mark >= 0).sort((a, b) => b.dataset.mark - a.dataset.mark);
 
-            // Assign Ranks
             let currentRank = 1;
             let previousMark = null;
             let actualCount = 1;
@@ -372,7 +403,6 @@
             sortedRows.forEach(row => {
                 let mark = parseFloat(row.dataset.mark);
                 
-                // Handle ties
                 if (mark !== previousMark) {
                     currentRank = actualCount;
                 }
@@ -389,14 +419,12 @@
                 actualCount++;
             });
 
-            // Reset empty rows
             rows.filter(r => r.dataset.mark == -1).forEach(row => {
                 row.querySelector('.rank-cell').innerText = "-";
                 row.querySelector('.rank-cell').className = 'rank-badge rank-cell';
             });
         }
 
-        // Final API Submit to Database
         async function submitMarks(e) {
             e.preventDefault();
             calculateLiveRanks();
@@ -412,6 +440,7 @@
                 let studentId = row.dataset.studentid;
                 let roll = row.querySelector('.roll-cell').innerText;
                 let name = row.querySelector('.name-cell').innerText;
+                let attendance = row.querySelector('.attendance-select').value; // 🔴 NEW
                 let mark = row.querySelector('.mark-input').value;
                 let rankStr = row.querySelector('.rank-cell').innerText.replace('Rank ', '');
                 let remarks = row.querySelector('.remarks-input').value;
@@ -420,6 +449,7 @@
                     studentId: studentId,
                     rollNo: roll,
                     studentName: name,
+                    attendanceStatus: attendance, // 🔴 Push to array
                     marksObtained: Number(mark),
                     rank: Number(rankStr) || 0,
                     remarks: remarks
@@ -429,11 +459,13 @@
             const finalPayload = {
                 teacherId: staffId,
                 course: document.getElementById('courseSelect').value,
+                sessionBatch: document.getElementById('batchSelect').value, // 🔴 Include Batch
                 semester: document.getElementById('semSelect').value,
                 subject: document.getElementById('subjectSelect').value,
                 examName: document.getElementById('examName').value,
                 examDate: document.getElementById('examDate').value,
                 maxMarks: document.getElementById('maxMarks').value,
+                status: 'Published', // 🔴 As per schema
                 studentsMarkList: marksData
             };
 
@@ -447,7 +479,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert("✅ Success: " + result.message);
+                    alert("✅ Success: Marks Uploaded Successfully!");
                     document.getElementById('marksTableCard').style.display = 'none';
                     document.getElementById('examName').value = "";
                 } else {
