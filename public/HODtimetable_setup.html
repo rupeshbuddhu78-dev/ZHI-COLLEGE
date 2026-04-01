@@ -27,7 +27,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styling Exact Same */
+        /* Sidebar Styling */
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
         .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
@@ -45,7 +45,7 @@
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header Exact Same */
+        /* Header */
         header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; flex-shrink:0; }
         .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
         .header-right { display: flex; align-items: center; gap: 20px; }
@@ -165,8 +165,8 @@
 
         <div class="teacher-tray">
             <div class="tray-header">
-                <span><i class='bx bx-user-pin' style="color: var(--primary);"></i> Available Faculty (Drag & Drop to assign class)</span>
-                <button onclick="fetchTeachers(true)" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight: 600; font-size: 12px;">Load All Teachers</button>
+                <span><i class='bx bx-user-pin' style="color: var(--primary);"></i> Available Present Faculty</span>
+                <button onclick="fetchTeachers(true)" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight: 600; font-size: 12px;">Force Load All Faculty</button>
             </div>
             <div class="draggable-teachers" id="teacherPool">
                 <div style="color: #64748b; font-size: 13px;">Loading teachers...</div>
@@ -188,7 +188,6 @@
 
         // --- 1. INITIALIZATION & LIVE CLOCK ---
         window.addEventListener('DOMContentLoaded', () => {
-            // Set Today's Date automatically
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -259,7 +258,7 @@
 
             document.getElementById('displayDateText').innerHTML = `<i class='bx bx-calendar'></i> ${dayName}, ${dateObj.toLocaleDateString('en-GB')}`;
 
-            // Fetch Teachers first
+            // Fetch Present Teachers first
             await fetchTeachers(false, dateVal);
 
             // Fetch classes
@@ -307,33 +306,45 @@
             });
         }
 
-        // --- 5. TEACHER TRAY (WITH SUBJECT UNDER NAME) ---
+        // --- 5. TEACHER TRAY (ONLY PRESENT TEACHERS) ---
         async function fetchTeachers(forceAll = false, dateStr = "") {
             const pool = document.getElementById('teacherPool');
             pool.innerHTML = "Loading...";
+            const selectedDate = dateStr || document.getElementById('ttDate').value;
+
             try {
                 let list = [];
+                
+                // Real API filtering check who is present
                 if(!forceAll) {
-                    const attRes = await fetch(`${API_BASE}/teacher-attendance?dateStr=${dateStr || document.getElementById('ttDate').value}`);
+                    // Yaha se database check karega ki kon teacher present (P) hai ya uska Punch In ho chuka hai
+                    const attRes = await fetch(`${API_BASE}/teacher-attendance?dateStr=${selectedDate}`);
                     const attData = await attRes.json();
+                    
                     if(attData.success && attData.data.length > 0) {
-                        list = attData.data.filter(l => l.punchIn).map(l => l.teacherId); 
+                        // Filter for only present teachers based on 'status' or 'punchIn'
+                        list = attData.data
+                            .filter(l => l.status === 'P' || l.status === 'Present' || l.punchIn)
+                            .map(l => l.teacherId)
+                            .filter(t => t != null); 
                     }
                 }
 
-                if(list.length === 0 || forceAll) {
+                // Agar forceAll pe click kiya ho tabhi sabko layega
+                if (forceAll) {
                     const res = await fetch(`${API_BASE}/staff`);
                     const data = await res.json();
                     if(data.success) list = data.data.filter(s => s.category === 'teacher' || s.role.toLowerCase().includes('teacher'));
                 }
 
+                // Agar koi teacher present na ho
                 if(list.length === 0) {
-                    pool.innerHTML = "<span style='color:red;'>No faculty available</span>";
+                    pool.innerHTML = "<span style='color:#ef4444; font-weight:600; font-size:13px;'>No faculty present today / Attendance not marked yet.</span>";
                     return;
                 }
 
-                // Render Teacher Cards (Name + Subject)
-                pool.innerHTML = list.filter(t => t != null).map(t => {
+                // Render Present Teacher Cards (Name + Unka Original Subject)
+                pool.innerHTML = list.map(t => {
                     const subjectName = t.skills || t.subject || t.department || t.specialization || "General";
                     return `
                     <div class="teacher-card" draggable="true" ondragstart="dragStart(event)" 
@@ -348,7 +359,7 @@
             }
         }
 
-        // --- 6. DRAG AND DROP LOGIC ---
+        // --- 6. DRAG AND DROP LOGIC (PROMPT REMOVED) ---
         function dragStart(ev) {
             ev.dataTransfer.setData("tId", ev.target.dataset.tid);
             ev.dataTransfer.setData("tName", ev.target.dataset.tname);
@@ -374,7 +385,7 @@
 
             const tId = ev.dataTransfer.getData("tId");
             const tName = ev.dataTransfer.getData("tName");
-            let tSub = ev.dataTransfer.getData("tSub");
+            const tSub = ev.dataTransfer.getData("tSub"); // Pre-defined subject
             
             if(!tId) return;
 
@@ -397,9 +408,8 @@
                 return;
             }
 
-            // Subject confirmation (pre-filled with teacher's subject)
-            let finalSub = prompt(`Assigning ${tName} for Sem ${sem} at ${startTime}.\nEnter Subject Name:`, tSub);
-            if(finalSub === null || finalSub.trim() === "") return; 
+            // [PROMPT HATA DIYA GAYA HAI] - Direct database wala subject use hoga
+            let finalSub = tSub || "General";
 
             slot.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i>`;
 
