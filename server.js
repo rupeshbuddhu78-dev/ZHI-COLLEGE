@@ -249,6 +249,31 @@ attendanceSchema.index({ 'records.studentId': 1, subject: 1, fullDate: 1 });
 attendanceSchema.index({ batch: 1, course: 1, semester: 1, fullDate: 1 });
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
+// 🟢 NEW: EXAM MARKS SCHEMA 🟢
+const markSchema = new mongoose.Schema({
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
+    course: { type: String, required: true }, 
+    sessionBatch: { type: String, required: true }, 
+    semester: { type: String, required: true }, 
+    subject: { type: String, required: true },
+    examName: { type: String, required: true }, 
+    examDate: { type: Date, required: true },
+    maxMarks: { type: Number, required: true },
+    studentsMarkList: [{
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, 
+        rollNo: { type: String, required: true },
+        studentName: { type: String, required: true },
+        attendanceStatus: { type: String, enum: ['Present', 'Absent', 'Debarred'], default: 'Present' },
+        marksObtained: { type: Number, default: 0 }, 
+        rank: { type: Number, default: 0 }, 
+        remarks: { type: String, default: "" }
+    }],
+    status: { type: String, enum: ['Draft', 'Published'], default: 'Published' } 
+}, { timestamps: true }); 
+
+markSchema.index({ course: 1, sessionBatch: 1, semester: 1, subject: 1, examName: 1 }, { unique: true });
+const Mark = mongoose.model('Mark', markSchema);
+
 
 // FEE GENERATOR HELPER FUNCTION
 const generateFeeStructure = (courseName) => {
@@ -353,26 +378,18 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ==========================================
-// 🟢 NEW STUDENT REGISTRATION API 🟢 (Fixed)
-// ==========================================
 app.post('/api/add-student', async (req, res) => {
     try {
-        // 1. Student ki Profile banakar DB mein save karo
         const newStudent = new Student({ ...req.body, password: req.body.studentMobile });
         const savedStudent = await newStudent.save();
 
-        // 2. Student ke Course ke hisaab se uski Fee Structure generate karo
         let feeData = generateFeeStructure(savedStudent.course);
-        
-        // 3. Admission ke time kitna amount collect hua (e.g. 30000)
         let collected = Number(req.body.amountCollected) || 0;
         
         if (collected > 0) {
             feeData.totalPaid = collected;
             feeData.totalDue = feeData.totalAmount - collected;
             
-            // Smart Logic: Paise ko heads me properly distribute karo
             let remainingAmount = collected;
             for (let head of feeData.feeHeads) {
                 if (remainingAmount <= 0) break;
@@ -390,7 +407,6 @@ app.post('/api/add-student', async (req, res) => {
                 }
             }
 
-            // 4. Ek receipt (Transaction) generate karke Transaction Table me dalo
             const newTxn = new Transaction({
                 receiptNo: "REC" + Date.now() + Math.floor(Math.random() * 100), 
                 studentId: savedStudent._id,
@@ -404,7 +420,6 @@ app.post('/api/add-student', async (req, res) => {
             await newTxn.save();
         }
 
-        // 5. Final poora Fee Record 'StudentFee' collection me save kar do
         const studentFee = new StudentFee({
             studentId: savedStudent._id,
             totalAmount: feeData.totalAmount,
@@ -861,7 +876,6 @@ app.post('/api/teacher-attendance/punch', async (req, res) => {
         const { teacherId, teacherName, action, timeStr, dateStr, monthVal, dayName } = req.body;
 
         if (action === 'IN') {
-            // Upsert (Agar date/teacher already hai to just return, otherwise create)
             const newLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
                 { 
@@ -879,7 +893,6 @@ app.post('/api/teacher-attendance/punch', async (req, res) => {
             res.status(200).json({ success: true, message: "Punched In Successfully", data: newLog });
         } 
         else if (action === 'OUT') {
-            // Update Punch Out
             const updatedLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
                 { punchOut: timeStr, remarks: 'Shift Completed' },
@@ -917,7 +930,6 @@ app.get('/api/teacher-attendance', async (req, res) => {
         if (dateStr) filter.dateStr = dateStr;
         if (monthVal) filter.monthVal = monthVal;
 
-        // Fetching records with teacher details
         const logs = await TeacherAttendance.find(filter).populate('teacherId', 'name empId dept').sort({ dateStr: -1 });
         res.status(200).json({ success: true, data: logs });
     } catch (error) {
@@ -966,17 +978,20 @@ app.get('/api/get-teacher-skills', async (req, res) => {
     }
 });
 
-// 🟢 FIX 1: Agar batch nahi aaya (HOD panel se), toh usko ignore karo
 app.get('/api/get-students', async (req, res) => {
     try {
-        const { course, batch, semester, date, isEdit, subject } = req.query;
+        // FIXED: Added sessionBatch destructuring so that the exact batch can be loaded
+        const { course, batch, sessionBatch, semester, date, isEdit, subject } = req.query;
 
         let queryFilter = {
             course: new RegExp(`^${course}$`, 'i'),
             semester: semester
         };
-        if (batch) {
-            queryFilter.sessionBatch = batch;
+        
+        // Dono fields se kaam kar le
+        const actualBatch = sessionBatch || batch; 
+        if (actualBatch) {
+            queryFilter.sessionBatch = actualBatch;
         }
 
         const students = await Student.find(queryFilter).select('_id studentName collegeRegNo');
@@ -1017,7 +1032,6 @@ app.get('/api/get-students', async (req, res) => {
     }
 });
 
-// 🟢 NEW API: FETCH ATTENDANCE BY SUBJECT & COURSE (For HOD Panel)
 app.get('/api/attendances/subject', async (req, res) => {
     try {
         const { course, semester, subject } = req.query;
@@ -1027,7 +1041,6 @@ app.get('/api/attendances/subject', async (req, res) => {
         if (semester) filter.semester = semester;
         if (subject) filter.subject = new RegExp(`^${subject}$`, 'i');
 
-        // Ye code us subject ki saari attendance uthayega
         const records = await Attendance.find(filter);
         res.status(200).json({ success: true, data: records });
     } catch (error) {
@@ -1072,7 +1085,6 @@ app.post('/api/save-attendance', async (req, res) => {
     }
 });
 
-// GET ATTENDANCE (FOR ANDROID APP)
 app.get('/api/attendance', async (req, res) => {
     try {
         const { studentId } = req.query;
@@ -1104,6 +1116,96 @@ app.get('/api/attendance', async (req, res) => {
     }
 });
 
+// ==========================================
+// 🟢 MARKS APIs (UPLOAD & FETCH) 🟢
+// ==========================================
+
+// 1. Upload or Update Marks
+app.post('/api/marks/upload', async (req, res) => {
+    try {
+        const payload = req.body;
+        
+        // Pata lagao ki same exam aur same subject ka marks pehle se upload hai ya nahi
+        const existingExam = await Mark.findOne({
+            course: payload.course,
+            sessionBatch: payload.sessionBatch,
+            semester: payload.semester,
+            subject: payload.subject,
+            examName: new RegExp(`^${payload.examName}$`, 'i') 
+        });
+
+        if (existingExam) {
+            // Agar existing hai toh overwrite (Edit) kardo
+            const updated = await Mark.findByIdAndUpdate(existingExam._id, payload, { new: true });
+            return res.status(200).json({ success: true, message: "Marks updated successfully!", data: updated });
+        } else {
+            // Nahi toh naya upload create karo
+            const newMarks = new Mark(payload);
+            await newMarks.save();
+            return res.status(201).json({ success: true, message: "Marks & Ranks saved successfully!", data: newMarks });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Check if Marks Exist (For Edit Mode in Frontend)
+app.get('/api/marks/check', async (req, res) => {
+    try {
+        const { course, sessionBatch, semester, subject, examName } = req.query;
+        const examRecord = await Mark.findOne({
+            course: new RegExp(`^${course}$`, 'i'),
+            sessionBatch: sessionBatch, 
+            semester: semester, 
+            subject: subject, 
+            examName: new RegExp(`^${examName}$`, 'i')
+        });
+
+        if (examRecord) {
+            res.status(200).json({ success: true, exists: true, data: examRecord });
+        } else {
+            res.status(200).json({ success: true, exists: false });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Fetch Student's Marks for Android App (With Rank & Subject)
+app.get('/api/marks/student', async (req, res) => {
+    try {
+        const { studentId } = req.query;
+        if (!studentId) return res.status(400).json({ success: false, message: "Student ID is required" });
+
+        // Database me wo sabhi exams dhundho jismein is bache ka studentId ho
+        const allExams = await Mark.find({ 'studentsMarkList.studentId': studentId })
+                                   .populate('teacherId', 'name')
+                                   .sort({ examDate: -1 });
+        
+        // App ko bhejne ke liye format karo (taki app result screen me theek se dikhe)
+        const formattedMarks = allExams.map(exam => {
+            const studentRecord = exam.studentsMarkList.find(s => s.studentId.toString() === studentId.toString());
+            return {
+                _id: exam._id,
+                examName: exam.examName,
+                subject: exam.subject,
+                course: exam.course,
+                semester: exam.semester,
+                date: exam.examDate,
+                teacher: exam.teacherId ? exam.teacherId.name : "Faculty",
+                maxMarks: exam.maxMarks,
+                attendanceStatus: studentRecord.attendanceStatus,
+                marksObtained: studentRecord.marksObtained,
+                rank: studentRecord.rank,
+                remarks: studentRecord.remarks
+            };
+        });
+
+        res.status(200).json({ success: true, data: formattedMarks });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // --- 7. SEED ADMIN ---
 const seedAdmin = async () => {
