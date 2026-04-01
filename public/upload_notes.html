@@ -9,12 +9,25 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <style>
-        /* MAIN THEME COLOR CHANGED TO GREEN (#10b981) */
-        :root { --sidebar-bg: #0f172a; --primary: #10b981; --warning: #f59e0b; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; --border: #e2e8f0; --card-curve: 12px; }
+        /* MAIN THEME COLOR (GREEN for Teachers) */
+        :root { 
+            --sidebar-bg: #0f172a; 
+            --primary: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --success: #10b981; 
+            --bg: #f8fafc; 
+            --text-dark: #1e293b; 
+            --text-light: #64748b; 
+            --white: #ffffff; 
+            --border: #e2e8f0; 
+            --card-curve: 12px; 
+        }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR (Updated Nav) */
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
@@ -24,13 +37,20 @@
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         
-        /* HOVER COLOR IS NOW GREEN DUE TO --primary */
         .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { padding-left: 20px; }
 
+        /* MAIN WRAPPER & TOPBAR */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        /* Topbar User Info & Logout */
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .user-info { font-size: 14px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
+        .user-info i { font-size: 20px; color: var(--primary); }
+        .btn-logout { background: #fee2e2; color: var(--danger); border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; font-size: 13px;}
+        .btn-logout:hover { background: #fca5a5; color: #b91c1c; }
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -48,8 +68,9 @@
         .form-control:focus { border-color: var(--primary); background: #fff; }
         
         .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;}
-        .btn-submit:hover { background: #059669; } /* Darker green on hover */
-        .btn-danger { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 4px; font-size: 18px; cursor: pointer; display: inline-flex;}
+        .btn-submit:hover { background: #059669; } 
+        .btn-danger { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 4px; font-size: 18px; cursor: pointer; display: inline-flex; transition: 0.2s;}
+        .btn-danger:hover { background: #fca5a5; }
 
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
         th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
@@ -83,6 +104,16 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics</div>
+            </div>
+            
+            <div class="topbar-right">
+                <div class="user-info">
+                    <i class='bx bx-user-circle'></i>
+                    <span id="teacherNameDisplay">Loading...</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">
+                    <i class='bx bx-log-out'></i> Logout
+                </button>
             </div>
         </header>
 
@@ -153,6 +184,19 @@
     </main>
 
     <script>
+        // ==========================================
+        // AUTHENTICATION & LOCAL STORAGE LOGIC
+        // ==========================================
+        const teacherId = localStorage.getItem('userId');
+        const teacherName = localStorage.getItem('userName') || 'Teacher';
+        const userRole = localStorage.getItem('userRole');
+
+        // Check if user is actually logged in and is a teacher
+        if (!teacherId || userRole !== 'teacher') {
+            alert("Unauthorized Access! Redirecting to login...");
+            window.location.href = "login.html"; // Change to your actual login page
+        }
+
         const subjectsData = {
             "Semester 1": ["C Programming", "Mathematics-I", "English", "Computer Fundamentals"],
             "Semester 2": ["Data Structures", "Mathematics-II", "Environment Science", "Digital Electronics"],
@@ -166,7 +210,16 @@
             document.getElementById('sidebar').classList.toggle('active'); 
         }
 
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html"; // Redirect to login page
+        }
+
         window.onload = function() {
+            // Display Teacher Name
+            document.getElementById('teacherNameDisplay').innerText = teacherName;
+            
+            // Set Default Date
             document.getElementById('nDate').valueAsDate = new Date();
             fetchNotes(); 
         }
@@ -187,12 +240,7 @@
             }
         }
 
-        // ==========================================
-        // MAIN FIX: EXACT MATCH WITH SERVER ROUTES
-        // ==========================================
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/notes"; 
-        // Note: Production ke time isko change karke apni render link daal dena 
-        // example: "https://zhi-college-rtya.onrender.com/api/notes"
 
         // 1. Upload Logic
         async function handleUpload(e) {
@@ -210,9 +258,11 @@
             formData.append('subject', document.getElementById('nSubject').value);
             formData.append('title', document.getElementById('nTitle').value);
             formData.append('file', fileInput.files[0]);
+            
+            // SENDING TEACHER ID FROM LOCAL STORAGE SO BACKEND KNOWS WHO UPLOADED IT
+            formData.append('teacherId', teacherId);
 
             try {
-                // BUG FIX: Removed "/upload", now points directly to POST /api/notes
                 const response = await fetch(`${API_BASE_URL}`, {
                     method: 'POST',
                     body: formData
@@ -221,7 +271,7 @@
                 const data = await response.json();
 
                 if(response.ok) {
-                    alert("Study Material uploaded successfully on Cloudinary!");
+                    alert("Study Material uploaded successfully!");
                     document.getElementById('noteForm').reset();
                     document.getElementById('nDate').valueAsDate = new Date(); 
                     updateSubjects(); 
@@ -241,11 +291,9 @@
         // 2. Fetch Notes Logic
         async function fetchNotes() {
             try {
-                // BUG FIX: Removed "/all", now points directly to GET /api/notes
                 const response = await fetch(`${API_BASE_URL}`);
                 const resData = await response.json();
                 
-                // Humara server data "data" key ke andar bhej raha hai
                 const notes = resData.data || []; 
                 
                 const tbody = document.getElementById('notesTable');
@@ -257,7 +305,7 @@
                 }
 
                 notes.forEach(note => {
-                    const isPdf = note.fileUrl.includes('.pdf') || note.fileUrl.includes('.png'); // Since we convert to png
+                    const isPdf = note.fileUrl.includes('.pdf') || note.fileUrl.includes('.png');
                     const iconClass = isPdf ? 'bx bxs-file-pdf' : 'bx bxs-image';
 
                     const row = `
@@ -288,7 +336,6 @@
         async function deleteNote(id) {
             if(confirm("Are you sure you want to delete this note?")) {
                 try {
-                    // BUG FIX: Changed URL format from "/delete/:id" to directly point to DELETE /api/notes/:id
                     const response = await fetch(`${API_BASE_URL}/${id}`, {
                         method: 'DELETE'
                     });
