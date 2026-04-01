@@ -3,13 +3,17 @@ const mongoose = require('mongoose');
 const markSchema = new mongoose.Schema({
     teacherId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
+        ref: 'Staff', // 🟢 Fixed: 'User' ki jagah 'Staff' hoga
         required: true 
     },
     course: { 
         type: String, 
         required: true // e.g., "BCA", "BBA"
     }, 
+    sessionBatch: { 
+        type: String, 
+        required: true // 🟢 NEW: e.g., "2025-2028" (Batches alag rakhne ke liye)
+    },
     semester: { 
         type: String, 
         required: true // e.g., "Semester 1", "Semester 6"
@@ -20,7 +24,7 @@ const markSchema = new mongoose.Schema({
     },
     examName: { 
         type: String, 
-        required: true // Teacher manual type karega, e.g., "First Mid-Term"
+        required: true // e.g., "First Mid-Term"
     }, 
     examDate: { 
         type: Date, 
@@ -31,17 +35,26 @@ const markSchema = new mongoose.Schema({
         required: true 
     },
     studentsMarkList: [{
-        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Optional reference to student DB
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, // 🟢 Fixed: 'User' ki jagah 'Student'
         rollNo: { type: String, required: true },
         studentName: { type: String, required: true },
-        marksObtained: { type: Number, required: true },
-        rank: { type: Number, required: true }, // Class Rank based on marks
+        attendanceStatus: { 
+            type: String, 
+            enum: ['Present', 'Absent', 'Debarred'], 
+            default: 'Present' // 🟢 NEW: Exam me baccha absent tha ya present
+        },
+        marksObtained: { type: Number, default: 0 }, // Agar absent hai toh 0
+        rank: { type: Number, default: 0 }, 
         remarks: { type: String, default: "" }
     }],
-    createdAt: { 
-        type: Date, 
-        default: Date.now 
+    status: {
+        type: String,
+        enum: ['Draft', 'Published'],
+        default: 'Published' // 🟢 NEW: Future me agar marks hide karne ho result date tak
     }
-});
+}, { timestamps: true }); // 🟢 NEW: Ye automatically createdAt aur updatedAt handle karega
+
+// 🟢 NEW: Prevent duplicate uploads for the same class and exam
+markSchema.index({ course: 1, sessionBatch: 1, semester: 1, subject: 1, examName: 1 }, { unique: true });
 
 module.exports = mongoose.model('Mark', markSchema);
