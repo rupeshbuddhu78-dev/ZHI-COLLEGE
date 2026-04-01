@@ -9,7 +9,21 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <style>
-        :root { --sidebar-bg: #0f172a; --primary: #3b82f6; --warning: #f59e0b; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; --border: #e2e8f0; --card-curve: 12px; }
+        /* GREEN THEME APPLIED */
+        :root { 
+            --sidebar-bg: #0f172a; 
+            --primary: #10b981;  /* Changed to Green */
+            --primary-dark: #059669; /* Darker Green for hover */
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --success: #10b981; 
+            --bg: #f8fafc; 
+            --text-dark: #1e293b; 
+            --text-light: #64748b; 
+            --white: #ffffff; 
+            --border: #e2e8f0; 
+            --card-curve: 12px; 
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
@@ -23,6 +37,8 @@
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { padding-left: 20px; }
+        .logout-btn a { color: var(--danger) !important; }
+        .logout-btn a:hover { border-left-color: var(--danger) !important; background: rgba(239, 68, 68, 0.1) !important; }
 
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
@@ -33,8 +49,8 @@
 
         /* PROFILE HEADER CARD */
         .profile-header-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); padding: 30px; display: flex; align-items: center; gap: 25px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-        .profile-img-wrap { position: relative; width: 100px; height: 100px; }
-        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #eff6ff; }
+        .profile-img-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0;}
+        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #d1fae5; }
         .profile-info h2 { font-size: 24px; color: var(--text-dark); margin-bottom: 5px;}
         .profile-info p { font-size: 14px; color: var(--text-light); display: flex; align-items: center; gap: 6px; margin-bottom: 10px;}
         .profile-badge { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block;}
@@ -57,13 +73,22 @@
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
         .form-control:focus { border-color: var(--primary); background: #fff; }
         .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; display: flex; justify-content: center; gap: 8px;}
-        .btn-submit:hover { background: #2563eb; }
+        .btn-submit:hover { background: var(--primary-dark); }
 
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } .profile-header-card { flex-direction: column; text-align: center; } .profile-info p { justify-content: center; } }
     </style>
 </head>
 <body>
+    
+    <script>
+        const staffId = localStorage.getItem("staffId");
+        if (!staffId) {
+            alert("Security Alert: Please login first!");
+            window.location.href = "login.html"; 
+        }
+    </script>
+
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-img"><i class='bx bx-book-reader'></i></div>
@@ -84,6 +109,10 @@
             
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
             <li class="active"><a href="teacher_profile.html"><i class='bx bx-user'></i> My Profile</a></li>
+
+            <li class="logout-btn" style="margin-top: 20px;">
+                <a href="#" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout Securely</a>
+            </li>
         </ul>
     </aside>
 
@@ -100,12 +129,12 @@
 
             <div class="profile-header-card">
                 <div class="profile-img-wrap">
-                    <img src="https://ui-avatars.com/api/?name=Rakesh+Kumar&background=3b82f6&color=fff&size=150" class="profile-img" alt="Profile">
+                    <img id="profileImage" src="https://ui-avatars.com/api/?name=User&background=10b981&color=fff&size=150" class="profile-img" alt="Profile">
                 </div>
                 <div class="profile-info">
-                    <h2>Dr. Rakesh Kumar</h2>
-                    <p><i class='bx bx-briefcase'></i> Faculty - Dept of Computer Application (BCA)</p>
-                    <span class="profile-badge">Employee ID: ZHI-EMP-045</span>
+                    <h2 id="profileName">Loading Data...</h2>
+                    <p><i class='bx bx-briefcase'></i> Faculty - <span id="profileRole">Loading...</span></p>
+                    <span class="profile-badge">Employee ID: <span id="profileEmpId">...</span></span>
                 </div>
             </div>
 
@@ -115,19 +144,19 @@
                     <div class="card-body">
                         <div class="info-row">
                             <label>Full Name</label>
-                            <span>Dr. Rakesh Kumar Singh</span>
+                            <span id="detailName">Loading...</span>
                         </div>
                         <div class="info-row">
                             <label>Email Address</label>
-                            <span>rakesh.kumar@zhi.edu.in</span>
+                            <span id="detailEmail">Loading...</span>
                         </div>
                         <div class="info-row">
                             <label>Mobile Number</label>
-                            <span>+91 9876543210</span>
+                            <span id="detailMobile">Loading...</span>
                         </div>
                         <div class="info-row">
                             <label>Highest Qualification</label>
-                            <span>Ph.D in Computer Science, MCA</span>
+                            <span id="detailQual">Loading...</span>
                         </div>
                     </div>
                 </div>
@@ -138,15 +167,15 @@
                         <div class="card-body">
                             <div class="info-row">
                                 <label>Bank Name</label>
-                                <span>State Bank of India</span>
+                                <span id="detailBank">Loading...</span>
                             </div>
                             <div class="info-row">
                                 <label>Account Number</label>
-                                <span>**********3491</span>
+                                <span id="detailAcc">Loading...</span>
                             </div>
                             <div class="info-row">
                                 <label>IFSC Code</label>
-                                <span>SBIN0001234</span>
+                                <span id="detailIfsc">Loading...</span>
                             </div>
                             <p style="font-size: 11px; color: var(--danger); font-weight: 500; margin-top: 5px;">* To update bank details, please contact HR/Accountant.</p>
                         </div>
@@ -157,13 +186,13 @@
                         <form class="card-body" onsubmit="changePassword(event)">
                             <div class="form-group">
                                 <label>Current Password</label>
-                                <input type="password" class="form-control" placeholder="••••••••" required>
+                                <input type="password" id="currentPass" class="form-control" placeholder="••••••••" required>
                             </div>
                             <div class="form-group">
                                 <label>New Password</label>
-                                <input type="password" class="form-control" placeholder="Create a strong password" required>
+                                <input type="password" id="newPass" class="form-control" placeholder="Create a strong password" required>
                             </div>
-                            <button type="submit" class="btn-submit"><i class='bx bx-shield-quarter'></i> Update Password</button>
+                            <button type="submit" class="btn-submit" id="updateBtn"><i class='bx bx-shield-quarter'></i> Update Password</button>
                         </form>
                     </div>
                 </div>
@@ -172,13 +201,117 @@
     </main>
 
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        
-        function changePassword(e) {
-            e.preventDefault();
-            alert("Security Alert: Your password has been updated successfully.");
-            e.target.reset();
+        const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+                             ? 'http://localhost:5000' 
+                             : 'https://zhi-college-rtya.onrender.com';
+
+        let currentTeacherData = null; // Store fetched data here
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
         }
+
+        // 1. Fetch Real Teacher Profile Details
+        async function fetchTeacherProfile() {
+            try {
+                // Hum staff API se fetch karke apna teacher dhundenge
+                const response = await fetch(`${API_BASE_URL}/api/staff`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const teacher = result.data.find(t => t._id === staffId);
+                    
+                    if (teacher) {
+                        currentTeacherData = teacher; // Data save kar liya aage ke liye (password check)
+                        
+                        // DOM update kar rahe hain real data se
+                        document.getElementById('profileName').textContent = teacher.name;
+                        document.getElementById('profileRole').textContent = teacher.dept || 'N/A';
+                        document.getElementById('profileEmpId').textContent = teacher.empId;
+                        
+                        document.getElementById('detailName').textContent = teacher.name;
+                        document.getElementById('detailEmail').textContent = teacher.email || 'N/A';
+                        document.getElementById('detailMobile').textContent = teacher.mobile;
+                        document.getElementById('detailQual').textContent = teacher.qualification || 'N/A';
+
+                        document.getElementById('detailBank').textContent = teacher.bankName || 'Not Updated';
+                        document.getElementById('detailAcc').textContent = teacher.accNumber || 'Not Updated';
+                        document.getElementById('detailIfsc').textContent = teacher.ifsc || 'Not Updated';
+
+                        // Agar profile pic hai DB me to lagao, warna name ke initials ka avatar banao
+                        if(teacher.profilePicUrl && teacher.profilePicUrl !== "") {
+                            document.getElementById('profileImage').src = teacher.profilePicUrl;
+                        } else {
+                            document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=10b981&color=fff&size=150`;
+                        }
+                    } else {
+                        alert("Profile data not found! Logging out...");
+                        logoutTeacher();
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            }
+        }
+
+        // 2. LIVE Password Change Logic
+        async function changePassword(e) {
+            e.preventDefault();
+            
+            const currentPassInput = document.getElementById('currentPass').value;
+            const newPassInput = document.getElementById('newPass').value;
+            const updateBtn = document.getElementById('updateBtn');
+
+            // Old password verification
+            if (currentPassInput !== currentTeacherData.password) {
+                alert("❌ Your current password is incorrect!");
+                return;
+            }
+
+            if(newPassInput.length < 5) {
+                alert("Password must be at least 5 characters long!");
+                return;
+            }
+
+            try {
+                updateBtn.innerHTML = "Updating...";
+                updateBtn.disabled = true;
+
+                // Backend API hit kar rahe hain password update ke liye
+                const res = await fetch(`${API_BASE_URL}/api/staff/${staffId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: newPassInput })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert("✅ Security Alert: Your password has been updated successfully.");
+                    currentTeacherData.password = newPassInput; // Local data update
+                    e.target.reset(); // Form clear
+                } else {
+                    alert("❌ Failed to update password!");
+                }
+            } catch (error) {
+                alert("Server error occurred!");
+            } finally {
+                updateBtn.innerHTML = "<i class='bx bx-shield-quarter'></i> Update Password";
+                updateBtn.disabled = false;
+            }
+        }
+
+        // 3. SECURE LOGOUT Logic
+        function logoutTeacher() {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.clear(); // Saara stored data delete
+                window.location.href = "index.html"; // Wapas login screen par
+            }
+        }
+
+        // Jab page load ho, data mangwao
+        window.onload = fetchTeacherProfile;
+
     </script>
 </body>
 </html>
