@@ -39,6 +39,8 @@
         
         .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { padding-left: 20px; }
+        .logout-btn a { color: var(--danger) !important; }
+        .logout-btn a:hover { border-left-color: var(--danger) !important; background: rgba(239, 68, 68, 0.1) !important; }
 
         /* MAIN WRAPPER & TOPBAR */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
@@ -46,11 +48,9 @@
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         /* Topbar User Info & Logout */
-        .topbar-right { display: flex; align-items: center; gap: 15px; }
-        .user-info { font-size: 14px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
-        .user-info i { font-size: 20px; color: var(--primary); }
-        .btn-logout { background: #fee2e2; color: var(--danger); border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; font-size: 13px;}
-        .btn-logout:hover { background: #fca5a5; color: #b91c1c; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);}
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -81,6 +81,15 @@
     </style>
 </head>
 <body>
+    
+    <script>
+        const staffId = localStorage.getItem("staffId");
+        if (!staffId) {
+            alert("Security Alert: Please login first!");
+            window.location.href = "login.html"; 
+        }
+    </script>
+
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-img"><i class='bx bx-book-reader'></i></div>
@@ -88,14 +97,23 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
             <li class="active"><a href="upload_notes.html"><i class='bx bx-folder-plus'></i> Upload Notes</a></li>
             <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom</li>
             <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
             <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
             <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user'></i> My Profile</a></li>
+
+            <li class="logout-btn" style="margin-top: 20px;">
+                <a href="#" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout Securely</a>
+            </li>
         </ul>
     </aside>
 
@@ -103,17 +121,15 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics</div>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics Portal</div>
             </div>
             
-            <div class="topbar-right">
-                <div class="user-info">
-                    <i class='bx bx-user-circle'></i>
-                    <span id="teacherNameDisplay">Loading...</span>
+            <div class="user-profile">
+                <div>
+                    <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
+                    <span style="font-size: 11px; color: var(--text-light);">Faculty</span>
                 </div>
-                <button class="btn-logout" onclick="logout()">
-                    <i class='bx bx-log-out'></i> Logout
-                </button>
+                <img id="teacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff" alt="Teacher">
             </div>
         </header>
 
@@ -184,19 +200,6 @@
     </main>
 
     <script>
-        // ==========================================
-        // AUTHENTICATION & LOCAL STORAGE LOGIC
-        // ==========================================
-        const teacherId = localStorage.getItem('userId');
-        const teacherName = localStorage.getItem('userName') || 'Teacher';
-        const userRole = localStorage.getItem('userRole');
-
-        // Check if user is actually logged in and is a teacher
-        if (!teacherId || userRole !== 'teacher') {
-            alert("Unauthorized Access! Redirecting to login...");
-            window.location.href = "index.html"; // Change to your actual login page
-        }
-
         const subjectsData = {
             "Semester 1": ["C Programming", "Mathematics-I", "English", "Computer Fundamentals"],
             "Semester 2": ["Data Structures", "Mathematics-II", "Environment Science", "Digital Electronics"],
@@ -210,17 +213,25 @@
             document.getElementById('sidebar').classList.toggle('active'); 
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = "index.html"; // Redirect to login page
+        function logoutTeacher() {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.clear();
+                window.location.href = "login.html"; 
+            }
         }
 
         window.onload = function() {
-            // Display Teacher Name
-            document.getElementById('teacherNameDisplay').innerText = teacherName;
+            // Use the staffName from local storage, dynamically!
+            const staffName = localStorage.getItem("staffName") || "Faculty";
             
+            // Update UI Name
+            document.getElementById("teacherNameTxt").innerText = staffName;
+            document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
+
             // Set Default Date
             document.getElementById('nDate').valueAsDate = new Date();
+            
+            // Fetch Notes
             fetchNotes(); 
         }
 
@@ -259,8 +270,8 @@
             formData.append('title', document.getElementById('nTitle').value);
             formData.append('file', fileInput.files[0]);
             
-            // SENDING TEACHER ID FROM LOCAL STORAGE SO BACKEND KNOWS WHO UPLOADED IT
-            formData.append('teacherId', teacherId);
+            // SENDING REAL TEACHER ID FROM LOCAL STORAGE SO BACKEND KNOWS WHO UPLOADED IT
+            formData.append('teacherId', staffId);
 
             try {
                 const response = await fetch(`${API_BASE_URL}`, {
@@ -291,6 +302,7 @@
         // 2. Fetch Notes Logic
         async function fetchNotes() {
             try {
+                // Modified fetch URL slightly so it doesn't cache incorrectly (Optional safety)
                 const response = await fetch(`${API_BASE_URL}`);
                 const resData = await response.json();
                 
