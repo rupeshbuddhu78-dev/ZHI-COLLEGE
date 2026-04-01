@@ -178,11 +178,11 @@ const Staff = mongoose.model('Staff', staffSchema);
 const routineSchema = new mongoose.Schema({
     course: { type: String, required: true }, 
     semester: { type: String, required: true },
-    section: { type: String, required: true }, // 🔥 Add ho gaya
+    section: { type: String, required: true }, 
     subject: { type: String, required: true },
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, 
-    teacherName: { type: String, required: true }, // 🔥 Add ho gaya
-    date: { type: String, required: true }, // 🔥 Yahan Date aa gayi
+    teacherName: { type: String, required: true }, 
+    date: { type: String, required: true }, 
     dayOfWeek: { type: String, required: true }, 
     startTime: { type: String, required: true }, 
     endTime: { type: String, required: true },   
@@ -202,20 +202,19 @@ const noteSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', noteSchema);
 
 
-// 🟢 NEW: TEACHER ATTENDANCE SCHEMA 🟢
+// 🟢 TEACHER ATTENDANCE SCHEMA 🟢
 const teacherAttendanceSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
     teacherName: { type: String, required: true },
-    dateStr: { type: String, required: true }, // "YYYY-MM-DD"
-    monthVal: { type: String, required: true }, // "YYYY-MM"
-    dayName: { type: String }, // "Monday"
-    punchIn: { type: String, default: "" }, // "09:00 AM"
-    punchOut: { type: String, default: "" }, // "04:00 PM"
+    dateStr: { type: String, required: true }, 
+    monthVal: { type: String, required: true }, 
+    dayName: { type: String }, 
+    punchIn: { type: String, default: "" }, 
+    punchOut: { type: String, default: "" }, 
     status: { type: String, default: "Present", enum: ["Present", "Absent", "Leave", "Half Day"] },
     remarks: { type: String, default: "On Time" }
 }, { timestamps: true });
 
-// Prevent duplicate punch records for same day
 teacherAttendanceSchema.index({ teacherId: 1, dateStr: 1 }, { unique: true });
 const TeacherAttendance = mongoose.model('TeacherAttendance', teacherAttendanceSchema);
 
@@ -354,7 +353,9 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Admin & Student Core APIs
+// ==========================================
+// 🟢 NEW STUDENT REGISTRATION API 🟢 (Fixed)
+// ==========================================
 app.post('/api/add-student', async (req, res) => {
     try {
         // 1. Student ki Profile banakar DB mein save karo
@@ -371,16 +372,21 @@ app.post('/api/add-student', async (req, res) => {
             feeData.totalPaid = collected;
             feeData.totalDue = feeData.totalAmount - collected;
             
-            // First Installment (Admission Fee) head me paise update karo
-            if (feeData.feeHeads.length > 0) {
-                if (collected >= feeData.feeHeads[0].due) {
-                    feeData.feeHeads[0].paid = feeData.feeHeads[0].due;
-                    feeData.feeHeads[0].due = 0;
-                    feeData.feeHeads[0].status = "Paid";
+            // Smart Logic: Paise ko heads me properly distribute karo
+            let remainingAmount = collected;
+            for (let head of feeData.feeHeads) {
+                if (remainingAmount <= 0) break;
+                
+                if (remainingAmount >= head.due) {
+                    remainingAmount -= head.due;
+                    head.paid = head.due;
+                    head.due = 0;
+                    head.status = "Paid";
                 } else {
-                    feeData.feeHeads[0].paid = collected;
-                    feeData.feeHeads[0].due -= collected;
-                    feeData.feeHeads[0].status = "Partial";
+                    head.paid = remainingAmount;
+                    head.due -= remainingAmount;
+                    head.status = "Partial";
+                    remainingAmount = 0;
                 }
             }
 
@@ -391,7 +397,7 @@ app.post('/api/add-student', async (req, res) => {
                 date: new Date(),
                 mode: req.body.paymentMode || "Cash",
                 amount: collected,
-                feeHeadName: "Admission Fee (Non Refundable)",
+                feeHeadName: "Admission Fee (Auto Distributed)",
                 remarks: req.body.transactionId || "Admission Time Payment",
                 payerMobile: req.body.studentMobile || req.body.fatherMobile
             });
