@@ -38,6 +38,8 @@
         
         .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        .logout-btn a { color: var(--danger) !important; }
+        .logout-btn a:hover { border-left-color: var(--danger) !important; background: rgba(239, 68, 68, 0.1) !important; }
 
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
@@ -69,6 +71,15 @@
     </style>
 </head>
 <body>
+
+    <script>
+        const staffId = localStorage.getItem("staffId");
+        if (!staffId) {
+            alert("Security Alert: Please login first!");
+            window.location.href = "login.html"; 
+        }
+    </script>
+
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-img"><i class='bx bx-book-reader'></i></div>
@@ -78,19 +89,22 @@
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classes & Academics</li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
             <li class="active"><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
-            <li><a href="teacher_subjects.html"><i class='bx bx-book-bookmark'></i> My Subjects</a></li>
+            <li><a href="upload_notes.html"><i class='bx bx-folder-plus'></i> Upload Notes</a></li>
+            <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom Duties</li>
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom</li>
             <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
             <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
-            <li><a href="upload_notes.html"><i class='bx bx-upload'></i> Upload Notes</a></li>
-            <li><a href="assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
             
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
-            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
-            <li><a href="my_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user'></i> My Profile</a></li>
+
+            <li class="logout-btn" style="margin-top: 20px;">
+                <a href="#" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout Securely</a>
+            </li>
         </ul>
     </aside>
 
@@ -137,8 +151,15 @@
         </div>
     </main>
 
- <script>
+    <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        function logoutTeacher() {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.clear();
+                window.location.href = "login.html"; 
+            }
+        }
 
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
@@ -171,7 +192,6 @@
         document.addEventListener("DOMContentLoaded", async () => {
             
             // 1. Get logged in teacher's ID & Name
-            const staffId = localStorage.getItem("staffId");
             const staffName = localStorage.getItem("staffName") || "Faculty";
 
             // Update Name in UI
@@ -180,7 +200,6 @@
             document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
 
             if (!staffId) {
-                alert("Authentication missing! Please login again.");
                 document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 20px;">Please login to view timetable.</td></tr>`;
                 return;
             }
