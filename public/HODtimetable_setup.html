@@ -68,7 +68,10 @@
         .sem-container { background: var(--white); border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
         .sem-header { background: #f8fafc; padding: 10px 15px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main);}
         
-        .room-input { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 12px; width: 100px; font-weight: 600; color: var(--danger);}
+        /* Room Input Styling (New Auto-Save effects) */
+        .room-input { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 12px; width: 100px; font-weight: 600; color: var(--danger); transition: 0.3s;}
+        .room-input.saving { border-color: var(--warning); background-color: #fffbeb; }
+        .room-input.saved { border-color: var(--success); background-color: #ecfdf5; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { padding: 10px; background: white; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); text-align: center;}
@@ -184,6 +187,9 @@
         let currentDayRoutines = []; 
         let teacherList = []; // Array to store all staff members to fetch subjects
 
+        // Debounce timer for Auto-Save Room Number
+        let roomSaveTimeout;
+
         const periods = [
             { s: "09:00", e: "10:00" }, { s: "10:00", e: "11:00" }, { s: "11:00", e: "12:00" },
             { break: true },
@@ -207,7 +213,7 @@
             document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN', { hour12: true }); 
         }, 1000);
 
-        // --- 2. BUILD 6 GRIDS (With Room Number Input) ---
+        // --- 2. BUILD 6 GRIDS (With Room Number Input Auto-Save Trigger) ---
         function buildEmptyGrids() {
             const container = document.getElementById('allSemestersContainer');
             container.innerHTML = '';
@@ -219,7 +225,7 @@
                         <span><i class='bx bxs-graduation'></i> Semester ${sem}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <label style="font-size:11px; color:var(--text-light);">ROOM NO:</label>
-                            <input type="text" class="room-input" id="room_sem_${sem}" placeholder="e.g. 101">
+                            <input type="text" class="room-input" id="room_sem_${sem}" placeholder="e.g. 101" onkeyup="handleRoomInput(${sem}, this.value)">
                         </div>
                     </div>
                     <table>
@@ -301,7 +307,6 @@
                     // Room Number slot me display hone ka logic agar room assign kiya gaya ho
                     let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
                     
-                    // ONCLICK HATA DIYA BOX SE, CROSS BUTTON ADD KIYA
                     parent.innerHTML = `
                         <div class="slot filled" data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}">
                             <i class='bx bx-x delete-btn' onclick="deleteSlot('${routine._id}', event)" title="Remove Class"></i>
@@ -316,6 +321,61 @@
                     }
                 }
             });
+        }
+
+        // --- 4.5. AUTO-SAVE ROOM NUMBER LOGIC ---
+        function handleRoomInput(sem, value) {
+            const inputField = document.getElementById(`room_sem_${sem}`);
+            inputField.classList.add('saving'); // Yellow effect on typing
+            inputField.classList.remove('saved');
+
+            // Clear the previous timeout
+            clearTimeout(roomSaveTimeout);
+
+            // Wait 1.5 seconds after typing stops before saving
+            roomSaveTimeout = setTimeout(() => {
+                saveRoomToDatabase(sem, value, inputField);
+            }, 1500); 
+        }
+
+        async function saveRoomToDatabase(sem, newRoomNo, inputField) {
+            const dateVal = document.getElementById('ttDate').value;
+            const course = document.getElementById('ttCourse').value;
+
+            // Find all classes assigned in this specific semester, date and course
+            const routinesToUpdate = currentDayRoutines.filter(r => r.semester == sem && r.course === course);
+
+            if(routinesToUpdate.length === 0) {
+                // If no class assigned yet, just visually show it's saved locally
+                inputField.classList.remove('saving');
+                inputField.classList.add('saved');
+                setTimeout(() => inputField.classList.remove('saved'), 1000);
+                return;
+            }
+
+            try {
+                // Update all matching routines one by one via API
+                for (let r of routinesToUpdate) {
+                    await fetch(`${API_BASE}/routines/${r._id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomNumber: newRoomNo })
+                    });
+                }
+                
+                // Visual effect: green for success
+                inputField.classList.remove('saving');
+                inputField.classList.add('saved');
+                setTimeout(() => inputField.classList.remove('saved'), 1000);
+                
+                // Refresh grid to reflect new room numbers inside the boxes
+                loadFullDayData();
+
+            } catch (e) {
+                console.error("Failed to update room numbers", e);
+                inputField.classList.remove('saving');
+                alert("Network error: Failed to auto-save room number!");
+            }
         }
 
         // --- 5. TEACHER TRAY (ONLY PRESENT TEACHERS - BULLETPROOF LOGIC) ---
@@ -341,19 +401,15 @@
                     const attData = await attRes.json();
                     
                     if(attData.success && attData.data.length > 0) {
-                        // Extract IDs of teachers who are marked 'P', 'Present', or have a punchIn time
                         const presentIds = attData.data
                             .filter(l => l.status === 'P' || l.status === 'Present' || l.punchIn)
                             .map(l => {
-                                // Extract string ID from object or direct string
                                 return typeof l.teacherId === 'object' && l.teacherId !== null ? l.teacherId._id.toString() : l.teacherId.toString();
                             });
                         
-                        // Intersect: Only keep staff members whose ID is in the presentIds array
                         displayList = allStaff.filter(staff => presentIds.includes(staff._id.toString()));
                     }
                 } else {
-                    // Force load all teachers bypasses the attendance check
                     displayList = allStaff;
                 }
 
@@ -416,7 +472,7 @@
             const dateVal = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
             
-            // Getting room number for that semester (TBA hata diya gaya hai)
+            // Getting room number for that semester
             const roomNo = document.getElementById(`room_sem_${sem}`).value || "";
 
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -429,9 +485,7 @@
                 return;
             }
 
-            // Automatically assigning original subject without asking via prompt
             let finalSub = tSub || "General";
-
             slot.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i>`;
 
             const payload = {
