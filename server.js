@@ -472,7 +472,7 @@ app.post('/api/forgot-password', async (req, res) => {
             from: 'rupesh.c.0828@zhi.org.in',
             to: user.email,
             subject: 'ZHI App - OTP',
-            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid hai.`
+            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid valid hai.`
         });
 
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
@@ -966,15 +966,20 @@ app.get('/api/get-teacher-skills', async (req, res) => {
     }
 });
 
+// 🟢 FIX 1: Agar batch nahi aaya (HOD panel se), toh usko ignore karo
 app.get('/api/get-students', async (req, res) => {
     try {
         const { course, batch, semester, date, isEdit, subject } = req.query;
 
-        const students = await Student.find({
+        let queryFilter = {
             course: new RegExp(`^${course}$`, 'i'),
-            sessionBatch: batch,
             semester: semester
-        }).select('_id studentName collegeRegNo');
+        };
+        if (batch) {
+            queryFilter.sessionBatch = batch;
+        }
+
+        const students = await Student.find(queryFilter).select('_id studentName collegeRegNo');
 
         if (!students || students.length === 0) {
             return res.status(200).json({ success: true, students: [] });
@@ -1007,6 +1012,24 @@ app.get('/api/get-students', async (req, res) => {
         }
 
         res.status(200).json({ success: true, students: studentsData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 🟢 NEW API: FETCH ATTENDANCE BY SUBJECT & COURSE (For HOD Panel)
+app.get('/api/attendances/subject', async (req, res) => {
+    try {
+        const { course, semester, subject } = req.query;
+        
+        let filter = {};
+        if (course) filter.course = new RegExp(`^${course}$`, 'i');
+        if (semester) filter.semester = semester;
+        if (subject) filter.subject = new RegExp(`^${subject}$`, 'i');
+
+        // Ye code us subject ki saari attendance uthayega
+        const records = await Attendance.find(filter);
+        res.status(200).json({ success: true, data: records });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
