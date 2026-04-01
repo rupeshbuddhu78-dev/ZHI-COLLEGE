@@ -85,11 +85,15 @@
         /* --- MODALS (VIEW & EDIT) --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
         .modal-box { background: white; width: 100%; max-width: 800px; border-radius: 12px; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px 12px 0 0; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px 12px 0 0; flex-shrink: 0;}
         .modal-header h3 { font-size: 18px; color: var(--text-dark); }
         .modal-close { background: none; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; }
-        .modal-body { padding: 25px; overflow-y: auto; }
-        .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-radius: 0 0 12px 12px;}
+        
+        /* 🟢 FIX SCROLL: Modal Body & Form styles updated */
+        .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+        #editForm { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        
+        .modal-footer { padding: 15px 25px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; border-radius: 0 0 12px 12px; flex-shrink: 0;}
 
         /* Form Grid in Edit Modal */
         .form-section-title { font-size: 14px; color: var(--primary); font-weight: 600; margin-bottom: 15px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
@@ -120,9 +124,9 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
+            <li><a href="director_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
             <li class="active"><a href="#"><i class='bx bx-group'></i> Student Directory</a></li>
-            <li><a href="#"><i class='bx bx-briefcase-alt-2'></i> Staff Directory</a></li>
+            <li><a href="staff_directory.html"><i class='bx bx-briefcase-alt-2'></i> Staff Directory</a></li>
             <li><a href="#"><i class='bx bx-file'></i> Applications</a></li>
             <li><a href="#"><i class='bx bx-id-card'></i> ID Cards</a></li>
             <li><a href="#"><i class='bx bx-rupee'></i> Fees Portal</a></li>
@@ -181,6 +185,7 @@
                         <option value="BCA">BCA</option>
                         <option value="BBA">BBA</option>
                         <option value="MCA">MCA</option>
+                        <option value="MBA">MBA</option>
                     </select>
                     <select id="semFilter" onchange="filterStudents()">
                         <option value="All">All Semesters</option>
@@ -277,7 +282,7 @@
                         <div class="form-group"><label>College Reg No.</label><input type="text" id="e_reg" readonly style="background:#f1f5f9;"></div>
                         <div class="form-group"><label>Session / Batch</label><input type="text" id="e_batch"></div>
                         <div class="form-group"><label>Course</label>
-                            <select id="e_course"><option value="BCA">BCA</option><option value="BBA">BBA</option><option value="MCA">MCA</option></select>
+                            <select id="e_course"><option value="BCA">BCA</option><option value="BBA">BBA</option><option value="MCA">MCA</option><option value="MBA">MBA</option></select>
                         </div>
                         <div class="form-group"><label>Semester</label>
                             <select id="e_sem">
@@ -314,7 +319,7 @@
 
         window.onload = () => { fetchStudents(); };
 
-        // Auto calculate due fee in edit form
+        // Auto calculate due fee
         document.getElementById('e_total_fee').addEventListener('input', calculateDue);
         document.getElementById('e_paid_fee').addEventListener('input', calculateDue);
         function calculateDue() {
@@ -325,23 +330,21 @@
 
         async function fetchStudents() {
             try {
-                // Ye apka backend API URL hai (agar directly localhost pe hai toh path de do)
                 const response = await fetch('/api/students'); 
                 const result = await response.json();
                 
                 if(result.success) {
-                    // Agar backend se fees, DOB wagarah nahi aa rahi, toh mai default values map kar raha hu takki UI na tute
                     allStudents = result.data.map(std => ({
                         ...std,
-                        status: std.status || 'Active', // Active, Passout, Dropped
-                        dob: std.dob || '2002-05-15',
+                        status: std.status || 'Active',
+                        dob: std.dob || 'N/A',
                         gender: std.gender || 'Male',
                         fatherName: std.fatherName || 'N/A',
                         parentMobile: std.parentMobile || 'N/A',
-                        address: std.address || 'Patna, Bihar',
+                        address: std.address || 'N/A',
                         totalFee: std.totalFee || 120000,
-                        paidFee: std.paidFee || 45000,
-                        dueFee: (std.totalFee || 120000) - (std.paidFee || 45000)
+                        paidFee: std.paidFee || 0,
+                        dueFee: (std.totalFee || 120000) - (std.paidFee || 0)
                     }));
                     
                     updateStats();
@@ -349,7 +352,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                document.getElementById('studentTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to fetch API data. Is your server running?</td></tr>';
+                document.getElementById('studentTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to fetch API data.</td></tr>';
             }
         }
 
@@ -370,14 +373,14 @@
 
             data.forEach(std => {
                 let imgUrl = std.profilePicUrl || 'https://via.placeholder.com/40?text=S';
-                
-                // Status Badge Color Logic
                 let badgeClass = 'badge-success';
                 if(std.status === 'Dropped') badgeClass = 'badge-danger';
-                if(std.status === 'Passout') badgeClass = 'badge-success'; // Or make a new one
+                if(std.status === 'Passout') badgeClass = 'badge-success'; 
 
+                // 🟢 FIX: Poori row pe onclick laga diya hai jisse View khulega.
+                // 🟢 Action buttons mein event.stopPropagation() laga diya hai taaki edit click karne pe view na khule.
                 tbody.innerHTML += `
-                    <tr>
+                    <tr onclick="openViewModal('${std._id}')" style="cursor: pointer;">
                         <td><b>${std.collegeRegNo || 'N/A'}</b></td>
                         <td>
                             <div class="std-profile">
@@ -398,7 +401,7 @@
                             <span style="font-size:12px; color:var(--danger); font-weight:600;">Due: ₹${std.dueFee}</span>
                         </td>
                         <td><span class="badge ${badgeClass}">${std.status}</span></td>
-                        <td>
+                        <td onclick="event.stopPropagation();">
                             <div class="action-btns">
                                 <button class="icon-btn view" onclick="openViewModal('${std._id}')" title="View Profile"><i class='bx bx-show'></i></button>
                                 <button class="icon-btn edit" onclick="openEditModal('${std._id}')" title="Edit Profile"><i class='bx bx-edit-alt'></i></button>
@@ -429,18 +432,66 @@
             renderTable(filtered);
         }
 
-        // --- MODAL CONTROLS ---
+        // --- MODALS CLOSE ---
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
 
-        // --- 1. VIEW PROFILE ---
-        function openViewModal(id) {
+        // --- 1. VIEW PROFILE (Fixed & Fetching Real Marks) ---
+        async function openViewModal(id) {
             const std = allStudents.find(s => s._id === id);
             if(!std) return;
 
+            document.getElementById('viewModalBody').innerHTML = '<div style="text-align:center; padding:30px;">Loading profile & results...</div>';
+            document.getElementById('viewModal').style.display = 'flex';
+
             let imgUrl = std.profilePicUrl || 'https://via.placeholder.com/80?text=Photo';
             
+            // 🟢 Fetching Marks for this student from our Backend API
+            let marksHtml = '<p style="color:var(--text-light); font-size:13px;">No examination records found for this student.</p>';
+            
+            try {
+                const marksRes = await fetch('/api/marks/student?studentId=' + id);
+                const marksResult = await marksRes.json();
+                
+                if(marksResult.success && marksResult.data.length > 0) {
+                    marksHtml = `
+                    <div class="table-res" style="border: 1px solid var(--border); border-radius: 8px;">
+                        <table style="min-width: 100%; font-size: 13px;">
+                            <thead style="background: #f8fafc;">
+                                <tr>
+                                    <th style="padding: 10px;">Exam Name</th>
+                                    <th style="padding: 10px;">Subject</th>
+                                    <th style="padding: 10px;">Marks</th>
+                                    <th style="padding: 10px;">Class Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    marksResult.data.forEach(m => {
+                        // Agar absent hai toh lal (red) dikhayega, present hai toh marks dikhayega
+                        let mkText = m.attendanceStatus === 'Present' 
+                                     ? `<b style="color:var(--success)">${m.marksObtained} / ${m.maxMarks}</b>` 
+                                     : `<b style="color:var(--danger)">${m.attendanceStatus}</b>`;
+                        
+                        let rankText = m.rank > 0 ? `Rank ${m.rank}` : '-';
+
+                        marksHtml += `
+                            <tr>
+                                <td style="padding: 10px;">${m.examName}</td>
+                                <td style="padding: 10px; font-weight:600;">${m.subject}</td>
+                                <td style="padding: 10px;">${mkText}</td>
+                                <td style="padding: 10px;"><b>${rankText}</b></td>
+                            </tr>
+                        `;
+                    });
+                    marksHtml += `</tbody></table></div>`;
+                }
+            } catch (e) {
+                console.error("Could not fetch marks", e);
+            }
+
+            // Constructing the full Body HTML
             const bodyHtml = `
                 <div class="view-profile-header">
                     <img src="${imgUrl}" alt="Profile">
@@ -456,6 +507,9 @@
                     <div class="detail-item"><span>Current Semester</span><strong>Semester ${std.semester}</strong></div>
                     <div class="detail-item"><span>Session / Batch</span><strong>${std.sessionBatch || 'N/A'}</strong></div>
                 </div>
+
+                <div class="form-section-title">Examination Results</div>
+                ${marksHtml}
 
                 <div class="form-section-title">Personal Information</div>
                 <div class="detail-grid">
@@ -476,16 +530,15 @@
             `;
             
             document.getElementById('viewModalBody').innerHTML = bodyHtml;
-            document.getElementById('viewModal').style.display = 'flex';
         }
 
-        // --- 2. EDIT PROFILE ---
+        // --- 2. EDIT PROFILE (With scroll fixed) ---
         function openEditModal(id) {
             const std = allStudents.find(s => s._id === id);
             if(!std) return;
             currentEditId = id;
 
-            // Map data to fields
+            // Pre-fill form fields
             document.getElementById('e_name').value = std.studentName || '';
             document.getElementById('e_dob').value = std.dob || '';
             document.getElementById('e_gender').value = std.gender || 'Male';
@@ -513,14 +566,15 @@
         async function updateStudent(e) {
             e.preventDefault();
             
-            // Getting all data from form
             const updatePayload = {
                 studentName: document.getElementById('e_name').value,
                 dob: document.getElementById('e_dob').value,
                 gender: document.getElementById('e_gender').value,
+                category: document.getElementById('e_category').value,
                 studentMobile: document.getElementById('e_mobile').value,
                 email: document.getElementById('e_email').value,
                 fatherName: document.getElementById('e_father').value,
+                parentMobile: document.getElementById('e_parent_mobile').value,
                 address: document.getElementById('e_address').value,
                 course: document.getElementById('e_course').value,
                 semester: document.getElementById('e_sem').value,
@@ -541,7 +595,7 @@
                 if(result.success) {
                     alert("✅ Record updated successfully!");
                     closeModal('editModal');
-                    fetchStudents(); // Re-fetch to see updates
+                    fetchStudents(); 
                 } else {
                     alert("❌ Update failed: " + result.message);
                 }
