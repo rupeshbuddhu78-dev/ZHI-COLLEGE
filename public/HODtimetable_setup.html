@@ -78,14 +78,18 @@
         .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; letter-spacing: 2px; width: 35px !important; font-size: 11px; vertical-align: middle;}
 
         /* Slots */
-        .slot { height: 100%; width: 100%; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 3px; cursor: pointer; transition: 0.2s;}
-        .slot.empty { border: 2px dashed #cbd5e1; background: #f8fafc; color: #94a3b8; }
+        .slot { height: 100%; width: 100%; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 3px; cursor: default; transition: 0.2s; position: relative;}
+        .slot.empty { border: 2px dashed #cbd5e1; background: #f8fafc; color: #94a3b8; cursor: pointer; }
         .slot.empty.drag-over { background: #e0e7ff; border-color: var(--primary); color: var(--primary); }
         .slot.filled { background: #eef2ff; border-left: 4px solid var(--primary); }
-        .slot.filled:hover { background: #fee2e2; border-left-color: var(--danger); }
+        .slot.filled:hover { background: #e0e7ff; }
         
         .slot .sub { font-weight: 800; font-size: 12px; color: var(--text-main); }
         .slot .teach { font-size: 11px; color: var(--primary); font-weight: 600;}
+
+        /* DELETE BUTTON STYLING ADDED HERE */
+        .delete-btn { position: absolute; top: 4px; right: 4px; font-size: 16px; color: #94a3b8; cursor: pointer; transition: 0.2s; border-radius: 50%; padding: 2px; }
+        .delete-btn:hover { background: #ef4444; color: white; }
 
         /* Teacher Tray (Bottom) */
         .teacher-tray { height: 150px; background: var(--white); border-top: 1px solid var(--border); padding: 15px 20px; flex-shrink: 0; display: flex; flex-direction: column; box-shadow: 0 -4px 10px rgba(0,0,0,0.03);}
@@ -297,8 +301,10 @@
                     // Room Number slot me display hone ka logic agar room assign kiya gaya ho
                     let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
                     
+                    // ONCLICK HATA DIYA BOX SE, CROSS BUTTON ADD KIYA
                     parent.innerHTML = `
-                        <div class="slot filled" data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}" onclick="deleteSlot('${routine._id}')" title="Click to Delete">
+                        <div class="slot filled" data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}">
+                            <i class='bx bx-x delete-btn' onclick="deleteSlot('${routine._id}', event)" title="Remove Class"></i>
                             <div class="sub">${routine.subject}</div>
                             <div class="teach">${routine.teacherName || (routine.teacherId ? routine.teacherId.name : 'Faculty')}</div>
                             ${roomHTML}
@@ -462,9 +468,9 @@
             }
         }
 
-        // --- 7. DELETE SLOT (By clicking on a filled slot) ---
-        async function deleteSlot(routineId) {
-            if(!confirm("Remove this class?")) return;
+        // --- 7. DELETE SLOT (By clicking on X icon only, NO ALERT) ---
+        async function deleteSlot(routineId, event) {
+            if(event) event.stopPropagation(); // Box ke kisi aur event ko trigger hone se rokega
             
             try {
                 const res = await fetch(`${API_BASE}/routines/${routineId}`, { method: 'DELETE' });
