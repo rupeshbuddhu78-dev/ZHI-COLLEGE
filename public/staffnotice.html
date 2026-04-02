@@ -6,6 +6,7 @@
     <title>ZHI | Notice Board Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -27,7 +28,7 @@
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); -webkit-font-smoothing: antialiased; }
 
         /* ------------------ SIDEBAR ------------------ */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
@@ -52,12 +53,15 @@
             height: 70px; background: var(--white); border-bottom: 1px solid var(--border); 
             display: flex; justify-content: space-between; align-items: center; padding: 0 25px; 
             position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            flex-shrink: 0;
         }
         
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; transition: background 0.2s;}
         .user-profile:hover { background: #f1f5f9; }
         .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
-        .user-profile div { display: flex; flex-direction: column; }
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
         .user-profile b { font-size: 13px; color: var(--text-dark); }
         .user-profile span { font-size: 11px; color: var(--text-light); }
 
@@ -84,16 +88,24 @@
         .form-group label { font-weight: 600; color: #475569; font-size: 13px; }
         .form-control { 
             padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; 
-            background: var(--bg); transition: 0.2s; width: 100%; 
+            background: var(--bg); transition: 0.2s; width: 100%; font-family: inherit;
         }
         .form-control:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        textarea.form-control { resize: vertical; min-height: 100px; }
+        textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.5;}
+
+        .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
+        .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #f1f5f9; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); transition: 0.2s; flex: 1; min-width: 90px; justify-content: center; font-weight: 500;}
+        .checkbox-label:hover { background: #e2e8f0; }
+        .checkbox-label input { cursor: pointer; transform: scale(1.1); }
 
         .btn-primary { 
             background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 6px; 
             font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+
+        .btn-cancel { background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; width: 100%; display: none; margin-top: 5px; text-align: center;}
+        .btn-cancel:hover { background: #dc2626; }
 
         /* Notice Board Display */
         .board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -108,36 +120,54 @@
         }
         .notice-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #cbd5e1; }
         
-        .notice-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .notice-urgent { border-left: 5px solid var(--danger); }
+        .notice-info { border-left: 5px solid var(--primary); }
+
+        .notice-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;}
         .notice-title { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
         .notice-meta { display: flex; align-items: center; gap: 15px; font-size: 12px; color: var(--text-light); }
         .notice-meta span { display: flex; align-items: center; gap: 4px; }
         
-        .notice-content { font-size: 14px; color: #475569; line-height: 1.6; margin-top: 10px; }
+        .notice-content { font-size: 14px; color: #475569; line-height: 1.6; margin-top: 10px; white-space: pre-wrap;}
         
-        .btn-delete { 
-            background: rgba(239, 68, 68, 0.1); color: var(--danger); border: none; width: 30px; height: 30px; 
-            border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
-        }
-        .btn-delete:hover { background: var(--danger); color: #fff; }
+        .action-btns { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px; justify-content: flex-end;}
+        .btn-icon { background: rgba(241, 245, 249, 0.8); border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
+        .btn-edit { color: var(--primary); } .btn-edit:hover { background: #e0f2fe; }
+        .btn-delete { color: var(--danger); } .btn-delete:hover { background: #fee2e2; }
 
-        /* Category Badges */
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
-        .badge-general { background: #e2e8f0; color: #475569; }
-        .badge-exam { background: #e0f2fe; color: #0284c7; }
-        .badge-event { background: #fef3c7; color: #d97706; }
-        .badge-holiday { background: #dcfce7; color: #16a34a; }
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;}
+        .badge-all { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;}
+        .badge-student { background: #dcfce7; color: #166534; border: 1px solid #86efac;}
+        .badge-faculty { background: #fef9c3; color: #854d0e; border: 1px solid #fde047;}
+        .badge-staff { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;}
+        .badge-urgent { background: #fee2e2; color: #b91c1c; padding: 3px 6px; font-size: 10px; border-radius: 4px;}
+
+        .attachment-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600; background: #eff6ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: 10px; transition: 0.2s;}
+
+        /* Sidebar Overlay */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
 
         /* Responsive Layout */
         @media (max-width: 992px) {
             .notice-container { flex-direction: column; }
             .create-col { flex: none; width: 100%; }
         }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .topbar { padding: 0 15px; }
+            .checkbox-label { flex: 1 1 45%; }
+        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div class="logo-img">
@@ -171,7 +201,10 @@
     <main class="main-wrapper">
         
         <header class="topbar">
-            <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Office Administration</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Office Administration</div>
+            </div>
             <div class="user-profile">
                 <div style="text-align: right;">
                     <b id="adminName">Karan Mishara</b>
@@ -189,28 +222,30 @@
                 <div class="create-col">
                     <div class="form-card">
                         <div class="form-header">
-                            <h3><i class='bx bx-edit' style='color:var(--primary)'></i> Create New Notice</h3>
+                            <h3 id="formTitle"><i class='bx bx-edit' style='color:var(--primary)'></i> Create New Notice</h3>
                         </div>
                         <form id="noticeForm" class="form-body" onsubmit="publishNotice(event)">
                             
                             <div class="form-group">
                                 <label>Notice Title *</label>
-                                <input type="text" id="nTitle" class="form-control" placeholder="E.g., Final Semester Exams" required>
+                                <input type="text" id="nTitle" class="form-control" placeholder="E.g., Semester Fee Reminder" required>
                             </div>
 
                             <div class="form-group">
-                                <label>Category *</label>
-                                <select id="nCategory" class="form-control" required>
-                                    <option value="General">General Notice</option>
-                                    <option value="Exam">Examination</option>
-                                    <option value="Event">College Event</option>
-                                    <option value="Holiday">Holiday Declaration</option>
+                                <label>Target Audience *</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="audStudents" checked> Students</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="audFaculty" checked> Faculty</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="audStaff"> Office Staff</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select id="nPriority" class="form-control">
+                                    <option value="info">General Information</option>
+                                    <option value="urgent">Urgent / Important</option>
                                 </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Date *</label>
-                                <input type="date" id="nDate" class="form-control" required>
                             </div>
 
                             <div class="form-group">
@@ -218,8 +253,16 @@
                                 <textarea id="nDetails" class="form-control" placeholder="Write the full notice description here..." required></textarea>
                             </div>
 
-                            <button type="submit" class="btn-primary">
+                            <div class="form-group">
+                                <label>Attach File (PDF/Image) - Optional</label>
+                                <input type="file" id="nFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" style="padding: 8px 10px;">
+                            </div>
+
+                            <button type="submit" id="btnSubmit" class="btn-primary">
                                 <i class='bx bx-send'></i> Publish Notice
+                            </button>
+                            <button type="button" id="btnCancel" class="btn-cancel" onclick="cancelEdit()">
+                                Cancel Edit
                             </button>
                         </form>
                     </div>
@@ -228,10 +271,12 @@
                 <div class="board-col">
                     <div class="board-header">
                         <h3><i class='bx bx-chalkboard' style='color:var(--primary)'></i> Published Notices</h3>
+                        <button style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 20px;" onclick="loadNotices()"><i class='bx bx-refresh'></i></button>
                     </div>
                     
                     <div class="notices-grid" id="noticesList">
-                        </div>
+                        <div style="text-align:center; padding: 40px; color: var(--text-light); background: #fff; border-radius: 10px; border: 1px solid var(--border);">Connecting to server...</div>
+                    </div>
                 </div>
 
             </div>
@@ -239,107 +284,207 @@
     </main>
 
     <script>
-        // Set today's date as default in form
-        document.getElementById('nDate').valueAsDate = new Date();
+        const BASE_URL = 'https://zhi-college-rtya.onrender.com/api';
+        let allNotices = [];
+        let editModeId = null;
 
-        // Empty Array for initial load (Dummy data removed)
-        let notices = [];
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
 
-        // Function to determine badge class based on category
-        function getBadgeClass(category) {
-            switch(category) {
-                case 'Exam': return 'badge-exam';
-                case 'Event': return 'badge-event';
-                case 'Holiday': return 'badge-holiday';
-                default: return 'badge-general';
+        window.onload = () => {
+            const userName = localStorage.getItem('userName') || 'Karan Mishara';
+            document.getElementById('adminName').innerText = userName;
+            loadNotices();
+        };
+
+        // 🟢 1. FETCH NOTICES FROM DATABASE 🟢
+        async function loadNotices() {
+            const container = document.getElementById('noticesList');
+            container.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-light); background: #fff; border-radius: 10px; border: 1px solid var(--border);"><i class="bx bx-loader-alt bx-spin"></i> Loading notices...</div>';
+            
+            try {
+                let res = await fetch(`${BASE_URL}/notices`);
+                let result = await res.json();
+                
+                if(result.success) {
+                    allNotices = result.data; 
+                    container.innerHTML = ''; 
+                    
+                    if(result.data.length === 0) {
+                        container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-light); background: #fff; border-radius: 10px; border: 1px solid var(--border);">No active notices at the moment.</div>`;
+                        return;
+                    }
+
+                    result.data.forEach(notice => {
+                        let priorityClass = notice.priority === 'urgent' ? 'notice-urgent' : 'notice-info';
+                        let priorityBadge = notice.priority === 'urgent' ? '<span class="badge-urgent">Urgent</span>' : '';
+                        
+                        let dateObj = new Date(notice.createdAt);
+                        let dateStr = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                        let audienceHtml = notice.audience.map(aud => {
+                            if(aud === 'Students') return '<span class="badge badge-student">Students</span>';
+                            if(aud === 'Faculty') return '<span class="badge badge-faculty">Faculty</span>';
+                            if(aud === 'Staff') return '<span class="badge badge-staff">Staff</span>';
+                            return '';
+                        }).join(' ');
+
+                        if(notice.audience.length === 3) audienceHtml = '<span class="badge badge-all">All Members</span>';
+
+                        let attachmentHtml = '';
+                        if (notice.fileUrl && notice.fileUrl.trim() !== "" && notice.fileUrl !== "undefined" && notice.fileUrl !== "null") {
+                            let isPdf = notice.fileUrl.toLowerCase().includes('.pdf');
+                            let icon = isPdf ? 'fa-file-pdf' : 'fa-image';
+                            attachmentHtml = `<a href="${notice.fileUrl}" target="_blank" class="attachment-link"><i class="fa-solid ${icon}"></i> View Attachment</a>`;
+                        }
+
+                        let postedBy = notice.postedBy || "Admin Office";
+
+                        let card = `
+                        <div class="notice-card ${priorityClass}">
+                            <div class="notice-top">
+                                <div>
+                                    <div style="display:flex; gap: 5px; flex-wrap:wrap; margin-bottom: 8px;">${audienceHtml} ${priorityBadge}</div>
+                                    <h4 class="notice-title">${notice.title}</h4>
+                                    <div class="notice-meta">
+                                        <span><i class='bx bx-calendar'></i> ${dateStr}</span>
+                                        <span style="color: var(--primary);"><i class='bx bx-user'></i> ${postedBy}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="notice-content">${notice.message}</div>
+                            ${attachmentHtml ? `<div style="margin-top:10px;">${attachmentHtml}</div>` : ''}
+
+                            <div class="action-btns">
+                                <button class="btn-icon btn-edit" onclick="editNotice('${notice._id}')"><i class='bx bx-edit'></i> Edit</button>
+                                <button class="btn-icon btn-delete" onclick="deleteNotice('${notice._id}')"><i class='bx bx-trash'></i> Delete</button>
+                            </div>
+                        </div>`;
+                        
+                        container.insertAdjacentHTML('beforeend', card);
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--danger); background: #fef2f2; border-radius: 10px; border: 1px solid #fecaca;">Failed to connect to database.</div>`;
             }
         }
 
-        // Format Date nicely
-        function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
-        }
+        // 🟢 2. PUBLISH OR UPDATE NOTICE 🟢
+        async function publishNotice(event) {
+            event.preventDefault(); 
 
-        // Function to render all notices
-        function renderNotices() {
-            const container = document.getElementById('noticesList');
-            container.innerHTML = ''; // Clear existing
+            const title = document.getElementById('nTitle').value;
+            const message = document.getElementById('nDetails').value;
+            const priority = document.getElementById('nPriority').value;
+            const fileInput = document.getElementById('nFile').files[0];
+            const btn = document.getElementById('btnSubmit');
 
-            if(notices.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-light); background: #fff; border-radius: 10px; border: 1px solid var(--border);">No active notices at the moment.</div>`;
+            const toStudents = document.getElementById('audStudents').checked;
+            const toFaculty = document.getElementById('audFaculty').checked;
+            const toStaff = document.getElementById('audStaff').checked;
+
+            let audienceArray = [];
+            if(toStudents) audienceArray.push("Students");
+            if(toFaculty) audienceArray.push("Faculty");
+            if(toStaff) audienceArray.push("Staff");
+
+            if(audienceArray.length === 0) {
+                alert("Please select at least one target audience!");
                 return;
             }
 
-            // Sort notices by latest date first (simple sort)
-            notices.sort((a, b) => new Date(b.date) - new Date(a.date));
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Processing...";
+            btn.disabled = true;
 
-            notices.forEach(notice => {
-                const card = document.createElement('div');
-                card.className = 'notice-card';
-                card.innerHTML = `
-                    <div class="notice-top">
-                        <div>
-                            <span class="badge ${getBadgeClass(notice.category)}">${notice.category}</span>
-                            <h4 class="notice-title" style="margin-top: 8px;">${notice.title}</h4>
-                            <div class="notice-meta">
-                                <span><i class='bx bx-calendar'></i> ${formatDate(notice.date)}</span>
-                                <span><i class='bx bx-user'></i> Admin Office</span>
-                            </div>
-                        </div>
-                        <button class="btn-delete" onclick="deleteNotice(${notice.id})" title="Delete Notice">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                    <div class="notice-content">
-                        ${notice.details}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Function to add a new notice
-        function publishNotice(event) {
-            event.preventDefault(); // Prevent page reload
-
-            const title = document.getElementById('nTitle').value;
-            const category = document.getElementById('nCategory').value;
-            const date = document.getElementById('nDate').value;
-            const details = document.getElementById('nDetails').value;
-
-            const newNotice = {
-                id: Date.now(), // Generate unique ID
-                title: title,
-                category: category,
-                date: date,
-                details: details
-            };
-
-            // Add to array
-            notices.push(newNotice);
+            let formData = new FormData();
+            formData.append('title', title);
+            formData.append('message', message);
+            formData.append('priority', priority);
+            formData.append('audience', JSON.stringify(audienceArray));
             
-            // Re-render
-            renderNotices();
+            // Set sender identity
+            const senderName = document.getElementById('adminName').innerText;
+            formData.append('postedBy', senderName + " (Management Office)");
 
-            // Clear Form but keep today's date
-            document.getElementById('noticeForm').reset();
-            document.getElementById('nDate').valueAsDate = new Date();
+            if (fileInput) formData.append('attachment', fileInput);
+
+            try {
+                let url = editModeId ? `${BASE_URL}/notices/${editModeId}` : `${BASE_URL}/notices`;
+                let methodType = editModeId ? 'PUT' : 'POST';
+
+                let response = await fetch(url, { method: methodType, body: formData });
+                let result = await response.json();
+                
+                if(result.success) {
+                    alert(editModeId ? "Notice Updated!" : "Notice Published!");
+                    cancelEdit(); 
+                    loadNotices(); 
+                } else {
+                    alert("Failed: " + result.message);
+                }
+            } catch (error) {
+                alert("Server Error! Check your connection.");
+            }
+
+            btn.innerHTML = "<i class='bx bx-send'></i> Publish Notice";
+            btn.disabled = false;
         }
 
-        // Function to delete a notice
-        function deleteNotice(id) {
-            if(confirm("Are you sure you want to delete this notice?")) {
-                notices = notices.filter(notice => notice.id !== id);
-                renderNotices();
+        // 🟢 3. DELETE NOTICE 🟢
+        async function deleteNotice(id) {
+            if(!confirm("Permanently delete this notice?")) return;
+
+            try {
+                let response = await fetch(`${BASE_URL}/notices/${id}`, { method: 'DELETE' });
+                let result = await response.json();
+                if(result.success) loadNotices(); 
+                else alert("Failed to delete notice.");
+            } catch(error) {
+                alert("Server Error!");
             }
         }
 
-        // Initial render
-        window.onload = () => {
-            renderNotices();
-        };
+        // 🟢 4. EDIT NOTICE (PREPARE FORM) 🟢
+        function editNotice(id) {
+            const notice = allNotices.find(n => n._id === id);
+            if(!notice) return;
 
+            editModeId = id; 
+            document.getElementById('nTitle').value = notice.title;
+            document.getElementById('nDetails').value = notice.message;
+            document.getElementById('nPriority').value = notice.priority || 'info';
+
+            document.getElementById('audStudents').checked = notice.audience.includes('Students');
+            document.getElementById('audFaculty').checked = notice.audience.includes('Faculty');
+            document.getElementById('audStaff').checked = notice.audience.includes('Staff');
+
+            document.getElementById('formTitle').innerHTML = "<i class='bx bx-edit' style='color:var(--warning)'></i> Edit Notice";
+            document.getElementById('btnSubmit').innerHTML = "<i class='bx bx-refresh'></i> Update Notice";
+            document.getElementById('btnSubmit').style.background = "var(--warning)";
+            document.getElementById('btnCancel').style.display = "block";
+            
+            // Scroll to form (Useful for mobile)
+            document.querySelector('.create-col').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 🟢 5. CANCEL EDITING 🟢
+        function cancelEdit() {
+            editModeId = null;
+            document.getElementById('noticeForm').reset();
+            
+            document.getElementById('audStudents').checked = true;
+            document.getElementById('audFaculty').checked = true;
+            document.getElementById('audStaff').checked = false;
+
+            document.getElementById('formTitle').innerHTML = "<i class='bx bx-edit' style='color:var(--primary)'></i> Create New Notice";
+            document.getElementById('btnSubmit').innerHTML = "<i class='bx bx-send'></i> Publish Notice";
+            document.getElementById('btnSubmit').style.background = "var(--primary)";
+            document.getElementById('btnCancel').style.display = "none";
+        }
     </script>
 </body>
 </html>
