@@ -263,7 +263,9 @@ const Attendance = mongoose.model('Attendance', attendanceSchema);
 const leaveSchema = new mongoose.Schema({
     applicantId: { type: String, required: true },
     applicantName: { type: String, required: true },
-    applicantRole: { type: String, required: true }, 
+    applicantRole: { type: String, required: true },
+    course: { type: String, default: "" },
+    semester: { type: String, default: "" }, 
     leaveType: { type: String, default: "General" }, 
     startDate: { type: String, required: true }, 
     endDate: { type: String, required: true },
@@ -1266,7 +1268,8 @@ app.get('/api/leaves', async (req, res) => {
 // 2. Apply for Leave (Student / Teacher dono ke liye common route)
 app.post('/api/leaves/apply', uploadLeave.single('document'), async (req, res) => {
     try {
-        const { applicantId, applicantName, applicantRole, leaveType, startDate, endDate, totalDays, reason } = req.body;
+        // ✅ FIX: course aur semester ko req.body se nikal liya gaya hai
+        const { applicantId, applicantName, applicantRole, course, semester, leaveType, startDate, endDate, totalDays, reason } = req.body;
 
         let documentUrl = "";
         if (req.file) {
@@ -1280,6 +1283,8 @@ app.post('/api/leaves/apply', uploadLeave.single('document'), async (req, res) =
             applicantName,
             applicantRole,
             leaveType,
+            course: course || "", 
+            semester: semester || "",
             startDate,
             endDate,
             totalDays: Number(totalDays),
