@@ -212,7 +212,7 @@
                         <h3 id="formCardTitle"><i class='bx bx-edit'></i> Compose Notice</h3>
                     </div>
                     <div class="form-container">
-                        <form id="noticeForm" onsubmit="submitNotice(event)">
+                        <form id="noticeForm" onsubmit="sendNotice(event)">
                             
                             <div class="form-group">
                                 <label>Notice Title / Subject</label>
@@ -265,7 +265,7 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3><i class='bx bx-history'></i> Sent Notices History</h3>
-                        <button style="background: none; border: none; color: var(--primary); font-size: 18px; cursor: pointer;" onclick="loadNotices()" title="Refresh"><i class='bx bx-refresh'></i></button>
+                        <button style="background: none; border: none; color: var(--purple); font-size: 18px; cursor: pointer;" onclick="loadNotices()" title="Refresh"><i class='bx bx-refresh'></i></button>
                     </div>
                     <div class="notice-list" id="noticeListContainer">
                         <p style="text-align:center; color: var(--text-light); margin-top: 50px;">Fetching records from database...</p>
@@ -277,7 +277,7 @@
     </div>
 
     <script>
-        // Use exact API URL matching your backend
+        // Backend API connection
         const BASE_URL = 'https://zhi-college-rtya.onrender.com/api'; 
         let allNotices = []; 
         let editNoticeId = null; 
@@ -288,11 +288,12 @@
         }
 
         window.onload = () => {
-            const userName = localStorage.getItem('userName') || 'Dr. Amit Kumar (HOD)';
+            const userName = localStorage.getItem('userName') || 'Dr. Amit Kumar';
             document.getElementById('adminName').innerText = userName;
             loadNotices();
         };
 
+        // File selection display
         function updateFileName() {
             const fileInput = document.getElementById('noticeFile');
             const display = document.getElementById('fileNameDisplay');
@@ -303,10 +304,10 @@
             }
         }
 
-        // 🔴 1. LOAD NOTICES FROM DATABASE 🔴
+        // 🟢 1. LOAD NOTICES FROM DATABASE 🟢
         async function loadNotices() {
             const container = document.getElementById('noticeListContainer');
-            container.innerHTML = '<p style="text-align:center; color: var(--text-light); margin-top: 50px;">Loading...</p>';
+            container.innerHTML = '<p style="text-align:center; color: var(--text-light); margin-top: 50px;"><i class="bx bx-loader-alt bx-spin"></i> Loading notices...</p>';
             
             try {
                 let res = await fetch(`${BASE_URL}/notices`);
@@ -351,8 +352,8 @@
                                 </div>`;
                         }
 
-                        // Added specific identifier to show it's from HOD
-                        let postedByHtml = notice.postedBy ? `<div style="font-size: 11px; color: var(--purple); margin-top: 5px; font-weight: 600;">By: ${notice.postedBy}</div>` : '';
+                        // Display who posted the notice (This uses the database value we save in sendNotice)
+                        let postedByHtml = notice.postedBy ? `<div style="font-size: 12px; color: var(--purple); margin-top: 8px; font-weight: 600;"><i class='bx bx-user-circle'></i> Issued by: ${notice.postedBy}</div>` : '';
 
                         let html = `
                         <div class="notice-item ${priorityClass}">
@@ -383,7 +384,7 @@
 
         // 🔴 2. SEND OR UPDATE NOTICE TO DATABASE 🔴
         async function sendNotice(event) {
-            event.preventDefault();
+            event.preventDefault(); 
             
             const title = document.getElementById('noticeTitle').value;
             const body = document.getElementById('noticeBody').value;
@@ -419,7 +420,7 @@
             formData.append('priority', priority);
             formData.append('audience', JSON.stringify(audienceArray));
             
-            // 🔥 HOD IDENTITY ADDED HERE 🔥
+            // 🔥 YAHAN SENDER KA NAAM FRONTEND SE BHEJA JAA RAHA HAI 🔥
             const senderName = document.getElementById('adminName').innerText;
             formData.append('postedBy', senderName + " (Department HOD)");
             
@@ -488,7 +489,7 @@
             document.getElementById('sendFaculty').checked = notice.audience.includes('Faculty');
             document.getElementById('sendStaff').checked = notice.audience.includes('Staff');
 
-            document.getElementById('formCardTitle').innerHTML = '<i class="bx bx-edit"></i> Edit Notice';
+            document.getElementById('formCardTitle').innerHTML = '<i class="bx bx-edit" style="color:var(--warning)"></i> Edit Notice';
             document.getElementById('btnSubmitNotice').innerHTML = '<i class="bx bx-refresh"></i> Update Notice';
             document.getElementById('btnSubmitNotice').style.backgroundColor = 'var(--warning)'; 
             document.getElementById('btnCancelEdit').style.display = 'block';
@@ -507,7 +508,7 @@
             document.getElementById('sendFaculty').checked = true;
             document.getElementById('sendStaff').checked = false;
 
-            document.getElementById('formCardTitle').innerHTML = '<i class="bx bx-edit"></i> Compose Notice';
+            document.getElementById('formCardTitle').innerHTML = '<i class="bx bx-edit" style="color:var(--primary)"></i> Compose Notice';
             document.getElementById('btnSubmitNotice').innerHTML = '<i class="bx bx-send"></i> Broadcast Notice';
             document.getElementById('btnSubmitNotice').style.backgroundColor = 'var(--purple)';
             document.getElementById('btnCancelEdit').style.display = 'none';
