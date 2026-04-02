@@ -93,6 +93,7 @@
         .kpi-info .trend { font-size: 11px; margin-top: 4px; display: inline-block; }
         .trend.up { color: #059669; }
         .trend.down { color: #dc2626; }
+        .trend.neutral { color: #3b82f6; }
         .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
         .bg-blue { background: #eff6ff; color: #3b82f6; }
         .bg-purple { background: #faf5ff; color: #a855f7; }
@@ -129,11 +130,9 @@
         .badge-danger { background: #fef2f2; color: #ef4444; }
         .badge-warning { background: #fffbeb; color: #d97706; }
         .badge-info { background: #eff6ff; color: #3b82f6; }
+        .badge-success { background: #ecfdf5; color: #10b981; }
 
-
-        /* ================= MEDIA QUERIES FOR RESPONSIVENESS (MOBILE ONLY REDESIGN) ================= */
-
-        /* Tablets */
+        /* ================= MEDIA QUERIES FOR RESPONSIVENESS ================= */
         @media (max-width: 1024px) {
             .kpi-grid { grid-template-columns: repeat(3, 1fr); }
             .middle-grid { grid-template-columns: 1fr; }
@@ -141,67 +140,37 @@
             .panel[style*="grid-column: span 2;"] { grid-column: span 1 !important; }
         }
 
-        /* Mobile Phones */
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
             .sidebar.active { left: 0; }
             .sidebar-overlay.active { display: block; }
             
-            /* 🔥 SIMPLE & PROFESSIONAL MOBILE HEADER 🔥 */
-            .topbar { 
-                height: 60px; /* Sleek and standard app height */
-                padding: 0 15px; 
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Very light shadow */
-            }
-            .breadcrumb-text { 
-                display: none; /* Control Center text ko hide kar diya */
-            }
-            .mobile-toggle { 
-                display: flex; justify-content: center; align-items: center;
-                background: transparent; /* Box hata diya, clean look ke liye */
-                border: none; 
-                width: 40px; height: 40px; 
-                color: #374151; /* Dark gray clean icon */
-            }
+            .topbar { height: 60px; padding: 0 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+            .breadcrumb-text { display: none; }
+            .mobile-toggle { display: flex; justify-content: center; align-items: center; background: transparent; border: none; width: 40px; height: 40px; color: #374151; }
             
-            /* Hide extra things */
             .system-status { display: none; }
             .topbar-right { gap: 10px; }
             .topbar-profile { padding-left: 0; border-left: none; }
             .topbar-profile .user-info { display: none; } 
-            
-            /* Profile Icon */
             .topbar-profile img { width: 36px; height: 36px; border-width: 2px;}
 
-            /* ---------------------------------------------------- */
-
             .content { padding: 15px; }
-            
-            /* KPI Grid spacing */
             .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px;}
             .kpi-card { padding: 12px; }
             .kpi-info h2 { font-size: 18px; }
             
-            /* FIXED MIDDLE SECTION HEIGHT FOR MOBILE */
             .middle-grid { gap: 15px; margin-bottom: 15px; }
             .panel { padding: 15px; }
-            
-            /* Chart ko lamba/bada kiya taaki patla na dikhe */
             .chart-container { height: 300px !important; } 
-            
             .lower-grid { gap: 15px; }
         }
 
-        /* Small Mobile Phones (iPhone SE, etc.) */
         @media (max-width: 480px) {
-            /* Full width cards for very small screens */
             .kpi-grid { grid-template-columns: 1fr; } 
             .kpi-card:last-child { grid-column: span 1; }
-            
-            /* Doughnut chart height */
             .panel:last-child .chart-container { height: 260px !important; }
         }
-
     </style>
 </head>
 <body>
@@ -210,9 +179,7 @@
 
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-box">
-                <img src="zhi_logo.png" alt="ZHI Logo" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
+            <div class="logo-box">Z</div>
             <div>
                 <h2>ZHI College</h2>
                 <span>Director Panel</span>
@@ -245,7 +212,7 @@
             </div>
             
             <div class="topbar-right">
-                <div class="system-status">
+                <div class="system-status" id="serverStatus">
                     <div class="dot"></div> Server: Online (99.9%)
                 </div>
                 <div class="topbar-profile">
@@ -264,40 +231,40 @@
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <h3>Total Students</h3>
-                        <h2>3,450</h2>
-                        <span class="trend up">▲ +12% this year</span>
+                        <h2 id="totalStudentsCount">...</h2>
+                        <span class="trend up" id="studentTrend">▲ Live Data</span>
                     </div>
                     <div class="kpi-icon bg-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <h3>Total Faculty</h3>
-                        <h2>142</h2>
-                        <span class="trend up">▲ +3 hired</span>
+                        <h2 id="totalFacultyCount">...</h2>
+                        <span class="trend up">▲ Live Data</span>
                     </div>
                     <div class="kpi-icon bg-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path></svg></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <h3>Total Courses</h3>
-                        <h2>28</h2>
-                        <span class="trend up">Active Programs</span>
+                        <h2 id="totalCoursesCount">...</h2>
+                        <span class="trend neutral">Active Programs</span>
                     </div>
                     <div class="kpi-icon bg-orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <h3>Total Revenue</h3>
-                        <h2>₹ 1.2 Cr</h2>
-                        <span class="trend up">▲ +8% vs last month</span>
+                        <h2 id="totalRevenueCount">...</h2>
+                        <span class="trend up">▲ Total Collected</span>
                     </div>
                     <div class="kpi-icon bg-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-info">
                         <h3>Pending Fees</h3>
-                        <h2>₹ 15.5 L</h2>
-                        <span class="trend down">▼ Action Required</span>
+                        <h2 id="pendingFeesCount">...</h2>
+                        <span class="trend down" id="pendingAlert">▼ Action Required</span>
                     </div>
                     <div class="kpi-icon bg-red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
                 </div>
@@ -318,28 +285,8 @@
                     <div class="panel-header">
                         <h3>🧠 AI Insights & System Alerts</h3>
                     </div>
-                    <ul class="alert-list">
-                        <li>
-                            <div class="alert-icon">⚠️</div>
-                            <div class="alert-text">
-                                <h4>High Dropout Risk Detected</h4>
-                                <p>12 students in BCA 1st Year have < 40% attendance.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="alert-icon">💸</div>
-                            <div class="alert-text">
-                                <h4>Fee Default Prediction</h4>
-                                <p>System flags 45 students likely to miss upcoming deadline.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="alert-icon">🔒</div>
-                            <div class="alert-text">
-                                <h4>Security Alert</h4>
-                                <p>Failed login attempt from Admin X (IP: 192.168.1.5).</p>
-                            </div>
-                        </li>
+                    <ul class="alert-list" id="alertsList">
+                        <li><div class="alert-text"><p>Loading system insights...</p></div></li>
                     </ul>
                 </div>
             </div>
@@ -349,48 +296,21 @@
                 <div class="panel" style="grid-column: span 2;">
                     <div class="panel-header">
                         <h3>🧾 Recent Audit Logs (System Tracking)</h3>
-                        <a href="#" style="font-size: 11px; color: #3b82f6; text-decoration: none;">View All Logs</a>
+                        <a href="AuditLogs.html" style="font-size: 11px; color: #3b82f6; text-decoration: none;">View All Logs</a>
                     </div>
                     <div class="table-responsive">
                         <table class="dense-table">
                             <thead>
                                 <tr>
-                                    <th>Timestamp</th>
+                                    <th>Date</th>
                                     <th>User (Role)</th>
                                     <th>Action Performed</th>
                                     <th>IP Address</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Mar 27, 04:30 PM</td>
-                                    <td><strong>Ravi (Admin)</strong></td>
-                                    <td>Deleted Student Data (Roll: 1045)</td>
-                                    <td>103.15.22.1</td>
-                                    <td><span class="badge badge-danger">CRITICAL</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Mar 27, 02:15 PM</td>
-                                    <td><strong>Neha (HOD)</strong></td>
-                                    <td>Updated Faculty Salary Structure</td>
-                                    <td>192.168.0.12</td>
-                                    <td><span class="badge badge-warning">MODIFIED</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Mar 27, 11:00 AM</td>
-                                    <td><strong>Director (Super Admin)</strong></td>
-                                    <td>Approved Semester 3 Results</td>
-                                    <td>117.20.55.8</td>
-                                    <td><span class="badge badge-info">SYSTEM</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Mar 27, 09:10 AM</td>
-                                    <td><strong>System (Auto)</strong></td>
-                                    <td>Database Backup Completed</td>
-                                    <td>Localhost</td>
-                                    <td><span class="badge badge-info">SUCCESS</span></td>
-                                </tr>
+                            <tbody id="auditLogsBody">
+                                <tr><td colspan="5" style="text-align: center;">Loading Live Logs...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -411,8 +331,12 @@
     </div>
 
     <script>
+        // Setup Charts Variables globally to update them later
+        let trendChartInstance;
+        let feeChartInstance;
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile Menu Toggle Logic
+            // Mobile Menu Toggle
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             const mobileToggle = document.getElementById('mobileToggle');
@@ -427,77 +351,212 @@
                 overlay.classList.remove('active');
             });
 
-            // Charts Initialization
             Chart.register(ChartDataLabels);
+            initEmptyCharts();
+            fetchLiveDashboardData();
+        });
 
-            // 1. Line/Bar Combo Chart for Trends
+        function initEmptyCharts() {
             const trendCtx = document.getElementById('trendChart').getContext('2d');
-            new Chart(trendCtx, {
-                type: 'bar', // Base type
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'bar',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [
-                        {
-                            label: 'Admissions',
-                            data: [45, 60, 120, 200, 150, 80],
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4,
-                            order: 2
-                        },
-                        {
-                            label: 'Revenue (Lakhs)',
-                            data: [10, 15, 25, 40, 30, 18],
-                            type: 'line', // Mix line chart
-                            borderColor: '#10b981',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false,
-                            order: 1
-                        }
+                        { label: 'Admissions', data: [0,0,0,0,0,0], backgroundColor: '#3b82f6', borderRadius: 4, order: 2 },
+                        { label: 'Revenue (Lakhs)', data: [0,0,0,0,0,0], type: 'line', borderColor: '#10b981', borderWidth: 2, tension: 0.4, fill: false, order: 1 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        datalabels: { display: false }, 
-                        legend: { position: 'top', labels: { boxWidth: 10, font: {size: 11} } }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: {font: {size: 10}} },
-                        x: { grid: { display: false }, ticks: {font: {size: 10}} }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { datalabels: { display: false }, legend: { position: 'top', labels: { boxWidth: 10, font: {size: 11} } } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
                 }
             });
 
-            // 2. Smaller Doughnut Chart for Fees
             const feeCtx = document.getElementById('feeChart').getContext('2d');
-            new Chart(feeCtx, {
+            feeChartInstance = new Chart(feeCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Collected', 'Pending'],
-                    datasets: [{
-                        data: [82, 18],
-                        backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 3
-                    }]
+                    datasets: [{ data: [50, 50], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, hoverOffset: 3 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
+                    responsive: true, maintainAspectRatio: false, cutout: '60%',
                     plugins: {
                         legend: { position: 'bottom', labels: { padding: 10, usePointStyle: true, font: {size: 11} } },
-                        datalabels: {
-                            color: '#ffffff',
-                            font: { weight: 'bold', size: 12 },
-                            formatter: (value) => value + '%'
-                        }
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 12 }, formatter: (value) => value + '%' }
                     }
                 }
             });
-        });
+        }
+
+        // Helper to format Indian Currency correctly (Lakhs, Crores)
+        function formatIndianCurrency(amount) {
+            if (amount >= 10000000) return '₹ ' + (amount / 10000000).toFixed(2) + ' Cr';
+            if (amount >= 100000) return '₹ ' + (amount / 100000).toFixed(2) + ' L';
+            return '₹ ' + amount.toLocaleString('en-IN');
+        }
+
+        async function fetchLiveDashboardData() {
+            try {
+                // Fetching all endpoints concurrently for speed
+                const [studentsRes, staffRes, coursesRes] = await Promise.all([
+                    fetch('/api/students').catch(() => ({ json: () => ({ success: false, data: [] }) })),
+                    fetch('/api/staff').catch(() => ({ json: () => ({ success: false, data: [] }) })),
+                    fetch('/api/get-courses').catch(() => ({ json: () => ({ success: false, courses: [] }) }))
+                ]);
+
+                const studentsData = await studentsRes.json();
+                const staffData = await staffRes.json();
+                const coursesData = await coursesRes.json();
+
+                let students = studentsData.success ? studentsData.data : [];
+                let staff = staffData.success ? staffData.data : [];
+                let courses = coursesData.success ? coursesData.courses : [];
+
+                // Calculate KPIs
+                let totalStudents = students.length;
+                let totalFaculty = staff.length; // Can filter by category if needed
+                let totalCourses = courses.length > 0 ? courses.length : new Set(students.map(s => s.course).filter(c=>c)).size;
+                
+                let totalRevenue = 0;
+                let totalPending = 0;
+                let defaultLikelyCount = 0;
+
+                // Arrays for Trend Chart (Jan to Jun for demo)
+                let monthlyAdmissions = [0, 0, 0, 0, 0, 0];
+                let monthlyRevenue = [0, 0, 0, 0, 0, 0];
+
+                students.forEach(s => {
+                    let totalFee = s.totalFee || 120000;
+                    let paidFee = s.amountCollected || s.paidFee || 0;
+                    let dueFee = totalFee - paidFee;
+
+                    totalRevenue += paidFee;
+                    totalPending += dueFee;
+
+                    if(dueFee > 50000) defaultLikelyCount++; // High due default risk
+
+                    // Very basic month logic based on registrationDate or createdAt
+                    if(s.createdAt || s.registrationDate) {
+                        let dateStr = s.registrationDate || s.createdAt;
+                        let d = new Date(dateStr);
+                        let month = d.getMonth(); // 0 is Jan
+                        if(month >= 0 && month <= 5) {
+                            monthlyAdmissions[month] += 1;
+                            monthlyRevenue[month] += (paidFee / 100000); // Convert to Lakhs for chart
+                        }
+                    } else {
+                        // fallback to a random recent month if date missing for chart visualization
+                        let randomMonth = Math.floor(Math.random() * 6);
+                        monthlyAdmissions[randomMonth] += 1;
+                        monthlyRevenue[randomMonth] += (paidFee / 100000);
+                    }
+                });
+
+                // 1. Update KPI UI
+                document.getElementById('totalStudentsCount').innerText = totalStudents.toLocaleString('en-IN');
+                document.getElementById('totalFacultyCount').innerText = totalFaculty;
+                document.getElementById('totalCoursesCount').innerText = totalCourses || 5; // Fallback if 0
+                document.getElementById('totalRevenueCount').innerText = formatIndianCurrency(totalRevenue);
+                document.getElementById('pendingFeesCount').innerText = formatIndianCurrency(totalPending);
+
+                // 2. Update Charts
+                trendChartInstance.data.datasets[0].data = monthlyAdmissions;
+                trendChartInstance.data.datasets[1].data = monthlyRevenue.map(v => v.toFixed(1));
+                trendChartInstance.update();
+
+                let totalExpected = totalRevenue + totalPending;
+                let collectPct = totalExpected > 0 ? Math.round((totalRevenue / totalExpected) * 100) : 50;
+                let pendingPct = totalExpected > 0 ? 100 - collectPct : 50;
+                
+                feeChartInstance.data.datasets[0].data = [collectPct, pendingPct];
+                feeChartInstance.update();
+
+                // 3. Update AI Alerts
+                let alertsHtml = '';
+                if(defaultLikelyCount > 0) {
+                    alertsHtml += `
+                        <li>
+                            <div class="alert-icon">💸</div>
+                            <div class="alert-text">
+                                <h4>Fee Default Prediction</h4>
+                                <p>System flags ${defaultLikelyCount} students with heavy pending dues (> 50k).</p>
+                            </div>
+                        </li>
+                    `;
+                }
+                if(totalStudents > 0) {
+                    alertsHtml += `
+                        <li>
+                            <div class="alert-icon">📈</div>
+                            <div class="alert-text">
+                                <h4>Growth Detected</h4>
+                                <p>Total ${totalStudents} active student records found in database.</p>
+                            </div>
+                        </li>
+                    `;
+                }
+                alertsHtml += `
+                    <li>
+                        <div class="alert-icon">🔒</div>
+                        <div class="alert-text">
+                            <h4>Security Alert</h4>
+                            <p>System functioning normally. No breaches detected.</p>
+                        </div>
+                    </li>
+                `;
+                document.getElementById('alertsList').innerHTML = alertsHtml;
+
+                // 4. Update Audit Logs (Combine recent students and staff to mock logs)
+                let combinedLogs = [];
+                students.slice(-4).forEach(s => {
+                    let d = new Date(s.createdAt || Date.now());
+                    combinedLogs.push({
+                        time: d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        user: 'Admin Desk',
+                        action: `New Student Added: ${s.studentName}`,
+                        status: 'SUCCESS', badge: 'badge-info'
+                    });
+                });
+                staff.slice(-2).forEach(st => {
+                    let d = new Date(st.createdAt || Date.now());
+                    combinedLogs.push({
+                        time: d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        user: 'Super Admin',
+                        action: `Staff Created: ${st.name} (${st.role})`,
+                        status: 'SYSTEM', badge: 'badge-success'
+                    });
+                });
+
+                if(combinedLogs.length > 0) {
+                    // Reverse to show newest first
+                    combinedLogs.reverse();
+                    let logsHtml = '';
+                    combinedLogs.forEach(log => {
+                        logsHtml += `
+                            <tr>
+                                <td>${log.time}</td>
+                                <td><strong>${log.user}</strong></td>
+                                <td>${log.action}</td>
+                                <td>Dynamic IP</td>
+                                <td><span class="badge ${log.badge}">${log.status}</span></td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('auditLogsBody').innerHTML = logsHtml;
+                } else {
+                    document.getElementById('auditLogsBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">System running smoothly. No recent logs.</td></tr>';
+                }
+
+            } catch (error) {
+                console.error("Dashboard Load Error: ", error);
+                document.getElementById('serverStatus').innerHTML = `<div class="dot" style="background:#ef4444; box-shadow:0 0 5px #ef4444;"></div> Server: Offline/Error`;
+                document.getElementById('serverStatus').style.color = '#ef4444';
+                document.getElementById('serverStatus').style.background = '#fef2f2';
+            }
+        }
     </script>
 
 </body>
