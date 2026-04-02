@@ -85,6 +85,7 @@
             
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
             <li><a href="teacher_profile.html"><i class='bx bx-user'></i> My Profile</a></li>
+            <li><a href="login.html" style="color: var(--danger);"><i class='bx bx-log-out'></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -97,7 +98,7 @@
             <div class="user-profile">
                 <div style="text-align: right;">
                     <b id="topbarTeacherName" style="font-size: 13px;">Loading...</b><br>
-                    <span style="font-size: 11px; color: var(--text-light);">Faculty</span>
+                    <span id="topbarTeacherSkills" style="font-size: 11px; color: var(--text-light);">Faculty</span>
                 </div>
                 <img id="topbarTeacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff">
             </div>
@@ -161,28 +162,64 @@
 
         const BASE_URL = 'https://zhi-college-rtya.onrender.com/api';
         
-        // Fetch Teacher Data from LocalStorage
-        const teacherData = {
-            id: localStorage.getItem('staffId') || 'FAC_DEMO_01',
-            name: localStorage.getItem('staffName') || 'Dr. Rakesh Kumar',
-            role: 'Teacher' // Role explicitly defined for future backend schema
-        };
+        // Fetch logged in Teacher Data
+        let staffId = localStorage.getItem('staffId');
+        let staffName = localStorage.getItem('staffName') || 'Faculty';
+        let staffRole = localStorage.getItem('role') || 'Teacher';
 
-        window.onload = () => {
-            // Update Topbar Info
-            document.getElementById('topbarTeacherName').innerText = teacherData.name;
-            document.getElementById('topbarTeacherImg').src = `https://ui-avatars.com/api/?name=${teacherData.name.replace(" ", "+")}&background=10b981&color=fff`;
+        window.onload = async () => {
+            if (!staffId) {
+                alert("Please login first to apply for leave!");
+                window.location.href = 'login.html';
+                return;
+            }
 
-            // Set minimum date to today to prevent past leave dates
+            // Set minimum date to today (past leave blocks)
             let today = new Date().toISOString().split('T')[0];
             document.getElementById("startDate").setAttribute('min', today);
             document.getElementById("endDate").setAttribute('min', today);
 
-            // Fetch History
+            // Fetch Real Profile Details & Skills
+            await loadTeacherProfile();
+            
+            // Fetch History from DB
             fetchMyLeaves();
         };
 
-        // 🟢 1. FETCH PAST LEAVES 🟢
+        // 🟢 1. FETCH LIVE TEACHER SKILLS/PROFILE 🟢
+        async function loadTeacherProfile() {
+            document.getElementById('topbarTeacherName').innerText = staffName;
+            document.getElementById('topbarTeacherImg').src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
+
+            try {
+                const response = await fetch(`${BASE_URL}/staff`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const myProfile = result.data.find(s => s._id === staffId);
+                    if (myProfile) {
+                        staffName = myProfile.name;
+                        document.getElementById('topbarTeacherName').innerText = myProfile.name;
+                        
+                        // Set Teacher Skills or Department
+                        if (myProfile.skills) {
+                            document.getElementById('topbarTeacherSkills').innerText = myProfile.skills;
+                        } else if (myProfile.dept) {
+                            document.getElementById('topbarTeacherSkills').innerText = myProfile.dept;
+                        }
+
+                        // Load Real Profile Picture
+                        if (myProfile.profilePicUrl) {
+                            document.getElementById('topbarTeacherImg').src = myProfile.profilePicUrl;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading profile data", error);
+            }
+        }
+
+        // 🟢 2. FETCH PAST LEAVES (Sirf Isi Teacher Ki) 🟢
         async function fetchMyLeaves() {
             const tbody = document.getElementById('leaveHistoryBody');
             
@@ -191,31 +228,28 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Filter records specifically for this teacher
-                    const myLeaves = result.data.filter(l => l.applicantId === teacherData.id);
+                    // Sirf login wale teacher ki leave uthao
+                    const myLeaves = result.data.filter(l => l.applicantId === staffId);
 
                     if (myLeaves.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">No leave history found.</td></tr>';
                         return;
                     }
 
-                    tbody.innerHTML = ''; // Clear loading text
+                    tbody.innerHTML = ''; // Clear loading
                     
                     // Sort by newest first
                     myLeaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                     myLeaves.forEach(leave => {
-                        // Badge logic
                         let badgeClass = 'badge-pending';
                         if(leave.status === 'Approved') badgeClass = 'badge-approved';
                         if(leave.status === 'Rejected') badgeClass = 'badge-rejected';
 
-                        // Date formatting
                         let appliedOn = new Date(leave.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                         let fromDate = new Date(leave.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                         let toDate = new Date(leave.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
-                        // Remark logic
                         let remarkHtml = leave.hodRemark ? `<div class="hod-remark"><b>HOD:</b> ${leave.hodRemark}</div>` : '';
 
                         let row = `
@@ -233,11 +267,11 @@
                     });
                 }
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--danger);">Failed to connect to server.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--danger);">Failed to fetch leave data from server.</td></tr>';
             }
         }
 
-        // 🟢 2. SUBMIT LEAVE APPLICATION 🟢
+        // 🟢 3. SUBMIT LEAVE APPLICATION (To Server) 🟢
         async function applyLeave(e) {
             e.preventDefault();
             
@@ -247,7 +281,7 @@
             const endDate = document.getElementById('endDate').value;
             const reason = document.getElementById('leaveReason').value;
 
-            // Date validation & Days Calculation
+            // Dates check
             const sDate = new Date(startDate);
             const eDate = new Date(endDate);
             if (eDate < sDate) {
@@ -260,22 +294,21 @@
             btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Submitting...";
             btn.disabled = true;
 
-            const payload = {
-                applicantId: teacherData.id,
-                applicantName: teacherData.name,
-                applicantRole: teacherData.role, // "Teacher" send kar rahe hain schema identity ke liye
-                leaveType: leaveType,
-                startDate: startDate,
-                endDate: endDate,
-                totalDays: totalDays,
-                reason: reason
-            };
+            // Form Data creation kyunki server.js multer.single expect kar raha hai
+            const formData = new FormData();
+            formData.append('applicantId', staffId);
+            formData.append('applicantName', staffName);
+            formData.append('applicantRole', staffRole); 
+            formData.append('leaveType', leaveType);
+            formData.append('startDate', startDate);
+            formData.append('endDate', endDate);
+            formData.append('totalDays', totalDays);
+            formData.append('reason', reason);
 
             try {
                 const response = await fetch(`${BASE_URL}/leaves/apply`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: formData // Content-Type auto detect ho jayega boundary ke saath
                 });
                 
                 const result = await response.json();
@@ -283,7 +316,7 @@
                 if (result.success) {
                     alert("✅ Leave Application Submitted Successfully!");
                     document.getElementById('leaveForm').reset();
-                    fetchMyLeaves(); // Update the table instantly
+                    fetchMyLeaves(); // Table ko instantly update karo
                 } else {
                     alert("❌ Failed: " + result.message);
                 }
