@@ -52,7 +52,7 @@
         .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
         .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
 
-        /* ------------------ STATS CARDS (LEAVE FOCUSED) ------------------ */
+        /* ------------------ STATS CARDS ------------------ */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
         .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; min-width: 0;}
         .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
@@ -174,10 +174,10 @@
             </div>
             <div class="user-profile">
                 <div style="text-align: right;">
-                    <b id="adminName">Dr. Amit Kumar</b>
-                    <span>Head of Department</span>
+                    <b id="adminName">Loading...</b>
+                    <span id="adminRole">Head of Department</span>
                 </div>
-                <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
+                <img id="adminImg" src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
             </div>
         </header>
 
@@ -190,28 +190,28 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-time-five'></i></div>
                     <div class="stat-info">
-                        <h4>12</h4>
+                        <h4 id="statPendingStudent">0</h4>
                         <p>Pending Student Leaves</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-user-voice'></i></div>
                     <div class="stat-info">
-                        <h4>03</h4>
-                        <p>Pending Teacher Leaves</p>
+                        <h4 id="statPendingStaff">0</h4>
+                        <p>Pending Staff Leaves</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #dcfce7; color: var(--success);"><i class='bx bx-check-circle'></i></div>
                     <div class="stat-info">
-                        <h4>24</h4>
+                        <h4 id="statApproved">0</h4>
                         <p>Approved This Week</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-x-circle'></i></div>
                     <div class="stat-info">
-                        <h4>05</h4>
+                        <h4 id="statRejected">0</h4>
                         <p>Rejected This Week</p>
                     </div>
                 </div>
@@ -221,19 +221,19 @@
                 <div class="panel-header">
                     <h3><i class='bx bx-envelope'></i> Manage Requests</h3>
                     <div class="filter-tabs">
-                        <button class="filter-btn active" id="tab-students" onclick="switchTab('students')">Students (12)</button>
-                        <button class="filter-btn" id="tab-teachers" onclick="switchTab('teachers')">Teachers (3)</button>
+                        <button class="filter-btn active" id="tab-students" onclick="switchTab('student')">Students</button>
+                        <button class="filter-btn" id="tab-teachers" onclick="switchTab('staff')">Staff/Teachers</button>
                     </div>
                 </div>
 
                 <div class="table-res">
                     <table>
                         <thead>
-                            <tr id="tableHeader">
-                                </tr>
+                            <tr id="tableHeader"></tr>
                         </thead>
                         <tbody id="leaveTableBody">
-                            </tbody>
+                            <tr><td colspan="4" style="text-align:center;">Loading requests...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -247,131 +247,149 @@
                 <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="req-summary" id="modalSummary">
-                    <b>Applicant:</b> Rahul Sharma (BCA Sem 1)<br>
-                    <b>Duration:</b> 15 Apr to 18 Apr (4 Days)<br>
-                    <b>Reason:</b> Medical Issue (Viral Fever)
-                </div>
-                
+                <div class="req-summary" id="modalSummary"></div>
                 <div class="form-group">
                     <label>HOD Remark / Message (Optional)</label>
-                    <textarea id="hodRemark" placeholder="Add a comment... e.g. 'Approved, please submit medical certificate when you return.'"></textarea>
+                    <textarea id="hodRemark" placeholder="Add a comment... e.g. 'Approved, please submit medical certificate.'"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-                <button class="btn-act btn-reject" onclick="submitAction('Rejected')"><i class='bx bx-x'></i> Reject Leave</button>
-                <button class="btn-act btn-approve" onclick="submitAction('Approved')"><i class='bx bx-check'></i> Approve Leave</button>
+                <button class="btn-act btn-reject" onclick="submitAction('Rejected')"><i class='bx bx-x'></i> Reject</button>
+                <button class="btn-act btn-approve" onclick="submitAction('Approved')"><i class='bx bx-check'></i> Approve</button>
             </div>
         </div>
     </div>
 
     <script>
+        const API_URL = 'https://zhi-college-rtya.onrender.com/api/leaves';
+        let allLeaves = [];
+        let currentTab = 'student';
+        let selectedLeaveId = null;
+
+        window.onload = () => {
+            loadAdminInfo();
+            fetchLeaves();
+        };
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // 🔴 DUMMY DATA FOR DEMONSTRATION 🔴
-        const studentLeaves = [
-            { id: 1, name: "Rahul Sharma", role: "BCA (Sem 1)", avatar: "RS", dates: "15 Apr 2026 - 18 Apr 2026", days: 4, reason: "Suffering from severe viral fever. Doctor advised rest.", doc: "medical_cert.pdf" },
-            { id: 2, name: "Priya Singh", role: "BBA (Sem 3)", avatar: "PS", dates: "16 Apr 2026", days: 1, reason: "Family function out of town.", doc: null },
-            { id: 3, name: "Aman Verma", role: "MCA (Sem 5)", avatar: "AV", dates: "20 Apr 2026 - 21 Apr 2026", days: 2, reason: "Attending hackathon at IIT Delhi.", doc: "event_invite.pdf" }
-        ];
+        // --- 1. Load Real HOD Info ---
+        function loadAdminInfo() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                document.getElementById('adminName').innerText = userData.name || userData.studentName || "Faculty Member";
+                document.getElementById('adminRole').innerText = userData.dept ? `${userData.role} (${userData.dept})` : userData.role;
+                if(userData.profilePicUrl) document.getElementById('adminImg').src = userData.profilePicUrl;
+            } else {
+                window.location.href = 'login.html'; // Redirect if not logged in
+            }
+        }
 
-        const teacherLeaves = [
-            { id: 101, name: "Vikas Kumar", role: "Sr. Faculty (BCA)", avatar: "VK", dates: "16 Apr 2026", days: 1, reason: "Personal emergency at home. Substitute: Sanjay Sir.", doc: null },
-            { id: 102, name: "Neha Gupta", role: "Asst. Professor", avatar: "NG", dates: "18 Apr 2026 - 22 Apr 2026", days: 5, reason: "Out of station for a wedding. Syllabus adjusted.", doc: null }
-        ];
+        // --- 2. Fetch Leaves From API ---
+        async function fetchLeaves() {
+            try {
+                const res = await fetch(API_URL);
+                const result = await res.json();
+                if (result.success) {
+                    allLeaves = result.data;
+                    updateStats();
+                    renderTable();
+                }
+            } catch (error) {
+                console.error("Error fetching leaves:", error);
+            }
+        }
 
-        let currentTab = 'students';
-        let currentRequestId = null;
+        function updateStats() {
+            const pendingStudent = allLeaves.filter(l => l.applicantType === 'student' && l.status === 'Pending').length;
+            const pendingStaff = allLeaves.filter(l => l.applicantType === 'staff' && l.status === 'Pending').length;
+            const approved = allLeaves.filter(l => l.status === 'Approved').length;
+            const rejected = allLeaves.filter(l => l.status === 'Rejected').length;
 
-        // Initialize Table
-        window.onload = () => { switchTab('students'); };
+            document.getElementById('statPendingStudent').innerText = pendingStudent;
+            document.getElementById('statPendingStaff').innerText = pendingStaff;
+            document.getElementById('statApproved').innerText = approved;
+            document.getElementById('statRejected').innerText = rejected;
+
+            // Update Tab counts
+            document.getElementById('tab-students').innerText = `Students (${pendingStudent})`;
+            document.getElementById('tab-teachers').innerText = `Staff (${pendingStaff})`;
+        }
 
         function switchTab(tab) {
             currentTab = tab;
-            document.getElementById('tab-students').classList.remove('active');
-            document.getElementById('tab-teachers').classList.remove('active');
-            document.getElementById(`tab-${tab}`).classList.add('active');
-
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab === 'student' ? 'students' : 'teachers'}`).classList.add('active');
             renderTable();
         }
 
         function renderTable() {
             const thead = document.getElementById('tableHeader');
             const tbody = document.getElementById('leaveTableBody');
-            
             tbody.innerHTML = '';
 
-            if(currentTab === 'students') {
-                thead.innerHTML = `
-                    <th>Student Name & Class</th>
-                    <th>Leave Duration</th>
-                    <th>Reason & Attachments</th>
-                    <th>Action</th>
-                `;
-                studentLeaves.forEach(req => tbody.innerHTML += createRow(req));
-            } else {
-                thead.innerHTML = `
-                    <th>Staff Name & Designation</th>
-                    <th>Leave Duration</th>
-                    <th>Reason & Substitute Info</th>
-                    <th>Action</th>
-                `;
-                teacherLeaves.forEach(req => tbody.innerHTML += createRow(req));
+            const filtered = allLeaves.filter(l => l.applicantType === currentTab && l.status === 'Pending');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">No pending ${currentTab} requests.</td></tr>`;
+                return;
             }
-        }
 
-        function createRow(req) {
-            let docHtml = req.doc ? `<br><a href="#" style="font-size:11px; color:var(--primary); text-decoration:none; margin-top:5px; display:inline-block;"><i class='bx bx-paperclip'></i> ${req.doc}</a>` : '';
-            
-            // Encode data so we can pass it to Modal
-            let reqData = encodeURIComponent(JSON.stringify(req));
-
-            return `
-                <tr>
-                    <td>
-                        <div class="user-col">
-                            <div class="avatar">${req.avatar}</div>
-                            <div>
-                                <b>${req.name}</b>
-                                <span class="role-text">${req.role}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="date-box">${req.dates}</div>
-                        <span class="badge bg-yellow" style="margin-top:4px;">${req.days} Days</span>
-                    </td>
-                    <td>
-                        <div class="reason-box">${req.reason}</div>
-                        ${docHtml}
-                    </td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-act btn-approve" onclick="openModal('${reqData}')">Process</button>
-                        </div>
-                    </td>
-                </tr>
+            thead.innerHTML = `
+                <th>${currentTab === 'student' ? 'Student' : 'Staff'} Name & Info</th>
+                <th>Leave Duration</th>
+                <th>Reason & Files</th>
+                <th>Action</th>
             `;
+
+            filtered.forEach(req => {
+                const name = req.studentId?.studentName || req.staffId?.name || "Unknown";
+                const role = req.studentId ? `${req.studentId.course} (Sem ${req.studentId.semester})` : (req.staffId?.dept || "Faculty");
+                const avatar = name.charAt(0);
+                const docLink = req.documentUrl ? `<br><a href="${req.documentUrl}" target="_blank" style="font-size:11px; color:var(--primary); text-decoration:none;"><i class='bx bx-paperclip'></i> View Attachment</a>` : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="user-col">
+                                <div class="avatar">${avatar}</div>
+                                <div>
+                                    <b>${name}</b>
+                                    <span class="role-text">${role}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-box">${new Date(req.startDate).toLocaleDateString()} - ${new Date(req.endDate).toLocaleDateString()}</div>
+                            <span class="badge bg-yellow" style="margin-top:4px;">${req.totalDays} Days</span>
+                        </td>
+                        <td>
+                            <div class="reason-box">${req.reason}</div>
+                            ${docLink}
+                        </td>
+                        <td>
+                            <button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        // 🔴 MODAL LOGIC 🔴
-        function openModal(encodedData) {
-            const req = JSON.parse(decodeURIComponent(encodedData));
-            currentRequestId = req.id;
+        function openModal(id) {
+            const req = allLeaves.find(l => l._id === id);
+            selectedLeaveId = id;
+            const name = req.studentId?.studentName || req.staffId?.name;
             
-            let applicantType = currentTab === 'students' ? 'Student' : 'Staff';
-
             document.getElementById('modalSummary').innerHTML = `
-                <div style="margin-bottom: 5px;"><b>${applicantType}:</b> ${req.name} (${req.role})</div>
-                <div style="margin-bottom: 5px;"><b>Duration:</b> ${req.dates} (${req.days} Days)</div>
+                <div style="margin-bottom: 5px;"><b>Applicant:</b> ${name}</div>
+                <div style="margin-bottom: 5px;"><b>Duration:</b> ${new Date(req.startDate).toLocaleDateString()} to ${new Date(req.endDate).toLocaleDateString()}</div>
                 <div><b>Reason:</b> ${req.reason}</div>
             `;
-            
-            document.getElementById('hodRemark').value = ''; // clear previous remark
+            document.getElementById('hodRemark').value = '';
             document.getElementById('actionModal').style.display = 'flex';
         }
 
@@ -379,17 +397,33 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
-        function submitAction(status) {
+        // --- 3. Submit Action to Backend ---
+        async function submitAction(status) {
             const remark = document.getElementById('hodRemark').value;
-            
-            // Here you would normally send an API request to your backend:
-            // fetch('/api/leaves/update-status', { method: 'POST', body: JSON.stringify({ id: currentRequestId, status, remark }) })
-            
-            let emoji = status === 'Approved' ? '✅' : '❌';
-            alert(`${emoji} Leave ${status} successfully!\nRemark sent: "${remark || 'No remark'}"`);
-            
-            closeModal();
-            // Optional: Remove row from table locally after processing
+            const btn = event.target;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/${selectedLeaveId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status, remark: remark })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert(`Leave ${status} Successfully!`);
+                    closeModal();
+                    fetchLeaves(); // Refresh data
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (error) {
+                console.error("Error updating leave:", error);
+                alert("Failed to connect to server.");
+            } finally {
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
