@@ -138,7 +138,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-user-voice'></i></div>
-                    <div><h4 id="statPendingT">0</h4><h4 id="statPendingT">0</h4><p style="font-size: 12px; color: var(--text-light);">Pending Staff</p></div>
+                    <div><h4 id="statPendingT">0</h4><p style="font-size: 12px; color: var(--text-light);">Pending Staff</p></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #dcfce7; color: var(--success);"><i class='bx bx-check-circle'></i></div>
@@ -165,7 +165,7 @@
                             <tr id="tableHeader">
                                 <th>Applicant Info</th>
                                 <th>Duration</th>
-                                <th>Reason</th>
+                                <th>Reason & Files</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -207,15 +207,15 @@
 
         window.onload = () => {
             fetchLeaves();
-            // User Data for Topbar
             const userData = JSON.parse(localStorage.getItem('userData'));
-            if(userData) document.getElementById('adminName').innerText = userData.name || "HOD Office";
+            if(userData) document.getElementById('adminName').innerText = userData.name || userData.studentName || "HOD Office";
         };
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
+        // --- FETCH LEAVES FROM DB ---
         async function fetchLeaves() {
             try {
                 const res = await fetch(API_URL);
@@ -231,9 +231,16 @@
             }
         }
 
+        // --- CHECK IF APPLICANT IS A STUDENT ---
+        function isStudent(role) {
+            if (!role) return false;
+            const r = role.toLowerCase();
+            return r.includes('student') || r.includes('sem') || r.includes('bca') || r.includes('bba') || r.includes('mca');
+        }
+
         function updateStats() {
-            document.getElementById('statPendingS').innerText = allLeaves.filter(l => l.applicantType === 'student' && l.status === 'Pending').length;
-            document.getElementById('statPendingT').innerText = allLeaves.filter(l => l.applicantType === 'staff' && l.status === 'Pending').length;
+            document.getElementById('statPendingS').innerText = allLeaves.filter(l => isStudent(l.applicantRole) && l.status === 'Pending').length;
+            document.getElementById('statPendingT').innerText = allLeaves.filter(l => !isStudent(l.applicantRole) && l.status === 'Pending').length;
             document.getElementById('statApproved').innerText = allLeaves.filter(l => l.status === 'Approved').length;
             document.getElementById('statRejected').innerText = allLeaves.filter(l => l.status === 'Rejected').length;
         }
@@ -245,9 +252,14 @@
             renderTable();
         }
 
+        // --- RENDER REAL DATA IN TABLE ---
         function renderTable() {
             const tbody = document.getElementById('leaveTableBody');
-            const filtered = allLeaves.filter(l => l.applicantType === currentTab && l.status === 'Pending');
+            
+            const filtered = allLeaves.filter(l => {
+                const isStud = isStudent(l.applicantRole);
+                return l.status === 'Pending' && (currentTab === 'student' ? isStud : !isStud);
+            });
 
             if (filtered.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">No pending ${currentTab} requests.</td></tr>`;
@@ -255,17 +267,25 @@
             }
 
             tbody.innerHTML = filtered.map(req => {
-                const name = req.studentId?.studentName || req.staffId?.name || "Unknown";
-                const role = req.studentId ? `Sem ${req.studentId.semester}` : (req.staffId?.dept || "Faculty");
+                // Real DB Mapping
+                const name = req.applicantName || "Unknown Applicant";
+                const role = req.applicantRole || "Role Unknown";
                 
+                // Dates Formatting
+                const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
+                const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
+
+                // Document Attachment Link Logic
+                const docLink = req.documentUrl ? `<br><a href="${req.documentUrl}" target="_blank" style="font-size:11px; color:var(--primary); text-decoration:none; margin-top:8px; display:inline-block;"><i class='bx bx-paperclip'></i> View Document</a>` : '';
+
                 return `
                     <tr>
                         <td><b>${name}</b><br><span style="color:gray; font-size:11px;">${role}</span></td>
                         <td>
-                            <div style="font-weight:600; color:var(--primary);">${new Date(req.startDate).toLocaleDateString()}</div>
-                            <span class="badge bg-yellow">${req.totalDays} Days</span>
+                            <div style="font-weight:600; color:var(--primary);">${sDate} - ${eDate}</div>
+                            <span class="badge bg-yellow" style="margin-top:4px; display:inline-block;">${req.totalDays} Days</span>
                         </td>
-                        <td><div style="max-width:250px; white-space:normal;">${req.reason}</div></td>
+                        <td><div style="max-width:250px; white-space:normal;">${req.reason}</div>${docLink}</td>
                         <td><button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process</button></td>
                     </tr>
                 `;
@@ -275,11 +295,14 @@
         function openModal(id) {
             selectedLeaveId = id;
             const req = allLeaves.find(l => l._id === id);
-            const name = req.studentId?.studentName || req.staffId?.name;
+            
+            const name = req.applicantName || "Unknown Applicant";
+            const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
+            const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
             
             document.getElementById('modalSummary').innerHTML = `
-                <b>Applicant:</b> ${name}<br>
-                <b>Dates:</b> ${new Date(req.startDate).toLocaleDateString()} to ${new Date(req.endDate).toLocaleDateString()}<br>
+                <b>Applicant:</b> ${name} (${req.applicantRole})<br>
+                <b>Dates:</b> ${sDate} to ${eDate}<br>
                 <b>Reason:</b> ${req.reason}
             `;
             document.getElementById('hodRemark').value = '';
@@ -290,28 +313,43 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
+        // --- SUBMIT APPROVE/REJECT TO SERVER ---
         async function submitAction(status) {
             const remark = document.getElementById('hodRemark').value;
             const btn = event.target;
+            const originalText = btn.innerText;
             btn.innerText = "Processing...";
             btn.disabled = true;
 
             try {
-                const res = await fetch(`${API_URL}/${selectedLeaveId}`, {
+                // Try update route fallback
+                let res = await fetch(`${API_URL}/update/${selectedLeaveId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: status, remark: remark })
                 });
+
+                if (res.status === 404) {
+                    res = await fetch(`${API_URL}/${selectedLeaveId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status, remark: remark })
+                    });
+                }
+
                 const result = await res.json();
+                
                 if (result.success) {
                     closeModal();
-                    fetchLeaves(); // Live Refresh
+                    fetchLeaves(); // Table apne aap refresh ho jayegi
+                } else {
+                    alert("Update Failed: " + result.message);
                 }
             } catch (err) {
                 alert("Server Connection Failed");
             } finally {
                 btn.disabled = false;
-                btn.innerText = status === 'Approved' ? "Approve Request" : "Reject";
+                btn.innerText = originalText;
             }
         }
     </script>
