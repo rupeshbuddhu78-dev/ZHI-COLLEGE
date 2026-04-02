@@ -25,7 +25,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
-        /* ------------------ SIDEBAR (FULL MENU) ------------------ */
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
@@ -37,7 +37,7 @@
         .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--purple); }
         .menu-section { margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
 
-        /* ------------------ MAIN CONTENT ------------------ */
+        /* MAIN CONTENT */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; }
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
@@ -48,27 +48,35 @@
         .content { padding: 25px; flex: 1; }
         .page-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
 
-        /* STATS CARDS */
+        /* CLICKABLE STATS CARDS */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; position: relative;}
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stat-card.active-filter { border: 2px solid var(--primary); background: #eff6ff; }
         .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; }
 
         /* TABLE PANEL */
         .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
         .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        .filters-container { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .date-filter { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; font-family: inherit; color: var(--text-dark);}
+        
         .filter-tabs { display: flex; gap: 5px; background: #f1f5f9; padding: 4px; border-radius: 8px;}
-        .filter-btn { padding: 8px 15px; border: none; background: transparent; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-light); cursor: pointer; }
+        .filter-btn { padding: 8px 15px; border: none; background: transparent; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: 0.2s;}
         .filter-btn.active { background: var(--white); color: var(--purple); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
         /* TABLE */
         .table-res { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; text-align: left; }
-        th { padding: 12px 20px; background: #f8fafc; font-size: 12px; color: var(--text-light); text-transform: uppercase; }
+        th { padding: 12px 20px; background: #f8fafc; font-size: 12px; color: var(--text-light); text-transform: uppercase; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle;}
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
         .bg-yellow { background: #fef9c3; color: #854d0e; }
-        .btn-act { padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-red { background: #fef2f2; color: #991b1b; }
+        .btn-act { padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
         .btn-approve { background: var(--success); color: white; }
 
         /* MODAL */
@@ -129,33 +137,38 @@
         </header>
 
         <main class="content">
-            <div class="page-title">📬 Leave Requests (Live)</div>
+            <div class="page-title">📬 Leave Requests & History</div>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card active-filter" id="box-Pending" onclick="setStatusFilter('Pending')">
                     <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-time'></i></div>
-                    <div><h4 id="statPendingS">0</h4><p style="font-size: 12px; color: var(--text-light);">Pending Students</p></div>
+                    <div><h4 id="statPendingS">0</h4><p style="font-size: 12px; color: var(--text-light);">Pending Requests</p></div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-user-voice'></i></div>
-                    <div><h4 id="statPendingT">0</h4><p style="font-size: 12px; color: var(--text-light);">Pending Staff</p></div>
-                </div>
-                <div class="stat-card">
+                <div class="stat-card" id="box-Approved" onclick="setStatusFilter('Approved')">
                     <div class="stat-icon" style="background: #dcfce7; color: var(--success);"><i class='bx bx-check-circle'></i></div>
-                    <div><h4 id="statApproved">0</h4><p style="font-size: 12px; color: var(--text-light);">Approved Total</p></div>
+                    <div><h4 id="statApproved">0</h4><p style="font-size: 12px; color: var(--text-light);">Approved History</p></div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" id="box-Rejected" onclick="setStatusFilter('Rejected')">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-x-circle'></i></div>
-                    <div><h4 id="statRejected">0</h4><p style="font-size: 12px; color: var(--text-light);">Rejected Total</p></div>
+                    <div><h4 id="statRejected">0</h4><p style="font-size: 12px; color: var(--text-light);">Rejected History</p></div>
+                </div>
+                <div class="stat-card" id="box-All" onclick="setStatusFilter('All')">
+                    <div class="stat-icon" style="background: #f1f5f9; color: var(--purple);"><i class='bx bx-list-ul'></i></div>
+                    <div><h4 id="statAll">0</h4><p style="font-size: 12px; color: var(--text-light);">Total Leaves</p></div>
                 </div>
             </div>
 
             <div class="panel">
                 <div class="panel-header">
-                    <h3>Manage Pending Requests</h3>
-                    <div class="filter-tabs">
-                        <button class="filter-btn active" id="btn-student" onclick="switchTab('student')">Students</button>
-                        <button class="filter-btn" id="btn-staff" onclick="switchTab('staff')">Staff/Teachers</button>
+                    <h3 id="tableHeading">Manage Pending Requests</h3>
+                    
+                    <div class="filters-container">
+                        <input type="date" id="filterDate" class="date-filter" onchange="renderTable()" title="Filter by Date">
+                        
+                        <div class="filter-tabs">
+                            <button class="filter-btn active" id="btn-student" onclick="switchTab('student')">Students</button>
+                            <button class="filter-btn" id="btn-staff" onclick="switchTab('staff')">Staff/Teachers</button>
+                        </div>
                     </div>
                 </div>
 
@@ -166,7 +179,7 @@
                                 <th>Applicant Info</th>
                                 <th>Duration</th>
                                 <th>Reason & Files</th>
-                                <th>Action</th>
+                                <th>Status/Action</th>
                             </tr>
                         </thead>
                         <tbody id="leaveTableBody">
@@ -203,6 +216,7 @@
         const API_URL = 'https://zhi-college-rtya.onrender.com/api/leaves';
         let allLeaves = [];
         let currentTab = 'student';
+        let currentStatusFilter = 'Pending'; // Default
         let selectedLeaveId = null;
 
         window.onload = () => {
@@ -215,23 +229,21 @@
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // --- FETCH LEAVES FROM DB ---
         async function fetchLeaves() {
             try {
                 const res = await fetch(API_URL);
                 const result = await res.json();
                 if (result.success) {
-                    allLeaves = result.data;
+                    // Sort by newest first
+                    allLeaves = result.data.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
                     updateStats();
                     renderTable();
                 }
             } catch (err) {
-                console.error("Database Fetch Error:", err);
                 document.getElementById('leaveTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Connection Error</td></tr>`;
             }
         }
 
-        // --- CHECK IF APPLICANT IS A STUDENT ---
         function isStudent(role) {
             if (!role) return false;
             const r = role.toLowerCase();
@@ -239,10 +251,10 @@
         }
 
         function updateStats() {
-            document.getElementById('statPendingS').innerText = allLeaves.filter(l => isStudent(l.applicantRole) && l.status === 'Pending').length;
-            document.getElementById('statPendingT').innerText = allLeaves.filter(l => !isStudent(l.applicantRole) && l.status === 'Pending').length;
+            document.getElementById('statPendingS').innerText = allLeaves.filter(l => l.status === 'Pending').length;
             document.getElementById('statApproved').innerText = allLeaves.filter(l => l.status === 'Approved').length;
             document.getElementById('statRejected').innerText = allLeaves.filter(l => l.status === 'Rejected').length;
+            document.getElementById('statAll').innerText = allLeaves.length;
         }
 
         function switchTab(tab) {
@@ -252,41 +264,80 @@
             renderTable();
         }
 
-        // --- RENDER REAL DATA IN TABLE ---
+        // CLICKABLE BOXES LOGIC
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            
+            // Highlight active box
+            document.querySelectorAll('.stat-card').forEach(box => box.classList.remove('active-filter'));
+            document.getElementById(`box-${status}`).classList.add('active-filter');
+            
+            // Change Table Heading
+            document.getElementById('tableHeading').innerText = status === 'All' ? 'All Leaves History' : `${status} Leaves`;
+            
+            renderTable();
+        }
+
         function renderTable() {
             const tbody = document.getElementById('leaveTableBody');
+            const selectedDate = document.getElementById('filterDate').value;
             
             const filtered = allLeaves.filter(l => {
                 const isStud = isStudent(l.applicantRole);
-                return l.status === 'Pending' && (currentTab === 'student' ? isStud : !isStud);
+                const tabMatch = currentTab === 'student' ? isStud : !isStud;
+                const statusMatch = currentStatusFilter === 'All' ? true : l.status === currentStatusFilter;
+                
+                // DATE FILTER LOGIC
+                let dateMatch = true;
+                if (selectedDate) {
+                    const lStartDate = l.startDate.split('T')[0];
+                    const lCreatedAt = l.createdAt ? l.createdAt.split('T')[0] : '';
+                    // Matches if selected date is start date OR applied date
+                    dateMatch = (lStartDate === selectedDate) || (lCreatedAt === selectedDate);
+                }
+
+                return tabMatch && statusMatch && dateMatch;
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">No pending ${currentTab} requests.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">No ${currentStatusFilter.toLowerCase()} requests found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = filtered.map(req => {
-                // Real DB Mapping
                 const name = req.applicantName || "Unknown Applicant";
-                const role = req.applicantRole || "Role Unknown";
                 
-                // Dates Formatting
+                // 🔥 DISPLAY COURSE & SEMESTER MAGIC 🔥
+                let roleInfo = req.applicantRole || "";
+                if(req.course && req.semester) {
+                    roleInfo = `${req.course.toUpperCase()} - Sem ${req.semester}`;
+                }
+
                 const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
                 const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
-
-                // Document Attachment Link Logic
                 const docLink = req.documentUrl ? `<br><a href="${req.documentUrl}" target="_blank" style="font-size:11px; color:var(--primary); text-decoration:none; margin-top:8px; display:inline-block;"><i class='bx bx-paperclip'></i> View Document</a>` : '';
+
+                // If already processed, show Status Badge instead of button
+                let actionHTML = '';
+                if (req.status === 'Pending') {
+                    actionHTML = `<button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process</button>`;
+                } else {
+                    const badgeClass = req.status === 'Approved' ? 'bg-green' : 'bg-red';
+                    actionHTML = `
+                        <span class="badge ${badgeClass}">${req.status}</span>
+                        <div style="font-size:11px; color:gray; margin-top:5px;">HOD: ${req.hodRemark || 'No remark'}</div>
+                    `;
+                }
 
                 return `
                     <tr>
-                        <td><b>${name}</b><br><span style="color:gray; font-size:11px;">${role}</span></td>
+                        <td><b>${name}</b><br><span style="color:gray; font-size:11px; font-weight:600;">${roleInfo}</span></td>
                         <td>
                             <div style="font-weight:600; color:var(--primary);">${sDate} - ${eDate}</div>
                             <span class="badge bg-yellow" style="margin-top:4px; display:inline-block;">${req.totalDays} Days</span>
                         </td>
                         <td><div style="max-width:250px; white-space:normal;">${req.reason}</div>${docLink}</td>
-                        <td><button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process</button></td>
+                        <td>${actionHTML}</td>
                     </tr>
                 `;
             }).join('');
@@ -300,8 +351,11 @@
             const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
             const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
             
+            let roleInfo = req.applicantRole || "";
+            if(req.course && req.semester) roleInfo = `${req.course.toUpperCase()} - Sem ${req.semester}`;
+
             document.getElementById('modalSummary').innerHTML = `
-                <b>Applicant:</b> ${name} (${req.applicantRole})<br>
+                <b>Applicant:</b> ${name} (${roleInfo})<br>
                 <b>Dates:</b> ${sDate} to ${eDate}<br>
                 <b>Reason:</b> ${req.reason}
             `;
@@ -313,44 +367,34 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
-      // --- SUBMIT APPROVE/REJECT TO SERVER ---
-async function submitAction(status) {
-    const remark = document.getElementById('hodRemark').value;
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.innerText = "Processing...";
-    btn.disabled = true;
+        async function submitAction(status) {
+            const remark = document.getElementById('hodRemark').value;
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
 
-    try {
-        // 🔥 Yahan POST method aur sahi route update kiya hai aapke server.js ke hisaab se
-        const res = await fetch(`${API_URL}/update-status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                id: selectedLeaveId,  // ID ab body me jaa rahi hai
-                status: status, 
-                remark: remark 
-            })
-        });
+            try {
+                const res = await fetch(`${API_URL}/update-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: selectedLeaveId, status: status, remark: remark })
+                });
 
-        const result = await res.json();
-        
-        if (result.success) {
-            closeModal();
-            fetchLeaves(); // Table apne aap refresh ho jayegi
-            alert(`Leave ${status} successfully! ✅`);
-        } else {
-            alert("Update Failed: " + result.message);
+                const result = await res.json();
+                if (result.success) {
+                    closeModal();
+                    fetchLeaves(); // Data automatically refresh ho jayega
+                } else {
+                    alert("Update Failed: " + result.message);
+                }
+            } catch (err) {
+                alert("Server Connection Failed");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         }
-    } catch (err) {
-        console.error("Approval Error:", err);
-        alert("Server Connection Failed");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = originalText;
-    }
-}
-
     </script>
 </body>
 </html>
