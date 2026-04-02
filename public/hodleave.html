@@ -76,6 +76,9 @@
         .bg-yellow { background: #fef9c3; color: #854d0e; }
         .bg-green { background: #dcfce7; color: #166534; }
         .bg-red { background: #fef2f2; color: #991b1b; }
+        .bg-purple { background: var(--purple); color: white; text-decoration: none; display: inline-block; padding: 6px 12px; border-radius: 6px; font-weight: 500; transition: 0.2s; }
+        .bg-purple:hover { background: #7c3aed; }
+        
         .btn-act { padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
         .btn-approve { background: var(--success); color: white; }
 
@@ -200,8 +203,9 @@
             <div class="modal-body">
                 <div id="modalSummary" style="background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 13px; line-height: 1.5;"></div>
                 <div style="margin-top: 15px;">
-                    <label style="font-size: 12px; font-weight: 700;">HOD Remark (Visible to applicant)</label>
-                    <textarea id="hodRemark" placeholder="e.g. Approved, please collect notes."></textarea>
+                    <label style="font-size: 12px; font-weight: 700;">HOD Remark (Required for partial days)</label>
+                    <p style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Note: If you want to approve fewer days, mention it here (e.g. "Approved for 2 days only").</p>
+                    <textarea id="hodRemark" placeholder="e.g. Approved, please collect notes upon return."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -307,7 +311,7 @@
             tbody.innerHTML = filtered.map(req => {
                 const name = req.applicantName || "Unknown Applicant";
                 
-                // 🔥 DISPLAY COURSE & SEMESTER MAGIC 🔥
+                // DISPLAY COURSE & SEMESTER
                 let roleInfo = req.applicantRole || "";
                 if(req.course && req.semester) {
                     roleInfo = `${req.course.toUpperCase()} - Sem ${req.semester}`;
@@ -315,17 +319,21 @@
 
                 const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
                 const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
-                const docLink = req.documentUrl ? `<br><a href="${req.documentUrl}" target="_blank" style="font-size:11px; color:var(--primary); text-decoration:none; margin-top:8px; display:inline-block;"><i class='bx bx-paperclip'></i> View Document</a>` : '';
+                
+                // 🔥 NAYA PROMINENT VIEW BUTTON 🔥
+                const docLink = req.documentUrl 
+                    ? `<div style="margin-top: 10px;"><a href="${req.documentUrl}" target="_blank" class="bg-purple"><i class='bx bx-link-external'></i> View Attached Document</a></div>` 
+                    : `<div style="margin-top: 10px; font-size: 12px; color: #94a3b8;"><i class='bx bx-block'></i> No Document Uploaded</div>`;
 
                 // If already processed, show Status Badge instead of button
                 let actionHTML = '';
                 if (req.status === 'Pending') {
-                    actionHTML = `<button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process</button>`;
+                    actionHTML = `<button class="btn-act btn-approve" onclick="openModal('${req._id}')">Process Request</button>`;
                 } else {
                     const badgeClass = req.status === 'Approved' ? 'bg-green' : 'bg-red';
                     actionHTML = `
                         <span class="badge ${badgeClass}">${req.status}</span>
-                        <div style="font-size:11px; color:gray; margin-top:5px;">HOD: ${req.hodRemark || 'No remark'}</div>
+                        <div style="font-size:11px; color:gray; margin-top:5px;"><b>Remark:</b> ${req.hodRemark || 'No remark added'}</div>
                     `;
                 }
 
@@ -334,9 +342,12 @@
                         <td><b>${name}</b><br><span style="color:gray; font-size:11px; font-weight:600;">${roleInfo}</span></td>
                         <td>
                             <div style="font-weight:600; color:var(--primary);">${sDate} - ${eDate}</div>
-                            <span class="badge bg-yellow" style="margin-top:4px; display:inline-block;">${req.totalDays} Days</span>
+                            <span class="badge bg-yellow" style="margin-top:4px; display:inline-block;">Requested: ${req.totalDays} Days</span>
                         </td>
-                        <td><div style="max-width:250px; white-space:normal;">${req.reason}</div>${docLink}</td>
+                        <td>
+                            <div style="max-width:250px; white-space:normal; font-size: 12px;"><b>Reason:</b> ${req.reason}</div>
+                            ${docLink}
+                        </td>
                         <td>${actionHTML}</td>
                     </tr>
                 `;
@@ -356,7 +367,7 @@
 
             document.getElementById('modalSummary').innerHTML = `
                 <b>Applicant:</b> ${name} (${roleInfo})<br>
-                <b>Dates:</b> ${sDate} to ${eDate}<br>
+                <b>Dates:</b> ${sDate} to ${eDate} (${req.totalDays} Days)<br>
                 <b>Reason:</b> ${req.reason}
             `;
             document.getElementById('hodRemark').value = '';
