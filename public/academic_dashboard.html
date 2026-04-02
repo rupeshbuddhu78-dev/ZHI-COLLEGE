@@ -94,7 +94,7 @@
         .alert-item:last-child { border-bottom: none; }
         .alert-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0;}
         .alert-content h4 { font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
-        .alert-content p { font-size: 12px; color: var(--text-light); }
+        .alert-content p { font-size: 12px; color: var(--text-light); line-height: 1.4; }
         .alert-action { margin-top: 8px; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; background: #fee2e2; color: #991b1b; display: inline-block;}
 
         /* 📱 100% FIXED MOBILE RESPONSIVENESS */
@@ -112,12 +112,9 @@
             .sidebar-overlay.active { display: block; }
             .topbar { padding: 0 15px; }
             
-            /* Hide name on phone to save space */
             .user-profile b, .user-profile span { display: none; }
             
             .content { padding: 15px; }
-
-            /* Fix page title & buttons for phone */
             .page-title { flex-direction: column; align-items: flex-start; gap: 15px; font-size: 18px;}
             .page-title button { width: 100%; justify-content: center; }
 
@@ -180,7 +177,7 @@
             </div>
             <div class="user-profile">
                 <div style="text-align: right;">
-                    <b id="adminName">Dr. Amit Kumar</b>
+                    <b id="adminName">Loading...</b>
                     <span>Head of Department</span>
                 </div>
                 <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
@@ -189,7 +186,7 @@
 
         <main class="content">
             <div class="page-title">
-                <div>👋 Welcome, HOD Sir!</div>
+                <div>👋 Welcome, <span id="welcomeName">HOD Sir</span>!</div>
                 <button class="btn-primary" style="background: var(--purple);"><i class='bx bx-calendar-plus'></i> Generate Timetable</button>
             </div>
 
@@ -197,47 +194,47 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-buildings'></i></div>
                     <div class="stat-info">
-                        <h4>42</h4>
+                        <h4 id="stat-classes">...</h4>
                         <p>Classes Today</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class='bx bx-user-check'></i></div>
                     <div class="stat-info">
-                        <h4>38 / 40</h4>
+                        <h4 id="stat-teachers">...</h4>
                         <p>Teachers Present</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-book-open'></i></div>
                     <div class="stat-info">
-                        <h4>65%</h4>
+                        <h4 id="stat-syllabus">...</h4>
                         <p>Avg. Syllabus Comp.</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
                     <div class="stat-info">
-                        <h4>12</h4>
-                        <p>Low Attendance Alerts</p>
+                        <h4 id="stat-alerts">...</h4>
+                        <p>Critical Alerts</p>
                     </div>
                 </div>
             </div>
 
             <div class="quick-actions">
-                <a href="#" class="action-btn">
+                <a href="HODtimetable_setup.html" class="action-btn">
                     <i class='bx bx-calendar'></i>
                     Manage Timetable
                 </a>
-                <a href="#" class="action-btn">
+                <a href="substitute_mgmt.html" class="action-btn">
                     <i class='bx bx-transfer'></i>
                     Assign Substitute
                 </a>
-                <a href="#" class="action-btn">
+                <a href="manage_syllabus.html" class="action-btn">
                     <i class='bx bx-book-reader'></i>
                     Track Syllabus Progress
                 </a>
-                <a href="#" class="action-btn">
+                <a href="performance_reports.html" class="action-btn">
                     <i class='bx bx-line-chart'></i>
                     View Weak Students
                 </a>
@@ -260,34 +257,9 @@
                                     <th>Room</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="timetableBody">
                                 <tr>
-                                    <td>10:00 - 11:00 AM</td>
-                                    <td>BCA (Sem 1)</td>
-                                    <td>C Programming</td>
-                                    <td><b style="color: var(--primary);">Rahul Sir</b></td>
-                                    <td><span class="badge bg-yellow">Room 101</span></td>
-                                </tr>
-                                <tr>
-                                    <td>11:00 - 12:00 PM</td>
-                                    <td>BBA (Sem 3)</td>
-                                    <td>Finance Mgmt.</td>
-                                    <td><b style="color: var(--primary);">Priya Mam</b></td>
-                                    <td><span class="badge bg-yellow">Room 205</span></td>
-                                </tr>
-                                <tr>
-                                    <td>12:00 - 01:00 PM</td>
-                                    <td>MCA (Sem 1)</td>
-                                    <td>Data Structures</td>
-                                    <td><b style="color: var(--primary);">Amit Sir</b></td>
-                                    <td><span class="badge bg-yellow">Lab 1</span></td>
-                                </tr>
-                                <tr>
-                                    <td>02:00 - 03:00 PM</td>
-                                    <td>BCA (Sem 5)</td>
-                                    <td>Web Tech</td>
-                                    <td><b style="color: var(--primary);">Sanjay Sir</b></td>
-                                    <td><span class="badge bg-yellow">Lab 2</span></td>
+                                    <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-light);">Loading live timetable...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -298,31 +270,8 @@
                     <div class="panel-header">
                         <h3><i class='bx bx-bell' style="color: var(--danger);"></i> Critical Alerts</h3>
                     </div>
-                    <div class="alert-list">
-                        <div class="alert-item">
-                            <div class="alert-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
-                            <div class="alert-content">
-                                <h4>Teacher Absent Today</h4>
-                                <p><b>Vikas Sir</b> is on leave. 2 classes need a substitute.</p>
-                                <button class="alert-action">Assign Substitute Now</button>
-                            </div>
-                        </div>
-                        
-                        <div class="alert-item">
-                            <div class="alert-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-trending-down'></i></div>
-                            <div class="alert-content">
-                                <h4>Low Attendance Warning</h4>
-                                <p>BCA Sem 1 Section A has average attendance below 65% this week.</p>
-                            </div>
-                        </div>
-
-                        <div class="alert-item">
-                            <div class="alert-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-book'></i></div>
-                            <div class="alert-content">
-                                <h4>Syllabus Lagging</h4>
-                                <p>Maths (BBA Sem 1) is 15% behind the target schedule.</p>
-                            </div>
-                        </div>
+                    <div class="alert-list" id="alertListContainer">
+                        <div style="padding: 20px; text-align: center; color: var(--text-light);">Checking for alerts...</div>
                     </div>
                 </div>
             </div>
@@ -338,13 +287,96 @@
             overlay.classList.toggle('active');
         }
 
-        // Display Name from LocalStorage (Set during login)
+        // Initialize Live Data on Load
         window.onload = () => {
-            const userName = localStorage.getItem('userName');
-            if(userName) {
-                document.getElementById('adminName').innerText = userName;
-            }
+            const userName = localStorage.getItem('userName') || 'HOD Sir';
+            document.getElementById('adminName').innerText = userName;
+            document.getElementById('welcomeName').innerText = userName.split(' ')[0]; // Show first name
+
+            fetchLiveHODData();
         };
+
+        // 🔴 FUNCTION TO FETCH LIVE DATA FROM DATABASE 🔴
+        async function fetchLiveHODData() {
+            try {
+                // Fetching from standard backend APIs concurrently
+                const [staffRes, timetableRes, alertsRes, syllabusRes] = await Promise.all([
+                    fetch('/api/staff').catch(() => ({ json: () => ({ success: false, data: [] }) })),
+                    fetch('/api/timetable/today').catch(() => ({ json: () => ({ success: false, data: [] }) })),
+                    fetch('/api/alerts/hod').catch(() => ({ json: () => ({ success: false, data: [] }) })),
+                    fetch('/api/syllabus/progress').catch(() => ({ json: () => ({ success: false, average: null }) }))
+                ]);
+
+                const staffData = await staffRes.json();
+                const timetableData = await timetableRes.json();
+                const alertsData = await alertsRes.json();
+                const syllabusData = await syllabusRes.json();
+
+                // 1. Process Staff (Teachers)
+                let teachers = staffData.success ? staffData.data.filter(s => s.role && s.role.toLowerCase().includes('teacher') || s.category === 'teacher') : [];
+                let totalTeachers = teachers.length;
+                let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
+
+                // 2. Process Timetable
+                let classesToday = timetableData.success ? timetableData.data : [];
+                
+                // 3. Process Alerts
+                let alerts = alertsData.success ? alertsData.data : [];
+
+                // UPDATE UI - STATS CARDS
+                document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
+                document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
+                document.getElementById('stat-syllabus').innerText = syllabusData.success && syllabusData.average ? `${syllabusData.average}%` : '0%'; 
+                document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
+
+                // UPDATE UI - TIMETABLE TABLE
+                const tbody = document.getElementById('timetableBody');
+                if (classesToday.length > 0) {
+                    tbody.innerHTML = classesToday.map(c => `
+                        <tr>
+                            <td>${c.time}</td>
+                            <td>${c.course}</td>
+                            <td>${c.subject}</td>
+                            <td><b style="color: var(--primary);">${c.teacherName}</b></td>
+                            <td><span class="badge bg-yellow">${c.room}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);">No classes scheduled for today in the database.</td></tr>';
+                }
+
+                // UPDATE UI - CRITICAL ALERTS
+                const alertList = document.getElementById('alertListContainer');
+                if (alerts.length > 0) {
+                    alertList.innerHTML = alerts.map(a => `
+                        <div class="alert-item">
+                            <div class="alert-icon" style="background: ${a.bgColor || '#fef2f2'}; color: ${a.iconColor || 'var(--danger)'};">
+                                <i class='bx ${a.icon || 'bx-error-circle'}'></i>
+                            </div>
+                            <div class="alert-content">
+                                <h4>${a.title}</h4>
+                                <p>${a.message}</p>
+                                ${a.actionText ? `<button class="alert-action" onclick="window.location.href='${a.actionLink || '#'}'">${a.actionText}</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    alertList.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: var(--text-light);"><i class="bx bx-check-shield" style="font-size: 30px; color: var(--success); margin-bottom: 10px; display: block;"></i>All clear! No critical alerts at the moment.</div>';
+                }
+
+            } catch(error) {
+                console.error("Error fetching live HOD data:", error);
+                
+                // Fallback UI in case of total failure (Database not connected)
+                document.getElementById('stat-classes').innerText = 'Error';
+                document.getElementById('stat-teachers').innerText = 'Error';
+                document.getElementById('stat-syllabus').innerText = 'Error';
+                document.getElementById('stat-alerts').innerText = 'Error';
+                
+                document.getElementById('timetableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--danger);">Failed to connect to database.</td></tr>';
+                document.getElementById('alertListContainer').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--danger);">Failed to load alerts. Check server connection.</div>';
+            }
+        }
     </script>
 </body>
 </html>
