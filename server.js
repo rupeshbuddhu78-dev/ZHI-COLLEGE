@@ -2,34 +2,34 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const nodemailer = require('nodemailer'); 
+const nodemailer = require('nodemailer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const https = require('https'); 
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // --- 1. MIDDLEWARE ---
 app.use(cors());
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- 2. CLOUDINARY CONFIGURATION ---
-cloudinary.config({ 
-    cloud_name: 'dzbpiv7ds', 
-    api_key: '812196161439545', 
+cloudinary.config({
+    cloud_name: 'dzbpiv7ds',
+    api_key: '812196161439545',
     api_secret: 'gWdxF2wJvGeuMqvpDgmNogS2pdY',
-    secure: true 
+    secure: true
 });
 
 // Profile Photos ke liye storage
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ZhiStudentProfiles', 
-        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], 
+        folder: 'ZhiStudentProfiles',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
     },
 });
 const upload = multer({ storage: storage });
@@ -38,8 +38,8 @@ const upload = multer({ storage: storage });
 const noticeStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ZhiNotices', 
-        resource_type: 'auto' 
+        folder: 'ZhiNotices',
+        resource_type: 'auto'
     },
 });
 const uploadNotice = multer({ storage: noticeStorage });
@@ -48,8 +48,8 @@ const uploadNotice = multer({ storage: noticeStorage });
 const leaveStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ZhiLeaves', 
-        resource_type: 'auto' 
+        folder: 'ZhiLeaves',
+        resource_type: 'auto'
     },
 });
 const uploadLeave = multer({ storage: leaveStorage });
@@ -58,8 +58,8 @@ const uploadLeave = multer({ storage: leaveStorage });
 const staffStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ZhiStaffFiles', 
-        resource_type: 'auto', 
+        folder: 'ZhiStaffFiles',
+        resource_type: 'auto',
         allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx']
     },
 });
@@ -69,8 +69,8 @@ const uploadStaff = multer({ storage: staffStorage });
 const noteStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ZhiNotes', 
-        resource_type: 'auto' 
+        folder: 'ZhiNotes',
+        resource_type: 'auto'
     },
 });
 const uploadNote = multer({ storage: noteStorage });
@@ -78,8 +78,8 @@ const uploadNote = multer({ storage: noteStorage });
 
 // --- 3. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
-.then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
-.catch((err) => console.log("❌ MongoDB Connection Error:", err));
+    .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
+    .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
 // --- 4. EMAIL SETUP ---
 const transporter = nodemailer.createTransport({
@@ -87,8 +87,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: 'rupesh.c.0828@zhi.org.in', 
-        pass: 'dyju pxba misf qfuk' 
+        user: 'rupesh.c.0828@zhi.org.in',
+        pass: 'dyju pxba misf qfuk'
     }
 });
 
@@ -98,8 +98,8 @@ const userSchema = new mongoose.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    resetOtp: String,        
-    otpExpiry: Date          
+    resetOtp: String,
+    otpExpiry: Date
 });
 const User = mongoose.model('User', userSchema);
 
@@ -119,35 +119,35 @@ const studentSchema = new mongoose.Schema({
     guardianMobile: String, guardianAddress: String,
     amountCollected: Number, paymentMode: String, transactionId: String,
     password: { type: String, required: true },
-    resetOtp: String,        
+    resetOtp: String,
     otpExpiry: Date,
-    profilePicUrl: { type: String, default: "" } 
+    profilePicUrl: { type: String, default: "" }
 }, { timestamps: true });
 const Student = mongoose.model('Student', studentSchema);
 
 // FINANCE SCHEMAS
 const feeHeadSchema = new mongoose.Schema({
-    headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 }, 
-    fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 }, 
+    headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 },
+    fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 },
     due: Number, status: { type: String, default: "Due" }
 });
 const studentFeeSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
     totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
-    feeHeads: [feeHeadSchema] 
+    feeHeads: [feeHeadSchema]
 });
 const StudentFee = mongoose.model('StudentFee', studentFeeSchema);
 
 const transactionSchema = new mongoose.Schema({
-    receiptNo: { type: String, unique: true }, 
+    receiptNo: { type: String, unique: true },
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
     date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String,
-    payerMobile: String 
+    payerMobile: String
 }, { timestamps: true });
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
 const expenseSchema = new mongoose.Schema({
-    voucherNo: { type: String, unique: true }, category: String, date: Date, 
+    voucherNo: { type: String, unique: true }, category: String, date: Date,
     mode: String, amount: Number, description: String
 }, { timestamps: true });
 const Expense = mongoose.model('Expense', expenseSchema);
@@ -156,27 +156,27 @@ const Expense = mongoose.model('Expense', expenseSchema);
 const noticeSchema = new mongoose.Schema({
     title: { type: String, required: true },
     message: { type: String, required: true },
-    priority: { type: String, default: "info" }, 
-    audience: [{ type: String }], 
-    fileUrl: { type: String, default: "" }, 
+    priority: { type: String, default: "info" },
+    audience: [{ type: String }],
+    fileUrl: { type: String, default: "" },
     postedBy: { type: String, default: "Director Office" }
 }, { timestamps: true });
 const Notice = mongoose.model('Notice', noticeSchema);
 
 // STAFF SCHEMA
 const staffSchema = new mongoose.Schema({
-    category: { type: String, required: true }, 
-    role: { type: String, required: true }, 
-    empId: { type: String, required: true, unique: true }, 
+    category: { type: String, required: true },
+    role: { type: String, required: true },
+    empId: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
     fatherName: String, dob: String, gender: String,
     mobile: { type: String, required: true },
-    email: { type: String }, address: String, contact: String, 
+    email: { type: String }, address: String, contact: String,
     aadhaar: String, pan: String, qualification: String,
     university: String, experience: String, skills: String,
     joinDate: String, dept: String, shift: String,
-    salary: Number, status: { type: String, default: "Active" }, 
+    salary: Number, status: { type: String, default: "Active" },
     bankName: String, accNumber: String, ifsc: String,
     profilePicUrl: { type: String, default: "" },
     resumeUrl: { type: String, default: "" },
@@ -186,17 +186,17 @@ const Staff = mongoose.model('Staff', staffSchema);
 
 // ROUTINE SCHEMA
 const routineSchema = new mongoose.Schema({
-    course: { type: String, required: true }, 
+    course: { type: String, required: true },
     semester: { type: String, required: true },
-    section: { type: String, required: true }, 
+    section: { type: String, required: true },
     subject: { type: String, required: true },
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true }, 
-    teacherName: { type: String, required: true }, 
-    date: { type: String, required: true }, 
-    dayOfWeek: { type: String, required: true }, 
-    startTime: { type: String, required: true }, 
-    endTime: { type: String, required: true },   
-    roomNumber: { type: String } 
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
+    teacherName: { type: String, required: true },
+    date: { type: String, required: true },
+    dayOfWeek: { type: String, required: true },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
+    roomNumber: { type: String }
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
 
@@ -206,8 +206,8 @@ const noteSchema = new mongoose.Schema({
     semester: { type: String, required: true },
     subject: { type: String, required: true },
     title: { type: String, required: true },
-    fileUrl: { type: String, required: true }, 
-    cloudinaryId: { type: String, required: true }, 
+    fileUrl: { type: String, required: true },
+    cloudinaryId: { type: String, required: true },
 }, { timestamps: true });
 const Note = mongoose.model('Note', noteSchema);
 
@@ -216,11 +216,11 @@ const Note = mongoose.model('Note', noteSchema);
 const teacherAttendanceSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
     teacherName: { type: String, required: true },
-    dateStr: { type: String, required: true }, 
-    monthVal: { type: String, required: true }, 
-    dayName: { type: String }, 
-    punchIn: { type: String, default: "" }, 
-    punchOut: { type: String, default: "" }, 
+    dateStr: { type: String, required: true },
+    monthVal: { type: String, required: true },
+    dayName: { type: String },
+    punchIn: { type: String, default: "" },
+    punchOut: { type: String, default: "" },
     status: { type: String, default: "Present", enum: ["Present", "Absent", "Leave", "Half Day"] },
     remarks: { type: String, default: "On Time" }
 }, { timestamps: true });
@@ -241,7 +241,7 @@ const attendanceSchema = new mongoose.Schema({
     subject: { type: String, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, 
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
     records: [{
         studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
         rollNumber: { type: String, required: true },
@@ -259,27 +259,44 @@ attendanceSchema.index({ 'records.studentId': 1, subject: 1, fullDate: 1 });
 attendanceSchema.index({ batch: 1, course: 1, semester: 1, fullDate: 1 });
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
+// 🔥 LEAVE SCHEMA (Isko Mark model ke niche paste karein) 🔥
+const leaveSchema = new mongoose.Schema({
+    applicantId: { type: String, required: true },
+    applicantName: { type: String, required: true },
+    applicantRole: { type: String, required: true }, 
+    leaveType: { type: String, default: "General" }, 
+    startDate: { type: String, required: true }, 
+    endDate: { type: String, required: true },
+    totalDays: { type: Number, required: true },
+    reason: { type: String, required: true },
+    documentUrl: { type: String, default: "" }, 
+    status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
+    hodRemark: { type: String, default: "" }
+}, { timestamps: true });
+
+const Leave = mongoose.model('Leave', leaveSchema);
+
 // 🟢 NEW: EXAM MARKS SCHEMA 🟢
 const markSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
-    course: { type: String, required: true }, 
-    sessionBatch: { type: String, required: true }, 
-    semester: { type: String, required: true }, 
+    course: { type: String, required: true },
+    sessionBatch: { type: String, required: true },
+    semester: { type: String, required: true },
     subject: { type: String, required: true },
-    examName: { type: String, required: true }, 
+    examName: { type: String, required: true },
     examDate: { type: Date, required: true },
     maxMarks: { type: Number, required: true },
     studentsMarkList: [{
-        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, 
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
         rollNo: { type: String, required: true },
         studentName: { type: String, required: true },
         attendanceStatus: { type: String, enum: ['Present', 'Absent', 'Debarred'], default: 'Present' },
-        marksObtained: { type: Number, default: 0 }, 
-        rank: { type: Number, default: 0 }, 
+        marksObtained: { type: Number, default: 0 },
+        rank: { type: Number, default: 0 },
         remarks: { type: String, default: "" }
     }],
-    status: { type: String, enum: ['Draft', 'Published'], default: 'Published' } 
-}, { timestamps: true }); 
+    status: { type: String, enum: ['Draft', 'Published'], default: 'Published' }
+}, { timestamps: true });
 
 markSchema.index({ course: 1, sessionBatch: 1, semester: 1, subject: 1, examName: 1 }, { unique: true });
 const Mark = mongoose.model('Mark', markSchema);
@@ -287,7 +304,7 @@ const Mark = mongoose.model('Mark', markSchema);
 
 // FEE GENERATOR HELPER FUNCTION
 const generateFeeStructure = (courseName) => {
-    let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880; 
+    let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880;
     let heads = [
         { headName: "Admission Fee (Non Refundable)", amount: 30000, dueDate: "01-08-2025" },
         { headName: "University Reg. Fees", amount: 2100, dueDate: "30-08-2025" },
@@ -331,50 +348,50 @@ app.post('/api/login', async (req, res) => {
         if (role.toLowerCase() === 'student') {
             const student = await Student.findOne({ email, password });
             if (student) {
-                return res.status(200).json({ 
-                    success: true, 
-                    message: "Welcome Student!", 
-                    role: "Student", 
+                return res.status(200).json({
+                    success: true,
+                    message: "Welcome Student!",
+                    role: "Student",
                     studentId: student._id,
                     studentName: student.studentName,
-                    course: student.course || "N/A",      
-                    semester: student.semester || "N/A",  
+                    course: student.course || "N/A",
+                    semester: student.semester || "N/A",
                     email: student.email,
-                    registrationNo: student.collegeRegNo || "N/A",   
-                    regDate: student.registrationDate || "N/A",      
+                    registrationNo: student.collegeRegNo || "N/A",
+                    regDate: student.registrationDate || "N/A",
                     dob: student.dob || "N/A",
                     gender: student.gender || "N/A",
-                    bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A", 
+                    bloodGroup: (student.bloodGroup && student.bloodGroup.trim() !== "") ? student.bloodGroup : "N/A",
                     category: student.category || "N/A",
                     religion: student.religion || "N/A",
-                    profilePicUrl: student.profilePicUrl || "" 
+                    profilePicUrl: student.profilePicUrl || ""
                 });
             }
-        } 
-        
+        }
+
         else if (role.toLowerCase() === 'director') {
             const user = await User.findOne({ email, password, role: 'director' });
             if (user) {
                 return res.status(200).json({ success: true, message: "Welcome Admin!", role: user.role });
             }
-        } 
-        
+        }
+
         else if (['hod', 'accountant', 'staff', 'teacher'].includes(role.toLowerCase())) {
             let dbCategory = 'management';
             if (role.toLowerCase() === 'teacher') {
                 dbCategory = 'teacher';
             }
-            
+
             const staffUser = await Staff.findOne({ email, password, category: dbCategory });
             if (staffUser) {
                 if (staffUser.status === 'Disabled') {
                     return res.status(403).json({ success: false, message: "Your account is disabled. Please contact Director." });
                 }
 
-                return res.status(200).json({ 
-                    success: true, 
-                    message: "Welcome " + staffUser.name, 
-                    role: role, 
+                return res.status(200).json({
+                    success: true,
+                    message: "Welcome " + staffUser.name,
+                    role: role,
                     staffId: staffUser._id,
                     staffName: staffUser.name
                 });
@@ -382,7 +399,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         res.status(401).json({ success: false, message: "Invalid Email or Password!" });
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Server Error!" });
     }
@@ -395,15 +412,15 @@ app.post('/api/add-student', async (req, res) => {
 
         let feeData = generateFeeStructure(savedStudent.course);
         let collected = Number(req.body.amountCollected) || 0;
-        
+
         if (collected > 0) {
             feeData.totalPaid = collected;
             feeData.totalDue = feeData.totalAmount - collected;
-            
+
             let remainingAmount = collected;
             for (let head of feeData.feeHeads) {
                 if (remainingAmount <= 0) break;
-                
+
                 if (remainingAmount >= head.due) {
                     remainingAmount -= head.due;
                     head.paid = head.due;
@@ -418,7 +435,7 @@ app.post('/api/add-student', async (req, res) => {
             }
 
             const newTxn = new Transaction({
-                receiptNo: "REC" + Date.now() + Math.floor(Math.random() * 100), 
+                receiptNo: "REC" + Date.now() + Math.floor(Math.random() * 100),
                 studentId: savedStudent._id,
                 date: new Date(),
                 mode: req.body.paymentMode || "Cash",
@@ -441,7 +458,7 @@ app.post('/api/add-student', async (req, res) => {
         await studentFee.save();
 
         res.status(201).json({ success: true, message: 'Student & Fee Record added successfully!', studentId: savedStudent._id });
-        
+
     } catch (error) {
         console.error(error);
         if (error.code === 11000) return res.status(400).json({ success: false, message: 'Email already exists!' });
@@ -490,7 +507,7 @@ app.post('/api/forgot-password', async (req, res) => {
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetOtp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000; 
+        user.otpExpiry = Date.now() + 10 * 60 * 1000;
         await user.save();
 
         await transporter.sendMail({
@@ -527,11 +544,11 @@ app.get('/api/finance/search-student', async (req, res) => {
     try {
         const { q, course, sem, batch } = req.query;
         let filterQuery = {};
-        
+
         if (q && q.trim() !== "") {
             filterQuery.$or = [
-                { studentName: new RegExp(q, 'i') }, 
-                { collegeRegNo: new RegExp(q, 'i') }, 
+                { studentName: new RegExp(q, 'i') },
+                { collegeRegNo: new RegExp(q, 'i') },
                 { studentMobile: new RegExp(q, 'i') }
             ];
         }
@@ -541,18 +558,18 @@ app.get('/api/finance/search-student', async (req, res) => {
 
         const students = await Student.find(filterQuery).select('_id studentName collegeRegNo course sessionBatch semester');
         res.status(200).json({ success: true, data: students });
-    } catch (err) { 
-        res.status(500).json({ success: false, message: "Error searching students" }); 
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Error searching students" });
     }
 });
 
 app.get('/api/finance/student-fee/:studentId', async (req, res) => {
     try {
         const student = await Student.findById(req.params.studentId);
-        if(!student) return res.status(404).json({ success: false, message: "Student not found!" });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found!" });
 
         let feeRecord = await StudentFee.findOne({ studentId: student._id }).populate('studentId', 'studentName collegeRegNo course semester sessionBatch');
-        
+
         if (!feeRecord) {
             const structure = generateFeeStructure(student.course || "BCA");
             feeRecord = new StudentFee({ studentId: student._id, ...structure });
@@ -564,17 +581,17 @@ app.get('/api/finance/student-fee/:studentId', async (req, res) => {
 });
 
 app.post('/api/finance/collect-fee', async (req, res) => {
-    const { studentId, headId, amount, mode, remarks, date, payerMobile } = req.body; 
+    const { studentId, headId, amount, mode, remarks, date, payerMobile } = req.body;
     try {
         let feeRecord = await StudentFee.findOne({ studentId });
-        if(!feeRecord) return res.status(404).json({ success: false, message: "Ledger not found!" });
+        if (!feeRecord) return res.status(404).json({ success: false, message: "Ledger not found!" });
 
         const headIndex = feeRecord.feeHeads.findIndex(h => h._id.toString() === headId);
-        if(headIndex === -1) return res.status(400).json({ success: false, message: "Fee head not found!" });
+        if (headIndex === -1) return res.status(400).json({ success: false, message: "Fee head not found!" });
 
         feeRecord.feeHeads[headIndex].paid += Number(amount);
         feeRecord.feeHeads[headIndex].due -= Number(amount);
-        if(feeRecord.feeHeads[headIndex].due <= 0) feeRecord.feeHeads[headIndex].status = "Paid";
+        if (feeRecord.feeHeads[headIndex].due <= 0) feeRecord.feeHeads[headIndex].status = "Paid";
 
         feeRecord.totalPaid += Number(amount);
         feeRecord.totalDue -= Number(amount);
@@ -582,9 +599,9 @@ app.post('/api/finance/collect-fee', async (req, res) => {
 
         const receiptNo = "REC" + Math.floor(100000 + Math.random() * 900000);
         const newTrans = new Transaction({
-            receiptNo, studentId, amount, mode, date: date || new Date(), 
+            receiptNo, studentId, amount, mode, date: date || new Date(),
             feeHeadName: feeRecord.feeHeads[headIndex].headName, remarks,
-            payerMobile 
+            payerMobile
         });
         await newTrans.save();
 
@@ -594,17 +611,17 @@ app.post('/api/finance/collect-fee', async (req, res) => {
 
 app.get('/api/finance/dashboard', async (req, res) => {
     try {
-        const transactions = await Transaction.find().populate('studentId', 'studentName collegeRegNo course').sort({createdAt: -1}).limit(20);
-        const expenses = await Expense.find().sort({createdAt: -1}).limit(20);
-        
+        const transactions = await Transaction.find().populate('studentId', 'studentName collegeRegNo course').sort({ createdAt: -1 }).limit(20);
+        const expenses = await Expense.find().sort({ createdAt: -1 }).limit(20);
+
         const totalIncome = transactions.reduce((sum, t) => sum + t.amount, 0);
         const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
-        
+
         const allFees = await StudentFee.find();
         const totalDue = allFees.reduce((sum, f) => sum + f.totalDue, 0);
 
         res.status(200).json({
-            success: true, 
+            success: true,
             stats: { income: totalIncome, expense: totalExpense, due: totalDue, balance: totalIncome - totalExpense },
             transactions, expenses
         });
@@ -627,26 +644,26 @@ app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => 
     try {
         // 🔥 Yahan postedBy add kiya hai
         const { title, message, priority, audience, postedBy } = req.body;
-        
+
         let fileUrl = "";
         if (req.file) {
             let tempUrl = req.file.secure_url || req.file.path;
-            fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
+            fileUrl = tempUrl.replace(/\.pdf$/i, '.png');
         }
 
         let parsedAudience = [];
-        try { parsedAudience = JSON.parse(audience); } 
+        try { parsedAudience = JSON.parse(audience); }
         catch (e) { parsedAudience = audience ? audience.split(',') : []; }
 
-        const newNotice = new Notice({ 
-            title, 
-            message, 
-            priority, 
-            audience: parsedAudience, 
+        const newNotice = new Notice({
+            title,
+            message,
+            priority,
+            audience: parsedAudience,
             fileUrl,
             postedBy: postedBy || "Director Office" // 🔥 Aur yahan save ho raha hai
         });
-        
+
         await newNotice.save();
         res.status(201).json({ success: true, message: "Notice sent successfully!", data: newNotice });
 
@@ -655,10 +672,10 @@ app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => 
 
 app.get('/api/notices', async (req, res) => {
     try {
-        const { targetRole } = req.query; 
+        const { targetRole } = req.query;
         let filter = {};
-        if (targetRole) filter.audience = targetRole; 
-        
+        if (targetRole) filter.audience = targetRole;
+
         const notices = await Notice.find(filter).sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: notices });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
@@ -669,12 +686,12 @@ app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) 
         // 🔥 Yahan postedBy add kiya hai
         const { title, message, priority, audience, postedBy } = req.body;
         let updateData = { title, message, priority };
-        
+
         // 🔥 Agar edit karte time naya naam bheja to update hoga
-        if (postedBy) updateData.postedBy = postedBy; 
+        if (postedBy) updateData.postedBy = postedBy;
 
         if (audience) {
-            try { updateData.audience = JSON.parse(audience); } 
+            try { updateData.audience = JSON.parse(audience); }
             catch (e) { updateData.audience = audience.split(','); }
         }
 
@@ -700,15 +717,15 @@ app.delete('/api/notices/:id', async (req, res) => {
 
 // STAFF (USERS & ROLES) APIs
 app.post('/api/staff', uploadStaff.fields([
-    { name: 'profilePic', maxCount: 1 }, 
-    { name: 'resumeFile', maxCount: 1 }, 
+    { name: 'profilePic', maxCount: 1 },
+    { name: 'resumeFile', maxCount: 1 },
     { name: 'certFile', maxCount: 1 }
 ]), async (req, res) => {
     try {
         const staffData = req.body;
 
         const existingStaff = await Staff.findOne({ empId: staffData.empId });
-        if(existingStaff) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
+        if (existingStaff) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
 
         if (req.files) {
             if (req.files['profilePic']) {
@@ -744,8 +761,8 @@ app.get('/api/staff', async (req, res) => {
 });
 
 app.put('/api/staff/:id', uploadStaff.fields([
-    { name: 'profilePic', maxCount: 1 }, 
-    { name: 'resumeFile', maxCount: 1 }, 
+    { name: 'profilePic', maxCount: 1 },
+    { name: 'resumeFile', maxCount: 1 },
     { name: 'certFile', maxCount: 1 }
 ]), async (req, res) => {
     try {
@@ -794,7 +811,7 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
 
         if (req.file) {
             let tempUrl = req.file.secure_url || req.file.path;
-            fileUrl = tempUrl.replace(/\.pdf$/i, '.png'); 
+            fileUrl = tempUrl.replace(/\.pdf$/i, '.png');
             cloudinaryId = req.file.filename;
         } else {
             return res.status(400).json({ success: false, message: "No file provided!" });
@@ -802,7 +819,7 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
 
         const newNote = new Note({ date, semester, subject, title, fileUrl, cloudinaryId });
         await newNote.save();
-        
+
         res.status(201).json({ success: true, message: "Study Material uploaded successfully!", data: newNote });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -856,13 +873,13 @@ app.get('/api/routines', async (req, res) => {
         const { course, semester, teacherId, dayOfWeek } = req.query;
         let filter = {};
 
-        if (course) filter.course = new RegExp(`^${course}$`, 'i'); 
+        if (course) filter.course = new RegExp(`^${course}$`, 'i');
         if (semester) filter.semester = semester;
         if (teacherId) filter.teacherId = teacherId;
         if (dayOfWeek) filter.dayOfWeek = new RegExp(`^${dayOfWeek}$`, 'i');
 
         const routines = await Routine.find(filter)
-            .populate('teacherId', 'name empId') 
+            .populate('teacherId', 'name empId')
             .sort({ dayOfWeek: 1, startTime: 1 });
 
         res.status(200).json({ success: true, data: routines });
@@ -903,20 +920,20 @@ app.post('/api/teacher-attendance/punch', async (req, res) => {
         if (action === 'IN') {
             const newLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
-                { 
-                    teacherId, 
-                    teacherName, 
-                    dateStr, 
-                    monthVal, 
-                    dayName, 
-                    punchIn: timeStr, 
-                    status: 'Present', 
-                    remarks: 'On Time' 
+                {
+                    teacherId,
+                    teacherName,
+                    dateStr,
+                    monthVal,
+                    dayName,
+                    punchIn: timeStr,
+                    status: 'Present',
+                    remarks: 'On Time'
                 },
                 { new: true, upsert: true }
             );
             res.status(200).json({ success: true, message: "Punched In Successfully", data: newLog });
-        } 
+        }
         else if (action === 'OUT') {
             const updatedLog = await TeacherAttendance.findOneAndUpdate(
                 { teacherId, dateStr },
@@ -927,7 +944,7 @@ app.post('/api/teacher-attendance/punch', async (req, res) => {
                 return res.status(400).json({ success: false, message: "Cannot punch out without punching in first!" });
             }
             res.status(200).json({ success: true, message: "Punched Out Successfully", data: updatedLog });
-        } 
+        }
         else {
             res.status(400).json({ success: false, message: "Invalid action type" });
         }
@@ -951,7 +968,7 @@ app.get('/api/teacher-attendance', async (req, res) => {
     try {
         const { dateStr, monthVal } = req.query;
         let filter = {};
-        
+
         if (dateStr) filter.dateStr = dateStr;
         if (monthVal) filter.monthVal = monthVal;
 
@@ -989,7 +1006,7 @@ app.get('/api/get-teacher-skills', async (req, res) => {
     try {
         const { staffId } = req.query;
         if (!staffId) return res.status(400).json({ success: false, message: "Staff ID required" });
-        
+
         const teacher = await Staff.findById(staffId);
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
 
@@ -1012,9 +1029,9 @@ app.get('/api/get-students', async (req, res) => {
             course: new RegExp(`^${course}$`, 'i'),
             semester: semester
         };
-        
+
         // Dono fields se kaam kar le
-        const actualBatch = sessionBatch || batch; 
+        const actualBatch = sessionBatch || batch;
         if (actualBatch) {
             queryFilter.sessionBatch = actualBatch;
         }
@@ -1029,7 +1046,7 @@ app.get('/api/get-students', async (req, res) => {
             _id: s._id,
             roll: s.collegeRegNo || 'N/A',
             name: s.studentName,
-            prevAtt: 100 
+            prevAtt: 100
         }));
 
         if (isEdit === 'true') {
@@ -1037,7 +1054,7 @@ app.get('/api/get-students', async (req, res) => {
                 course: course,
                 semester: semester,
                 subject: subject,
-                fullDate: new Date(date) 
+                fullDate: new Date(date)
             });
 
             if (existingAtt) {
@@ -1045,7 +1062,7 @@ app.get('/api/get-students', async (req, res) => {
                     const record = existingAtt.records.find(r => r.studentId.toString() === s._id.toString());
                     return {
                         ...s,
-                        recordedStatus: record ? record.status : 'A' 
+                        recordedStatus: record ? record.status : 'A'
                     };
                 });
             }
@@ -1060,7 +1077,7 @@ app.get('/api/get-students', async (req, res) => {
 app.get('/api/attendances/subject', async (req, res) => {
     try {
         const { course, semester, subject } = req.query;
-        
+
         let filter = {};
         if (course) filter.course = new RegExp(`^${course}$`, 'i');
         if (semester) filter.semester = semester;
@@ -1079,11 +1096,11 @@ app.post('/api/save-attendance', async (req, res) => {
 
         if (payload.mode === 'UPDATE') {
             const updated = await Attendance.findOneAndUpdate(
-                { 
-                    fullDate: new Date(payload.fullDate), 
-                    course: payload.course, 
-                    semester: payload.semester, 
-                    subject: payload.subject 
+                {
+                    fullDate: new Date(payload.fullDate),
+                    course: payload.course,
+                    semester: payload.semester,
+                    subject: payload.subject
                 },
                 payload,
                 { new: true, upsert: true }
@@ -1091,9 +1108,9 @@ app.post('/api/save-attendance', async (req, res) => {
             return res.status(200).json({ success: true, message: "Attendance updated!", data: updated });
         } else {
             const existing = await Attendance.findOne({
-                fullDate: new Date(payload.fullDate), 
-                course: payload.course, 
-                semester: payload.semester, 
+                fullDate: new Date(payload.fullDate),
+                course: payload.course,
+                semester: payload.semester,
                 subject: payload.subject
             });
 
@@ -1131,7 +1148,7 @@ app.get('/api/attendance', async (req, res) => {
                 subject: record.subject,
                 date: record.fullDate,
                 teacher: record.teacherId ? record.teacherId.name : "N/A",
-                studentStatus: studentRecord ? studentRecord.status : "A" 
+                studentStatus: studentRecord ? studentRecord.status : "A"
             };
         });
 
@@ -1149,14 +1166,14 @@ app.get('/api/attendance', async (req, res) => {
 app.post('/api/marks/upload', async (req, res) => {
     try {
         const payload = req.body;
-        
+
         // Pata lagao ki same exam aur same subject ka marks pehle se upload hai ya nahi
         const existingExam = await Mark.findOne({
             course: payload.course,
             sessionBatch: payload.sessionBatch,
             semester: payload.semester,
             subject: payload.subject,
-            examName: new RegExp(`^${payload.examName}$`, 'i') 
+            examName: new RegExp(`^${payload.examName}$`, 'i')
         });
 
         if (existingExam) {
@@ -1180,9 +1197,9 @@ app.get('/api/marks/check', async (req, res) => {
         const { course, sessionBatch, semester, subject, examName } = req.query;
         const examRecord = await Mark.findOne({
             course: new RegExp(`^${course}$`, 'i'),
-            sessionBatch: sessionBatch, 
-            semester: semester, 
-            subject: subject, 
+            sessionBatch: sessionBatch,
+            semester: semester,
+            subject: subject,
             examName: new RegExp(`^${examName}$`, 'i')
         });
 
@@ -1204,9 +1221,9 @@ app.get('/api/marks/student', async (req, res) => {
 
         // Database me wo sabhi exams dhundho jismein is bache ka studentId ho
         const allExams = await Mark.find({ 'studentsMarkList.studentId': studentId })
-                                   .populate('teacherId', 'name')
-                                   .sort({ examDate: -1 });
-        
+            .populate('teacherId', 'name')
+            .sort({ examDate: -1 });
+
         // App ko bhejne ke liye format karo (taki app result screen me theek se dikhe)
         const formattedMarks = allExams.map(exam => {
             const studentRecord = exam.studentsMarkList.find(s => s.studentId.toString() === studentId.toString());
@@ -1232,7 +1249,7 @@ app.get('/api/marks/student', async (req, res) => {
     }
 });
 
-  // ==========================================
+// ==========================================
 // 🟢 LEAVE MANAGEMENT APIs 🟢
 // ==========================================
 
@@ -1250,7 +1267,7 @@ app.get('/api/leaves', async (req, res) => {
 app.post('/api/leaves/apply', uploadLeave.single('document'), async (req, res) => {
     try {
         const { applicantId, applicantName, applicantRole, leaveType, startDate, endDate, totalDays, reason } = req.body;
-        
+
         let documentUrl = "";
         if (req.file) {
             // 🔥 Cloudinary PDF URL ko PNG me badalna taaki direct image dikhe
@@ -1269,7 +1286,7 @@ app.post('/api/leaves/apply', uploadLeave.single('document'), async (req, res) =
             reason,
             documentUrl
         });
-        
+
         await newLeave.save();
         res.status(201).json({ success: true, message: "Leave application submitted successfully!", data: newLeave });
     } catch (error) {
@@ -1282,11 +1299,11 @@ app.post('/api/leaves/update-status', async (req, res) => {
     try {
         const { id, status, remark } = req.body;
         const updatedLeave = await Leave.findByIdAndUpdate(
-            id, 
-            { status: status, hodRemark: remark }, 
+            id,
+            { status: status, hodRemark: remark },
             { new: true }
         );
-        
+
         if (!updatedLeave) return res.status(404).json({ success: false, message: "Leave record not found!" });
 
         res.status(200).json({ success: true, message: `Leave ${status} successfully!`, data: updatedLeave });
