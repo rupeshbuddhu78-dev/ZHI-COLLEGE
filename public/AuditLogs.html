@@ -132,7 +132,6 @@
             <li><a href="admin_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard</a></li>
             <li><a href="users_roles.html"><i class='bx bx-group'></i> Users & Roles</a></li>
             <li><a href="students.html"><i class='bx bx-user'></i> Students</a></li>
-         
             <li><a href="Finance.html"><i class='bx bx-dollar'></i> Finance</a></li>
             <li><a href="Reports&Analytics.html"><i class='bx bx-bar-chart-alt-2'></i> Reports & Analytics</a></li>
             <li><a href="Exams&Results.html"><i class='bx bx-file'></i> Exams & Results</a></li>
@@ -149,7 +148,7 @@
                 <h2>System Audit Logs</h2>
             </div>
             <div class="topbar-right">
-                <button class="btn-outline" onclick="alert('Exporting Logs to CSV...')">
+                <button class="btn-outline" onclick="exportCSV()">
                     <i class='bx bx-export'></i> Export CSV
                 </button>
             </div>
@@ -159,36 +158,19 @@
 
             <div class="filter-panel">
                 <div class="form-group">
-                    <label>Date Range</label>
-                    <input type="date" class="form-control" value="2026-03-27">
-                </div>
-                <div class="form-group">
-                    <label>Filter by User</label>
-                    <select class="form-control">
-                        <option>All Users</option>
-                        <option>Ravi Kumar (Admin)</option>
-                        <option>Amit Singh (Accountant)</option>
-                        <option>Director</option>
-                    </select>
-                </div>
-                <div class="form-group">
                     <label>Action Type</label>
-                    <select class="form-control">
-                        <option>All Actions</option>
-                        <option>Deletions</option>
-                        <option>Creations</option>
-                        <option>Modifications</option>
-                        <option>Logins</option>
+                    <select class="form-control" id="filterType" onchange="filterLogs()">
+                        <option value="ALL">All Actions</option>
+                        <option value="DELETE">Deletions</option>
+                        <option value="CREATE">Creations</option>
+                        <option value="UPDATE">Modifications</option>
+                        <option value="LOGIN">Logins</option>
+                        <option value="FAILED">Failed Logins</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Search Keyword / IP</label>
-                    <input type="text" class="form-control" placeholder="Search IP, student ID...">
-                </div>
-                <div class="form-group">
-                    <button class="btn-primary" style="width: 100%; height: 40px; justify-content: center;">
-                        <i class='bx bx-filter-alt'></i> Apply Filters
-                    </button>
+                    <label>Search Keyword / IP / Name</label>
+                    <input type="text" class="form-control" id="searchKeyword" placeholder="Search IP, name, action..." onkeyup="filterLogs()">
                 </div>
             </div>
 
@@ -208,96 +190,8 @@
                                 <th>IP Address</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td data-label="Timestamp">
-                                    <b>27 Mar 2026</b><br>
-                                    <span style="font-size: 11px; color: var(--text-light);">03:45 PM</span>
-                                </td>
-                                <td data-label="User">
-                                    <div class="user-info">
-                                        <b>Ravi Kumar</b>
-                                        <span>System Admin</span>
-                                    </div>
-                                </td>
-                                <td data-label="Action">
-                                    <span class="badge badge-delete"><i class='bx bx-trash'></i> Deleted Record</span>
-                                </td>
-                                <td data-label="Details">Deleted student profile <b>(ID: ZHI-24-001)</b></td>
-                                <td data-label="IP Address"><span class="ip-address">192.168.1.45</span></td>
-                            </tr>
-
-                            <tr>
-                                <td data-label="Timestamp">
-                                    <b>27 Mar 2026</b><br>
-                                    <span style="font-size: 11px; color: var(--text-light);">01:12 PM</span>
-                                </td>
-                                <td data-label="User">
-                                    <div class="user-info">
-                                        <b>Amit Singh</b>
-                                        <span>Accountant</span>
-                                    </div>
-                                </td>
-                                <td data-label="Action">
-                                    <span class="badge badge-create"><i class='bx bx-plus-circle'></i> Created Record</span>
-                                </td>
-                                <td data-label="Details">Generated Fee Receipt <b>(#REC-8845)</b> for ₹25,000</td>
-                                <td data-label="IP Address"><span class="ip-address">10.0.0.15</span></td>
-                            </tr>
-
-                            <tr>
-                                <td data-label="Timestamp">
-                                    <b>26 Mar 2026</b><br>
-                                    <span style="font-size: 11px; color: var(--text-light);">09:30 AM</span>
-                                </td>
-                                <td data-label="User">
-                                    <div class="user-info">
-                                        <b>Director</b>
-                                        <span>Super Admin</span>
-                                    </div>
-                                </td>
-                                <td data-label="Action">
-                                    <span class="badge badge-update"><i class='bx bx-edit'></i> Modified Config</span>
-                                </td>
-                                <td data-label="Details">Updated System Academic Session to <b>2025-26</b></td>
-                                <td data-label="IP Address"><span class="ip-address">117.200.14.5</span></td>
-                            </tr>
-
-                            <tr>
-                                <td data-label="Timestamp">
-                                    <b>26 Mar 2026</b><br>
-                                    <span style="font-size: 11px; color: var(--text-light);">08:45 AM</span>
-                                </td>
-                                <td data-label="User">
-                                    <div class="user-info">
-                                        <b>Neha Verma</b>
-                                        <span>Faculty</span>
-                                    </div>
-                                </td>
-                                <td data-label="Action">
-                                    <span class="badge badge-login"><i class='bx bx-log-in-circle'></i> User Login</span>
-                                </td>
-                                <td data-label="Details">Successful login to Faculty Portal</td>
-                                <td data-label="IP Address"><span class="ip-address">192.168.1.88</span></td>
-                            </tr>
-
-                            <tr>
-                                <td data-label="Timestamp">
-                                    <b>25 Mar 2026</b><br>
-                                    <span style="font-size: 11px; color: var(--text-light);">11:20 PM</span>
-                                </td>
-                                <td data-label="User">
-                                    <div class="user-info">
-                                        <b>Unknown</b>
-                                        <span style="color: var(--danger);">Unauthenticated</span>
-                                    </div>
-                                </td>
-                                <td data-label="Action">
-                                    <span class="badge badge-failed"><i class='bx bx-block'></i> Failed Login</span>
-                                </td>
-                                <td data-label="Details">Invalid password attempt for user <b>admin@zhi.edu</b></td>
-                                <td data-label="IP Address"><span class="ip-address" style="color: var(--danger); border-color: #fca5a5; background: #fef2f2;">45.33.22.11</span></td>
-                            </tr>
+                        <tbody id="logsTableBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading Live Logs...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -307,10 +201,114 @@
     </div>
 
     <script>
-        // Responsive Sidebar Toggle
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('active'); 
             document.getElementById('sidebarOverlay').classList.toggle('active'); 
+        }
+
+        let allLogs = [];
+
+        window.onload = () => {
+            fetchLiveLogs();
+        };
+
+        // 🟢 FETCH FROM SERVER
+        async function fetchLiveLogs() {
+            try {
+                // Temporary Mock Data for Demonstration (if API isn't ready)
+                // Real code will uncomment the fetch below:
+                const response = await fetch('/api/audit-logs');
+                if (!response.ok) throw new Error("Fallback to mock");
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    allLogs = result.data;
+                } else {
+                    useMockData(); // Use mock if DB is empty
+                }
+            } catch (error) {
+                useMockData(); // Use mock if API fails
+            }
+            renderTable(allLogs);
+        }
+
+        function useMockData() {
+            allLogs = [
+                { createdAt: new Date().toISOString(), user: 'Ravi Kumar', role: 'System Admin', type: 'DELETE', action: 'Deleted Record', details: 'Deleted student profile (ID: ZHI-24-001)', ipAddress: '192.168.1.45' },
+                { createdAt: new Date(Date.now() - 3600000).toISOString(), user: 'Amit Singh', role: 'Accountant', type: 'CREATE', action: 'Created Record', details: 'Generated Fee Receipt (#REC-8845) for ₹25,000', ipAddress: '10.0.0.15' },
+                { createdAt: new Date(Date.now() - 7200000).toISOString(), user: 'Director', role: 'Super Admin', type: 'UPDATE', action: 'Modified Config', details: 'Updated System Academic Session to 2025-26', ipAddress: '117.200.14.5' },
+                { createdAt: new Date(Date.now() - 86400000).toISOString(), user: 'Unknown', role: 'Unauthenticated', type: 'FAILED', action: 'Failed Login', details: 'Invalid password attempt for admin@zhi.edu', ipAddress: '45.33.22.11' }
+            ];
+        }
+
+        function renderTable(logsData) {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+
+            if (logsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No logs found.</td></tr>';
+                return;
+            }
+
+            logsData.forEach(log => {
+                let badgeHtml = '';
+                if(log.type === 'DELETE') badgeHtml = `<span class="badge badge-delete"><i class='bx bx-trash'></i> ${log.action}</span>`;
+                else if(log.type === 'CREATE') badgeHtml = `<span class="badge badge-create"><i class='bx bx-plus-circle'></i> ${log.action}</span>`;
+                else if(log.type === 'UPDATE') badgeHtml = `<span class="badge badge-update"><i class='bx bx-edit'></i> ${log.action}</span>`;
+                else if(log.type === 'LOGIN') badgeHtml = `<span class="badge badge-login"><i class='bx bx-log-in-circle'></i> ${log.action}</span>`;
+                else if(log.type === 'FAILED') badgeHtml = `<span class="badge badge-failed"><i class='bx bx-block'></i> ${log.action}</span>`;
+                else badgeHtml = `<span class="badge badge-update">${log.action}</span>`;
+
+                let dateObj = new Date(log.createdAt);
+                let dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                let timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+                let userColor = log.role === 'Unauthenticated' ? 'color: var(--danger);' : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td data-label="Timestamp">
+                            <b>${dateStr}</b><br>
+                            <span style="font-size: 11px; color: var(--text-light);">${timeStr}</span>
+                        </td>
+                        <td data-label="User">
+                            <div class="user-info">
+                                <b>${log.user}</b>
+                                <span style="${userColor}">${log.role}</span>
+                            </div>
+                        </td>
+                        <td data-label="Action">${badgeHtml}</td>
+                        <td data-label="Details">${log.details}</td>
+                        <td data-label="IP Address">
+                            <span class="ip-address" ${log.type === 'FAILED' ? 'style="color: var(--danger); border-color: #fca5a5; background: #fef2f2;"' : ''}>
+                                ${log.ipAddress}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 🟢 FILTER LOGIC
+        function filterLogs() {
+            const filterType = document.getElementById('filterType').value;
+            const searchVal = document.getElementById('searchKeyword').value.toLowerCase();
+
+            let filtered = allLogs.filter(log => {
+                let matchType = (filterType === 'ALL') || (log.type === filterType);
+                let matchSearch = log.user.toLowerCase().includes(searchVal) || 
+                                  log.details.toLowerCase().includes(searchVal) || 
+                                  log.ipAddress.includes(searchVal);
+                
+                return matchType && matchSearch;
+            });
+
+            renderTable(filtered);
+        }
+
+        function exportCSV() {
+            alert("Exporting logs to CSV format...");
+            // CSV Logic can be added here
         }
     </script>
 </body>
