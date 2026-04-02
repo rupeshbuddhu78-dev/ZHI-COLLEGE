@@ -42,11 +42,12 @@
         
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
-        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; }
+        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); transition: 0.2s; width: 100%; font-family: inherit;}
         .form-control:focus { border-color: var(--primary); background: #fff; }
         
         .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn-submit:hover { background: #2563eb; }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
 
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
         th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
@@ -56,6 +57,8 @@
         .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a;}
         .badge-approved { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;}
         .badge-rejected { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;}
+
+        .hod-remark { font-size: 12px; color: var(--primary); margin-top: 6px; font-weight: 500; background: #eff6ff; padding: 6px 10px; border-radius: 4px;}
 
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
@@ -92,8 +95,11 @@
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Classroom & Leaves</div>
             </div>
             <div class="user-profile">
-                <div style="text-align: right;"><b style="font-size: 13px;">Dr. Rakesh Kumar</b><br><span style="font-size: 11px; color: var(--text-light);">Faculty - BCA</span></div>
-                <img src="https://ui-avatars.com/api/?name=Rakesh+Kumar&background=10b981&color=fff">
+                <div style="text-align: right;">
+                    <b id="topbarTeacherName" style="font-size: 13px;">Loading...</b><br>
+                    <span style="font-size: 11px; color: var(--text-light);">Faculty</span>
+                </div>
+                <img id="topbarTeacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff">
             </div>
         </header>
 
@@ -106,21 +112,21 @@
                     <form id="leaveForm" class="card-body" onsubmit="applyLeave(event)">
                         <div class="form-group">
                             <label>Leave Type *</label>
-                            <select class="form-control" required>
+                            <select id="leaveType" class="form-control" required>
                                 <option value="Casual Leave">Casual Leave (CL)</option>
                                 <option value="Sick Leave">Sick Leave (SL)</option>
                                 <option value="Emergency">Emergency Leave</option>
                             </select>
                         </div>
                         <div class="form-group" style="display: flex; gap: 10px; flex-direction: row;">
-                            <div style="flex: 1;"><label>From Date *</label><input type="date" class="form-control" required></div>
-                            <div style="flex: 1;"><label>To Date *</label><input type="date" class="form-control" required></div>
+                            <div style="flex: 1;"><label>From Date *</label><input type="date" id="startDate" class="form-control" required></div>
+                            <div style="flex: 1;"><label>To Date *</label><input type="date" id="endDate" class="form-control" required></div>
                         </div>
                         <div class="form-group">
                             <label>Reason for Leave *</label>
-                            <textarea class="form-control" rows="3" placeholder="Briefly explain the reason..." required></textarea>
+                            <textarea id="leaveReason" class="form-control" rows="3" placeholder="Briefly explain the reason..." required></textarea>
                         </div>
-                        <button type="submit" class="btn-submit"><i class='bx bx-send'></i> Submit Application</button>
+                        <button type="submit" id="btnSubmit" class="btn-submit"><i class='bx bx-send'></i> Submit Application</button>
                     </form>
                 </div>
 
@@ -128,19 +134,19 @@
                     <div class="card-header"><i class='bx bx-history' style="color: var(--text-light);"></i> My Leave History</div>
                     <div style="overflow-x: auto;">
                         <table>
-                            <thead><tr><th>Applied On</th><th>Leave Type</th><th>Duration</th><th>Status</th></tr></thead>
-                            <tbody>
+                            <thead>
                                 <tr>
-                                    <td>10 Oct, 2025</td>
-                                    <td><b>Casual Leave</b></td>
-                                    <td>15 Oct to 16 Oct<br><small style="color: var(--text-light);">2 Days</small></td>
-                                    <td><span class="badge badge-approved">Approved</span></td>
+                                    <th>Applied On</th>
+                                    <th>Leave Type</th>
+                                    <th>Duration</th>
+                                    <th>Status & Remark</th>
                                 </tr>
+                            </thead>
+                            <tbody id="leaveHistoryBody">
                                 <tr>
-                                    <td>05 Nov, 2025</td>
-                                    <td><b>Sick Leave</b></td>
-                                    <td>06 Nov to 06 Nov<br><small style="color: var(--text-light);">1 Day</small></td>
-                                    <td><span class="badge badge-pending">Pending</span></td>
+                                    <td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">
+                                        <i class='bx bx-loader-alt bx-spin'></i> Fetching your leave history...
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -152,10 +158,141 @@
 
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        function applyLeave(e) {
+
+        const BASE_URL = 'https://zhi-college-rtya.onrender.com/api';
+        
+        // Fetch Teacher Data from LocalStorage
+        const teacherData = {
+            id: localStorage.getItem('staffId') || 'FAC_DEMO_01',
+            name: localStorage.getItem('staffName') || 'Dr. Rakesh Kumar',
+            role: 'Teacher' // Role explicitly defined for future backend schema
+        };
+
+        window.onload = () => {
+            // Update Topbar Info
+            document.getElementById('topbarTeacherName').innerText = teacherData.name;
+            document.getElementById('topbarTeacherImg').src = `https://ui-avatars.com/api/?name=${teacherData.name.replace(" ", "+")}&background=10b981&color=fff`;
+
+            // Set minimum date to today to prevent past leave dates
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("startDate").setAttribute('min', today);
+            document.getElementById("endDate").setAttribute('min', today);
+
+            // Fetch History
+            fetchMyLeaves();
+        };
+
+        // 🟢 1. FETCH PAST LEAVES 🟢
+        async function fetchMyLeaves() {
+            const tbody = document.getElementById('leaveHistoryBody');
+            
+            try {
+                const response = await fetch(`${BASE_URL}/leaves`);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Filter records specifically for this teacher
+                    const myLeaves = result.data.filter(l => l.applicantId === teacherData.id);
+
+                    if (myLeaves.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">No leave history found.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = ''; // Clear loading text
+                    
+                    // Sort by newest first
+                    myLeaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                    myLeaves.forEach(leave => {
+                        // Badge logic
+                        let badgeClass = 'badge-pending';
+                        if(leave.status === 'Approved') badgeClass = 'badge-approved';
+                        if(leave.status === 'Rejected') badgeClass = 'badge-rejected';
+
+                        // Date formatting
+                        let appliedOn = new Date(leave.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        let fromDate = new Date(leave.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                        let toDate = new Date(leave.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+                        // Remark logic
+                        let remarkHtml = leave.hodRemark ? `<div class="hod-remark"><b>HOD:</b> ${leave.hodRemark}</div>` : '';
+
+                        let row = `
+                            <tr>
+                                <td>${appliedOn}</td>
+                                <td><b>${leave.leaveType}</b><br><small style="color: var(--text-light);">${leave.reason.substring(0, 30)}...</small></td>
+                                <td>${fromDate} to ${toDate}<br><small style="color: var(--text-light);">${leave.totalDays} Days</small></td>
+                                <td>
+                                    <span class="badge ${badgeClass}">${leave.status}</span>
+                                    ${remarkHtml}
+                                </td>
+                            </tr>
+                        `;
+                        tbody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--danger);">Failed to connect to server.</td></tr>';
+            }
+        }
+
+        // 🟢 2. SUBMIT LEAVE APPLICATION 🟢
+        async function applyLeave(e) {
             e.preventDefault();
-            alert("Your leave application has been submitted to the HOD for approval.");
-            document.getElementById('leaveForm').reset();
+            
+            const btn = document.getElementById('btnSubmit');
+            const leaveType = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reason = document.getElementById('leaveReason').value;
+
+            // Date validation & Days Calculation
+            const sDate = new Date(startDate);
+            const eDate = new Date(endDate);
+            if (eDate < sDate) {
+                alert("❌ End date cannot be earlier than Start date!");
+                return;
+            }
+            const diffTime = Math.abs(eDate - sDate);
+            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Submitting...";
+            btn.disabled = true;
+
+            const payload = {
+                applicantId: teacherData.id,
+                applicantName: teacherData.name,
+                applicantRole: teacherData.role, // "Teacher" send kar rahe hain schema identity ke liye
+                leaveType: leaveType,
+                startDate: startDate,
+                endDate: endDate,
+                totalDays: totalDays,
+                reason: reason
+            };
+
+            try {
+                const response = await fetch(`${BASE_URL}/leaves/apply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert("✅ Leave Application Submitted Successfully!");
+                    document.getElementById('leaveForm').reset();
+                    fetchMyLeaves(); // Update the table instantly
+                } else {
+                    alert("❌ Failed: " + result.message);
+                }
+            } catch (error) {
+                alert("❌ Server Error! Please check your connection.");
+            }
+
+            btn.innerHTML = "<i class='bx bx-send'></i> Submit Application";
+            btn.disabled = false;
         }
     </script>
 </body>
