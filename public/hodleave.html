@@ -313,45 +313,44 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
-        // --- SUBMIT APPROVE/REJECT TO SERVER ---
-        async function submitAction(status) {
-            const remark = document.getElementById('hodRemark').value;
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Processing...";
-            btn.disabled = true;
+      // --- SUBMIT APPROVE/REJECT TO SERVER ---
+async function submitAction(status) {
+    const remark = document.getElementById('hodRemark').value;
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Processing...";
+    btn.disabled = true;
 
-            try {
-                // Try update route fallback
-                let res = await fetch(`${API_URL}/update/${selectedLeaveId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: status, remark: remark })
-                });
+    try {
+        // 🔥 Yahan POST method aur sahi route update kiya hai aapke server.js ke hisaab se
+        const res = await fetch(`${API_URL}/update-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: selectedLeaveId,  // ID ab body me jaa rahi hai
+                status: status, 
+                remark: remark 
+            })
+        });
 
-                if (res.status === 404) {
-                    res = await fetch(`${API_URL}/${selectedLeaveId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: status, remark: remark })
-                    });
-                }
-
-                const result = await res.json();
-                
-                if (result.success) {
-                    closeModal();
-                    fetchLeaves(); // Table apne aap refresh ho jayegi
-                } else {
-                    alert("Update Failed: " + result.message);
-                }
-            } catch (err) {
-                alert("Server Connection Failed");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
+        const result = await res.json();
+        
+        if (result.success) {
+            closeModal();
+            fetchLeaves(); // Table apne aap refresh ho jayegi
+            alert(`Leave ${status} successfully! ✅`);
+        } else {
+            alert("Update Failed: " + result.message);
         }
+    } catch (err) {
+        console.error("Approval Error:", err);
+        alert("Server Connection Failed");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+
     </script>
 </body>
 </html>
