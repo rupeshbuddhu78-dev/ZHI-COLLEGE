@@ -44,6 +44,16 @@ const noticeStorage = new CloudinaryStorage({
 });
 const uploadNotice = multer({ storage: noticeStorage });
 
+// 🔥 NAYA: Leave Documents ke liye Cloudinary Storage 🔥
+const leaveStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ZhiLeaves', 
+        resource_type: 'auto' 
+    },
+});
+const uploadLeave = multer({ storage: leaveStorage });
+
 // Staff Files ke liye storage
 const staffStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -151,24 +161,7 @@ const noticeSchema = new mongoose.Schema({
     fileUrl: { type: String, default: "" }, 
     postedBy: { type: String, default: "Director Office" }
 }, { timestamps: true });
-
-const Notice = mongoose.model('Notice', noticeSchema);// 🔥 LEAVE SCHEMA (Isko baaki schemas ke paas paste karna hai) 🔥
-const leaveSchema = new mongoose.Schema({
-    applicantId: { type: String, required: true },
-    applicantName: { type: String, required: true },
-    applicantRole: { type: String, required: true }, 
-    leaveType: { type: String, default: "General" }, 
-    startDate: { type: String, required: true }, 
-    endDate: { type: String, required: true },
-    totalDays: { type: Number, required: true },
-    reason: { type: String, required: true },
-    documentUrl: { type: String, default: "" }, 
-    status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
-    hodRemark: { type: String, default: "" }
-}, { timestamps: true });
-
-const Leave = mongoose.model('Leave', leaveSchema);
-
+const Notice = mongoose.model('Notice', noticeSchema);
 
 // STAFF SCHEMA
 const staffSchema = new mongoose.Schema({
@@ -627,10 +620,13 @@ app.post('/api/finance/expense', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// GLOBAL NOTICE APIs
+// ==========================================
+// 🟢 GLOBAL NOTICE APIs 🟢
+// ==========================================
 app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => {
     try {
-        const { title, message, priority, audience } = req.body;
+        // 🔥 Yahan postedBy add kiya hai
+        const { title, message, priority, audience, postedBy } = req.body;
         
         let fileUrl = "";
         if (req.file) {
@@ -642,7 +638,15 @@ app.post('/api/notices', uploadNotice.single('attachment'), async (req, res) => 
         try { parsedAudience = JSON.parse(audience); } 
         catch (e) { parsedAudience = audience ? audience.split(',') : []; }
 
-        const newNotice = new Notice({ title, message, priority, audience: parsedAudience, fileUrl });
+        const newNotice = new Notice({ 
+            title, 
+            message, 
+            priority, 
+            audience: parsedAudience, 
+            fileUrl,
+            postedBy: postedBy || "Director Office" // 🔥 Aur yahan save ho raha hai
+        });
+        
         await newNotice.save();
         res.status(201).json({ success: true, message: "Notice sent successfully!", data: newNotice });
 
@@ -662,9 +666,13 @@ app.get('/api/notices', async (req, res) => {
 
 app.put('/api/notices/:id', uploadNotice.single('attachment'), async (req, res) => {
     try {
-        const { title, message, priority, audience } = req.body;
+        // 🔥 Yahan postedBy add kiya hai
+        const { title, message, priority, audience, postedBy } = req.body;
         let updateData = { title, message, priority };
         
+        // 🔥 Agar edit karte time naya naam bheja to update hoga
+        if (postedBy) updateData.postedBy = postedBy; 
+
         if (audience) {
             try { updateData.audience = JSON.parse(audience); } 
             catch (e) { updateData.audience = audience.split(','); }
