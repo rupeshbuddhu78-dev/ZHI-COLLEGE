@@ -287,7 +287,7 @@
             overlay.classList.toggle('active');
         }
 
-        // Initialize Live Data on Load
+        // Display User Name
         window.onload = () => {
             const userName = localStorage.getItem('userName') || 'HOD Sir';
             document.getElementById('adminName').innerText = userName;
@@ -296,37 +296,49 @@
             fetchLiveHODData();
         };
 
+        // 🔴 SAFE FETCH FUNCTION: Prevents HTML parse error if backend API doesn't exist yet
+        const BASE_URL = 'https://zhi-college-rtya.onrender.com';
+        
+        async function safeFetch(endpoint, fallbackData) {
+            try {
+                const res = await fetch(BASE_URL + endpoint);
+                const contentType = res.headers.get("content-type");
+                
+                // Sirf tabhi JSON parse karo jab response success ho aur JSON format me ho
+                if (res.ok && contentType && contentType.includes("application/json")) {
+                    return await res.json();
+                }
+                return fallbackData; // Agar API nahi hai ya error hai, toh fallback return karo
+            } catch (error) {
+                console.error("API error or missing at: " + endpoint, error);
+                return fallbackData;
+            }
+        }
+
         // 🔴 FUNCTION TO FETCH LIVE DATA FROM DATABASE 🔴
         async function fetchLiveHODData() {
             try {
-                // Fetching from standard backend APIs concurrently
-                const [staffRes, timetableRes, alertsRes, syllabusRes] = await Promise.all([
-                    fetch('/api/staff').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/timetable/today').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/alerts/hod').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/syllabus/progress').catch(() => ({ json: () => ({ success: false, average: null }) }))
-                ]);
-
-                const staffData = await staffRes.json();
-                const timetableData = await timetableRes.json();
-                const alertsData = await alertsRes.json();
-                const syllabusData = await syllabusRes.json();
+                // Fetching safely so missing APIs don't crash the dashboard
+                const staffData = await safeFetch('/api/staff', { success: true, data: [] });
+                const timetableData = await safeFetch('/api/timetable/today', { success: true, data: [] });
+                const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
+                const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
                 // 1. Process Staff (Teachers)
-                let teachers = staffData.success ? staffData.data.filter(s => s.role && s.role.toLowerCase().includes('teacher') || s.category === 'teacher') : [];
+                let teachers = staffData.data ? staffData.data.filter(s => (s.role && s.role.toLowerCase().includes('teacher')) || s.category === 'teacher') : [];
                 let totalTeachers = teachers.length;
                 let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
 
                 // 2. Process Timetable
-                let classesToday = timetableData.success ? timetableData.data : [];
+                let classesToday = timetableData.data || [];
                 
                 // 3. Process Alerts
-                let alerts = alertsData.success ? alertsData.data : [];
+                let alerts = alertsData.data || [];
 
                 // UPDATE UI - STATS CARDS
                 document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
                 document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
-                document.getElementById('stat-syllabus').innerText = syllabusData.success && syllabusData.average ? `${syllabusData.average}%` : '0%'; 
+                document.getElementById('stat-syllabus').innerText = syllabusData.average ? `${syllabusData.average}%` : '0%'; 
                 document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
 
                 // UPDATE UI - TIMETABLE TABLE
@@ -342,7 +354,7 @@
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);">No classes scheduled for today in the database.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);">No classes scheduled for today.</td></tr>';
                 }
 
                 // UPDATE UI - CRITICAL ALERTS
@@ -365,16 +377,10 @@
                 }
 
             } catch(error) {
-                console.error("Error fetching live HOD data:", error);
-                
-                // Fallback UI in case of total failure (Database not connected)
-                document.getElementById('stat-classes').innerText = 'Error';
-                document.getElementById('stat-teachers').innerText = 'Error';
-                document.getElementById('stat-syllabus').innerText = 'Error';
-                document.getElementById('stat-alerts').innerText = 'Error';
-                
-                document.getElementById('timetableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--danger);">Failed to connect to database.</td></tr>';
-                document.getElementById('alertListContainer').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--danger);">Failed to load alerts. Check server connection.</div>';
+                console.error("Critical Error updating HOD dashboard UI:", error);
+                document.getElementById('stat-classes').innerText = 'Err';
+                document.getElementById('stat-teachers').innerText = 'Err';
+                document.getElementById('timetableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--danger);">Dashboard initialization failed.</td></tr>';
             }
         }
     </script>
