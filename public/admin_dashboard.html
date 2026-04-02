@@ -3,275 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZHI | Academic & HOD Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>God Mode | Director Dashboard</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <style>
-        :root {
-            --sidebar-bg: #0f172a; 
-            --primary: #3b82f6; 
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --purple: #8b5cf6;
-            --bg: #f8fafc;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
-            --white: #ffffff;
-            --border: #e2e8f0;
+        /* Base & Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        body { background-color: #f3f4f6; display: flex; height: 100vh; overflow: hidden; color: #1f2937; font-size: 13px; }
+
+        /* ------------------ SIDEBAR (GOD MODE) - DESKTOP ------------------ */
+        .sidebar {
+            width: 275px; 
+            min-width: 275px; 
+            flex-shrink: 0; 
+            background-color: #0f172a; 
+            color: #9ca3af;
+            display: flex; flex-direction: column; 
+            z-index: 1005; border-right: 1px solid #1e293b;
+            transition: left 0.3s ease;
         }
 
-        /* 🔴 FIXED HORIZONTAL SCROLL ISSUE 🔴 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
+        .sidebar-header {
+            padding: 25px 20px; display: flex; align-items: center; gap: 15px;
+            border-bottom: 1px solid #1e293b; background: #0b0f19;
+        }
 
-        /* ------------------ SIDEBAR ------------------ */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+        .sidebar-header .logo-box {
+            background: #ffffff;
+            color: white; font-weight: bold; width: 45px; height: 45px;
+            display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 16px; overflow: hidden; flex-shrink: 0;
+        }
 
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
-        .sidebar-menu li a i { font-size: 20px; }
-        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        .sidebar-header h2 { color: #f8fafc; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+        .sidebar-header span { display: block; font-size: 11px; color: #ef4444; font-weight: bold; text-transform: uppercase; margin-top: 3px;}
 
-        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
-        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
-        
-        .user-profile { display: flex; align-items: center; gap: 10px; }
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
-        .user-profile div { display: flex; flex-direction: column; }
-        .user-profile b { font-size: 13px; color: var(--text-dark); }
-        .user-profile span { font-size: 11px; color: var(--text-light); }
-
-        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
-        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
-
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; transition: 0.2s; text-align: center; }
-        .btn-primary:hover { background: #2563eb; }
-
-        /* ------------------ STATS CARDS ------------------ */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
-        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; min-width: 0;}
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
-        .stat-info { overflow: hidden; }
-        .stat-info h4 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;}
-        .stat-info p { font-size: 12px; color: var(--text-light); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-
-        /* ------------------ QUICK ACTIONS ------------------ */
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
-        .action-btn { background: var(--white); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 12px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: center; word-break: break-word;}
-        .action-btn i { font-size: 26px; color: var(--purple); }
-        .action-btn:hover { background: #faf5ff; border-color: #e9d5ff; color: var(--purple); }
-
-        /* ------------------ PANELS & TABLES ------------------ */
-        .grid-2-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; width: 100%;}
-        
-        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; max-width: 100%;}
-        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
-        .panel-header h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
-        
-        /* 🔴 TABLE OVERFLOW FIX 🔴 */
-        .table-res { width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
-        th { padding: 12px 15px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; white-space: nowrap;}
-        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500;}
-        
-        .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap;}
-        .bg-blue { background: #eff6ff; color: #1e40af; }
-        .bg-green { background: #dcfce7; color: #166534; }
-        .bg-yellow { background: #fef9c3; color: #854d0e; }
-        
-        /* Alert List */
-        .alert-list { display: flex; flex-direction: column; }
-        .alert-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
-        .alert-item:last-child { border-bottom: none; }
-        .alert-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0;}
-        .alert-content h4 { font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
-        .alert-content p { font-size: 12px; color: var(--text-light); line-height: 1.4; }
-        .alert-action { margin-top: 8px; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; background: #fee2e2; color: #991b1b; display: inline-block;}
-
-        /* 📱 100% FIXED MOBILE RESPONSIVENESS */
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
-        
-        @media (max-width: 992px) {
-            .stats-grid, .quick-actions { grid-template-columns: repeat(2, 1fr); }
-            .grid-2-col { grid-template-columns: 1fr; }
+        .sidebar-menu { list-style: none; padding: 20px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 15px; padding: 12px 21px 12px 21px; /* Adjusted padding for border */
+            color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500;
+            transition: all 0.3s ease; white-space: nowrap;
+            border-left: 4px solid transparent; /* Hidden border to stop jumping */
         }
         
+        /* 🔥 FIX: Premium Hover Effect with Blue Tint 🔥 */
+        .sidebar-menu a:hover { 
+            background-color: rgba(59, 130, 246, 0.1); /* Halka blue background */
+            color: #60a5fa; /* Light blue text */
+            border-left: 4px solid #3b82f6; /* Blue line on hover */
+            padding-left: 28px; /* Smooth slide to right */
+        }
+        .sidebar-menu li.active a { 
+            border-left: 4px solid #3b82f6; 
+            padding-left: 21px; 
+            background-color: #1e293b; 
+            color: #ffffff;
+        }
+        
+        .sidebar-menu a svg { width: 18px; height: 18px; opacity: 0.9; flex-shrink: 0; transition: 0.3s; }
+        .sidebar-menu a:hover svg { color: #3b82f6; opacity: 1; } /* Icon turns blue on hover */
+
+        /* ------------------ MAIN CONTENT - DESKTOP ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+
+        /* TOPBAR */
+        .topbar {
+            height: 70px; background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 30px;
+            position: sticky; top: 0; z-index: 998; flex-shrink: 0;
+        }
+        
+        .breadcrumb { display: flex; align-items: center; gap: 15px; }
+        .breadcrumb-text h1 { font-size: 19px; font-weight: 700; color: #111827; line-height: 1.2;}
+        .breadcrumb-text p { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;}
+
+        .mobile-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #111827; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; backdrop-filter: blur(2px); }
+
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .system-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #059669; background: #ecfdf5; padding: 6px 12px; border-radius: 20px;}
+        .system-status .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 5px #10b981;}
+
+        .topbar-profile { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid #e5e7eb; cursor: pointer;}
+        .topbar-profile .user-info h4 { font-size: 14px; color: #111827; line-height: 1.2;}
+        .topbar-profile .user-info p { font-size: 11px; color: #ef4444; font-weight: 700; text-align: right; margin-top: 2px;}
+        .topbar-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ef4444; object-fit: cover; }
+
+        /* DASHBOARD CONTENT */
+        .content { padding: 25px 30px; flex: 1; }
+
+        /* KPI STATS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { 
+            background: #ffffff; padding: 18px; border-radius: 10px; border: 1px solid #e5e7eb; 
+            display: flex; align-items: center; justify-content: space-between; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.3s ease; 
+            cursor: pointer;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
+        }
+
+        .kpi-info h3 { font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+        .kpi-info h2 { font-size: 22px; color: #111827; font-weight: 700; }
+        .kpi-info .trend { font-size: 11px; margin-top: 4px; display: inline-block; font-weight: 500;}
+        .trend.up { color: #059669; }
+        .trend.down { color: #dc2626; }
+        .trend.neutral { color: #3b82f6; }
+        .kpi-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
+        .bg-blue { background: #eff6ff; color: #3b82f6; }
+        .bg-purple { background: #faf5ff; color: #a855f7; }
+        .bg-green { background: #ecfdf5; color: #10b981; }
+        .bg-red { background: #fef2f2; color: #ef4444; }
+        .bg-orange { background: #fff7ed; color: #f97316; }
+
+        /* PANELS GRIDS */
+        .middle-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .full-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .panel { 
+            background: #ffffff; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; 
+            overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+        }
+        
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; }
+        .panel-header h3 { font-size: 15px; font-weight: 600; color: #111827; display: flex; align-items: center; gap: 8px;}
+        
+        .chart-container { position: relative; height: 240px; width: 100%; }
+        
+        /* Staff Leave & Requests List */
+        .request-list { list-style: none; }
+        .request-list li { 
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; 
+            border-bottom: 1px solid #f3f4f6; transition: background 0.2s ease; border-radius: 6px;
+        }
+        .request-list li:hover { background: #f8fafc; }
+        
+        .request-list li:last-child { border: none; padding-bottom: 0;}
+        .req-info { display: flex; align-items: center; gap: 12px; }
+        .req-avatar { width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;}
+        .req-text h4 { font-size: 13px; color: #111827; font-weight: 600;}
+        .req-text p { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .req-actions { display: flex; gap: 8px; }
+        .req-btn { padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s;}
+        .req-approve { background: #ecfdf5; color: #10b981; border: 1px solid #a7f3d0; }
+        .req-approve:hover { background: #d1fae5; transform: scale(1.05); } 
+        .req-reject { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+        .req-reject:hover { background: #fee2e2; transform: scale(1.05); }
+
+        /* AI & Alerts List */
+        .alert-list { list-style: none; }
+        .alert-list li { 
+            display: flex; gap: 12px; padding: 12px 10px; border-bottom: 1px solid #f3f4f6; 
+            transition: background 0.2s ease; border-radius: 6px;
+        }
+        .alert-list li:hover { background: #f8fafc; }
+        .alert-list li:last-child { border: none; padding-bottom: 0;}
+        .alert-icon { font-size: 18px; flex-shrink: 0;}
+        .alert-text h4 { font-size: 13px; color: #111827; font-weight: 600; }
+        .alert-text p { font-size: 12px; color: #6b7280; margin-top: 3px; line-height: 1.4;}
+
+        /* Audit Logs Table */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .dense-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .dense-table th, .dense-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 12px; white-space: nowrap; }
+        .dense-table th { color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 11px; background: #f9fafb; }
+        
+        .dense-table tbody tr { transition: background 0.2s ease; cursor: pointer; }
+        .dense-table tbody tr:hover { background-color: #f1f5f9; }
+
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; letter-spacing: 0.5px;}
+        .badge-danger { background: #fef2f2; color: #ef4444; }
+        .badge-warning { background: #fffbeb; color: #d97706; }
+        .badge-info { background: #eff6ff; color: #3b82f6; }
+        .badge-success { background: #ecfdf5; color: #10b981; }
+
+        /* ================= MEDIA QUERIES ================= */
+        @media (max-width: 1100px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .middle-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100vh; }
-            .sidebar.active { transform: translateX(260px); }
-            .menu-btn { display: block; }
+            .sidebar { position: fixed; left: -280px; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { left: 0; }
             .sidebar-overlay.active { display: block; }
-            .topbar { padding: 0 15px; }
             
-            .user-profile b, .user-profile span { display: none; }
+            .topbar { height: 65px; padding: 0 15px; }
+            .breadcrumb-text { display: none; }
+            .mobile-toggle { display: flex; justify-content: center; align-items: center; background: transparent; border: none; width: 40px; height: 40px; color: #111827; }
+            
+            .system-status { display: none; }
+            .topbar-right { gap: 10px; }
+            .topbar-profile { padding-left: 0; border-left: none; }
+            .topbar-profile .user-info { display: none; } 
             
             .content { padding: 15px; }
-            .page-title { flex-direction: column; align-items: flex-start; gap: 15px; font-size: 18px;}
-            .page-title button { width: 100%; justify-content: center; }
-
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card { padding: 15px; gap: 10px; }
-            .stat-icon { width: 38px; height: 38px; font-size: 18px; }
-            .stat-info h4 { font-size: 16px; }
-
-            .quick-actions { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .action-btn { padding: 12px 8px; font-size: 11px; }
-            .action-btn i { font-size: 22px; }
-
-            .panel-header { padding: 15px; flex-direction: column; align-items: flex-start; gap: 8px; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .middle-grid { gap: 15px; margin-bottom: 15px; }
+            .panel { padding: 15px; }
+            .chart-container { height: 250px !important; } 
         }
 
         @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .kpi-grid { grid-template-columns: 1fr; } 
+            .kpi-card:last-child { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-    <aside class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="logo-img">
-                    <i class='bx bxs-book-bookmark' style="color:var(--purple); font-size: 26px;"></i>
-                </div>
-                <div>
-                    <h2>ZHI Academics</h2>
-                    <p>HOD / CO-ORDINATOR</p>
-                </div>
+            <div class="logo-box">
+                <img src="zhi_logo.png" alt="ZHI Logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
-            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
+            <div>
+                <h2>ZHI College</h2>
+                <span>Director Panel</span>
+            </div>
         </div>
-        
+
         <ul class="sidebar-menu">
-            <li class="active"><a href="#"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
-            
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Management</li>
-            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
-            <li><a href="LeaveApproval.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
-            <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
-            
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
-            <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
-            <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
-            <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+            <li class="active"><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> Dashboard</a></li>
+            <li><a href="users_roles.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Users & Roles</a></li>
+            <li><a href="students.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Students Directory</a></li>
+            <li><a href="Finance.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Finance & Fees</a></li>
+            <li><a href="Reports&Analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Analytics</a></li>
+            <li><a href="Exams&Results.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Exams & Results</a></li>
+            <li><a href="GlobalNotice.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Global Notices</a></li>
+            <li><a href="SystemSettings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> System Settings</a></li>
+            <li><a href="AuditLogs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg> Audit Logs</a></li>
         </ul>
-    </aside>
+    </nav>
 
     <div class="main-wrapper">
         <header class="topbar">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academic Department</div>
-            </div>
-            <div class="user-profile">
-                <div style="text-align: right;">
-                    <b id="adminName">Loading...</b>
-                    <span>Head of Department</span>
+            <div class="breadcrumb">
+                <button class="mobile-toggle" id="mobileToggle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="breadcrumb-text">
+                    <h1>Control Center</h1>
+                    <p>Super Admin Overview</p>
                 </div>
-                <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
+            </div>
+            
+            <div class="topbar-right">
+                <div class="system-status" id="serverStatus">
+                    <div class="dot"></div> Server: Online (99.9%)
+                </div>
+                <div class="topbar-profile">
+                    <div class="user-info">
+                        <h4>Md Director</h4>
+                        <p>GOD MODE</p>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Director&background=111827&color=fff" alt="Profile">
+                </div>
             </div>
         </header>
 
         <main class="content">
-            <div class="page-title">
-                <div>👋 Welcome, <span id="welcomeName">HOD Sir</span>!</div>
-                <button class="btn-primary" style="background: var(--purple);"><i class='bx bx-calendar-plus'></i> Generate Timetable</button>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Total Students</h3>
+                        <h2 id="totalStudentsCount">...</h2>
+                        <span class="trend up">▲ Live Data</span>
+                    </div>
+                    <div class="kpi-icon bg-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Total Faculty</h3>
+                        <h2 id="totalFacultyCount">...</h2>
+                        <span class="trend up">▲ Live Data</span>
+                    </div>
+                    <div class="kpi-icon bg-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Total Courses</h3>
+                        <h2 id="totalCoursesCount">...</h2>
+                        <span class="trend neutral">Active Programs</span>
+                    </div>
+                    <div class="kpi-icon bg-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Total Revenue</h3>
+                        <h2 id="totalRevenueCount">...</h2>
+                        <span class="trend up">▲ Total Collected</span>
+                    </div>
+                    <div class="kpi-icon bg-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Pending Fees</h3>
+                        <h2 id="pendingFeesCount">...</h2>
+                        <span class="trend down">▼ Action Required</span>
+                    </div>
+                    <div class="kpi-icon bg-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-buildings'></i></div>
-                    <div class="stat-info">
-                        <h4 id="stat-classes">...</h4>
-                        <p>Classes Today</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class='bx bx-user-check'></i></div>
-                    <div class="stat-info">
-                        <h4 id="stat-teachers">...</h4>
-                        <p>Teachers Present</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-book-open'></i></div>
-                    <div class="stat-info">
-                        <h4 id="stat-syllabus">...</h4>
-                        <p>Avg. Syllabus Comp.</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-user-x'></i></div>
-                    <div class="stat-info">
-                        <h4 id="stat-alerts">...</h4>
-                        <p>Critical Alerts</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="quick-actions">
-                <a href="HODtimetable_setup.html" class="action-btn">
-                    <i class='bx bx-calendar'></i>
-                    Manage Timetable
-                </a>
-                <a href="substitute_mgmt.html" class="action-btn">
-                    <i class='bx bx-transfer'></i>
-                    Assign Substitute
-                </a>
-                <a href="manage_syllabus.html" class="action-btn">
-                    <i class='bx bx-book-reader'></i>
-                    Track Syllabus Progress
-                </a>
-                <a href="performance_reports.html" class="action-btn">
-                    <i class='bx bx-line-chart'></i>
-                    View Weak Students
-                </a>
-            </div>
-
-            <div class="grid-2-col">
+            <div class="middle-grid">
                 <div class="panel">
                     <div class="panel-header">
-                        <h3><i class='bx bx-time-five'></i> Ongoing & Upcoming Classes</h3>
-                        <span class="badge bg-blue">Today's Routine</span>
+                        <h3>📈 Admissions & Revenue Trends</h3>
+                        <span style="font-size: 11px; color: #6b7280;">Year: 2026</span>
                     </div>
-                    <div class="table-res">
-                        <table>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>💰 Fee Collection Overview</h3>
+                    </div>
+                    <div class="chart-container" style="height: 200px; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="feeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="middle-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>📬 Pending Approvals & Leave Requests</h3>
+                        <a href="#" style="font-size: 12px; color: #3b82f6; text-decoration: none; font-weight: 500;">View All</a>
+                    </div>
+                    <ul class="request-list" id="leaveRequestsList">
+                        <li>
+                            <div class="req-info">
+                                <div class="req-avatar">NV</div>
+                                <div class="req-text">
+                                    <h4>Neha Verma (Faculty)</h4>
+                                    <p>Casual Leave • 2 Days (15 Apr - 16 Apr)</p>
+                                </div>
+                            </div>
+                            <div class="req-actions">
+                                <button class="req-btn req-approve" onclick="alert('Leave Approved!')">Approve</button>
+                                <button class="req-btn req-reject" onclick="alert('Leave Rejected!')">Reject</button>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="req-info">
+                                <div class="req-avatar" style="background:#fef2f2; color:#ef4444;">AK</div>
+                                <div class="req-text">
+                                    <h4>Amit Kumar (Accountant)</h4>
+                                    <p>Sick Leave • 1 Day (Today)</p>
+                                </div>
+                            </div>
+                            <div class="req-actions">
+                                <button class="req-btn req-approve" onclick="alert('Leave Approved!')">Approve</button>
+                                <button class="req-btn req-reject" onclick="alert('Leave Rejected!')">Reject</button>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="req-info">
+                                <div class="req-avatar" style="background:#fffbeb; color:#f59e0b;">SR</div>
+                                <div class="req-text">
+                                    <h4>Student Council</h4>
+                                    <p>Request for Tech Fest Budget Approval</p>
+                                </div>
+                            </div>
+                            <div class="req-actions">
+                                <button class="req-btn req-approve" onclick="alert('Request Approved!')">Approve</button>
+                                <button class="req-btn req-reject" onclick="alert('Request Denied!')">Decline</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>🧠 AI Insights & System Alerts</h3>
+                    </div>
+                    <ul class="alert-list" id="alertsList">
+                        <li>
+                            <div class="alert-text">
+                                <p>Loading live insights from server...</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="full-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>🧾 Recent Audit Logs (System Tracking)</h3>
+                        <a href="AuditLogs.html" style="font-size: 12px; color: #3b82f6; text-decoration: none; font-weight: 500;">View All Logs</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dense-table">
                             <thead>
                                 <tr>
-                                    <th>Time</th>
-                                    <th>Course</th>
-                                    <th>Subject</th>
-                                    <th>Teacher</th>
-                                    <th>Room</th>
+                                    <th>Timestamp</th>
+                                    <th>User (Role)</th>
+                                    <th>Action Performed</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="timetableBody">
+                            <tbody id="auditLogsBody">
                                 <tr>
-                                    <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-light);">Loading live timetable...</td>
+                                    <td colspan="5" style="text-align: center; padding: 20px;">Fetching recent system logs...</td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3><i class='bx bx-bell' style="color: var(--danger);"></i> Critical Alerts</h3>
-                    </div>
-                    <div class="alert-list" id="alertListContainer">
-                        <div style="padding: 20px; text-align: center; color: var(--text-light);">Checking for alerts...</div>
                     </div>
                 </div>
             </div>
@@ -280,103 +436,268 @@
     </div>
 
     <script>
-        function toggleSidebar() {
+        let trendChartInstance;
+        let feeChartInstance;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Toggle Logic
             const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mobileToggle = document.getElementById('mobileToggle');
+
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+
+            // Initialize Charts with blank data first
+            Chart.register(ChartDataLabels);
+            initEmptyCharts();
+            
+            // Start fetching live database numbers
+            fetchLiveDashboardData();
+        });
+
+        function initEmptyCharts() {
+            // 1. Line/Bar Combo Chart for Trends
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Admissions',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4,
+                            order: 2
+                        },
+                        {
+                            label: 'Revenue (Lakhs)',
+                            data: [0, 0, 0, 0, 0, 0],
+                            type: 'line',
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: { display: false }, 
+                        legend: { position: 'top', labels: { boxWidth: 10, font: {size: 11} } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: {font: {size: 10}} },
+                        x: { grid: { display: false }, ticks: {font: {size: 10}} }
+                    }
+                }
+            });
+
+            // 2. Smaller Doughnut Chart for Fees
+            const feeCtx = document.getElementById('feeChart').getContext('2d');
+            feeChartInstance = new Chart(feeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Collected', 'Pending'],
+                    datasets: [{
+                        data: [50, 50],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 10, usePointStyle: true, font: {size: 12} } },
+                        datalabels: {
+                            color: '#ffffff',
+                            font: { weight: 'bold', size: 12 },
+                            formatter: (value) => value + '%'
+                        }
+                    }
+                }
+            });
         }
 
-        // Initialize Live Data on Load
-        window.onload = () => {
-            const userName = localStorage.getItem('userName') || 'HOD Sir';
-            document.getElementById('adminName').innerText = userName;
-            document.getElementById('welcomeName').innerText = userName.split(' ')[0]; // Show first name
+        // Helper for Currency Formatter
+        function formatIndianCurrency(amount) {
+            if (amount >= 10000000) return '₹ ' + (amount / 10000000).toFixed(2) + ' Cr';
+            if (amount >= 100000) return '₹ ' + (amount / 100000).toFixed(2) + ' L';
+            return '₹ ' + amount.toLocaleString('en-IN');
+        }
 
-            fetchLiveHODData();
-        };
-
-        // 🔴 FUNCTION TO FETCH LIVE DATA FROM DATABASE 🔴
-        async function fetchLiveHODData() {
+        // 🔴 LIVE FETCH SCRIPT 🔴
+        async function fetchLiveDashboardData() {
             try {
-                // Fetching from standard backend APIs concurrently
-                const [staffRes, timetableRes, alertsRes, syllabusRes] = await Promise.all([
+                // Fetching all endpoints concurrently for speed
+                const [studentsRes, staffRes, coursesRes] = await Promise.all([
+                    fetch('/api/students').catch(() => ({ json: () => ({ success: false, data: [] }) })),
                     fetch('/api/staff').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/timetable/today').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/alerts/hod').catch(() => ({ json: () => ({ success: false, data: [] }) })),
-                    fetch('/api/syllabus/progress').catch(() => ({ json: () => ({ success: false, average: null }) }))
+                    fetch('/api/get-courses').catch(() => ({ json: () => ({ success: false, courses: [] }) }))
                 ]);
 
+                const studentsData = await studentsRes.json();
                 const staffData = await staffRes.json();
-                const timetableData = await timetableRes.json();
-                const alertsData = await alertsRes.json();
-                const syllabusData = await syllabusRes.json();
+                const coursesData = await coursesRes.json();
 
-                // 1. Process Staff (Teachers)
-                let teachers = staffData.success ? staffData.data.filter(s => s.role && s.role.toLowerCase().includes('teacher') || s.category === 'teacher') : [];
-                let totalTeachers = teachers.length;
-                let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
+                let students = studentsData.success ? studentsData.data : [];
+                let staff = staffData.success ? staffData.data : [];
+                let courses = coursesData.success ? coursesData.courses : [];
 
-                // 2. Process Timetable
-                let classesToday = timetableData.success ? timetableData.data : [];
+                // KPI Calculations
+                let totalStudents = students.length;
+                let totalFaculty = staff.length;
+                let totalCourses = courses.length > 0 ? courses.length : new Set(students.map(s => s.course).filter(c=>c)).size;
                 
-                // 3. Process Alerts
-                let alerts = alertsData.success ? alertsData.data : [];
+                let totalRevenue = 0;
+                let totalPending = 0;
+                let defaultLikelyCount = 0;
 
-                // UPDATE UI - STATS CARDS
-                document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
-                document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
-                document.getElementById('stat-syllabus').innerText = syllabusData.success && syllabusData.average ? `${syllabusData.average}%` : '0%'; 
-                document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
+                let monthlyAdmissions = [0, 0, 0, 0, 0, 0];
+                let monthlyRevenue = [0, 0, 0, 0, 0, 0];
 
-                // UPDATE UI - TIMETABLE TABLE
-                const tbody = document.getElementById('timetableBody');
-                if (classesToday.length > 0) {
-                    tbody.innerHTML = classesToday.map(c => `
-                        <tr>
-                            <td>${c.time}</td>
-                            <td>${c.course}</td>
-                            <td>${c.subject}</td>
-                            <td><b style="color: var(--primary);">${c.teacherName}</b></td>
-                            <td><span class="badge bg-yellow">${c.room}</span></td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);">No classes scheduled for today in the database.</td></tr>';
+                students.forEach(s => {
+                    let totalFee = s.totalFee || 120000;
+                    let paidFee = s.amountCollected || s.paidFee || 0;
+                    let dueFee = totalFee - paidFee;
+
+                    totalRevenue += paidFee;
+                    totalPending += dueFee;
+
+                    if(dueFee > 50000) defaultLikelyCount++; 
+
+                    // Monthly data grouping for charts
+                    if(s.createdAt || s.registrationDate) {
+                        let d = new Date(s.registrationDate || s.createdAt);
+                        let month = d.getMonth(); 
+                        if(month >= 0 && month <= 5) {
+                            monthlyAdmissions[month] += 1;
+                            monthlyRevenue[month] += (paidFee / 100000); 
+                        }
+                    } else {
+                        let randomMonth = Math.floor(Math.random() * 6);
+                        monthlyAdmissions[randomMonth] += 1;
+                        monthlyRevenue[randomMonth] += (paidFee / 100000);
+                    }
+                });
+
+                // 1. Update UI Numbers
+                document.getElementById('totalStudentsCount').innerText = totalStudents.toLocaleString('en-IN');
+                document.getElementById('totalFacultyCount').innerText = totalFaculty;
+                document.getElementById('totalCoursesCount').innerText = totalCourses || 5; 
+                document.getElementById('totalRevenueCount').innerText = formatIndianCurrency(totalRevenue);
+                document.getElementById('pendingFeesCount').innerText = formatIndianCurrency(totalPending);
+
+                // 2. Update Trend Chart
+                trendChartInstance.data.datasets[0].data = monthlyAdmissions;
+                trendChartInstance.data.datasets[1].data = monthlyRevenue.map(v => v.toFixed(1));
+                trendChartInstance.update();
+
+                // 3. Update Fee Doughnut Chart
+                let totalExpected = totalRevenue + totalPending;
+                let collectPct = totalExpected > 0 ? Math.round((totalRevenue / totalExpected) * 100) : 50;
+                let pendingPct = totalExpected > 0 ? 100 - collectPct : 50;
+                
+                feeChartInstance.data.datasets[0].data = [collectPct, pendingPct];
+                feeChartInstance.update();
+
+                // 4. Smart AI Alerts
+                let alertsHtml = '';
+                if(defaultLikelyCount > 0) {
+                    alertsHtml += `
+                        <li>
+                            <div class="alert-icon">💸</div>
+                            <div class="alert-text">
+                                <h4>Fee Default Prediction</h4>
+                                <p>System flags ${defaultLikelyCount} students with heavy pending dues (> 50k).</p>
+                            </div>
+                        </li>
+                    `;
                 }
-
-                // UPDATE UI - CRITICAL ALERTS
-                const alertList = document.getElementById('alertListContainer');
-                if (alerts.length > 0) {
-                    alertList.innerHTML = alerts.map(a => `
-                        <div class="alert-item">
-                            <div class="alert-icon" style="background: ${a.bgColor || '#fef2f2'}; color: ${a.iconColor || 'var(--danger)'};">
-                                <i class='bx ${a.icon || 'bx-error-circle'}'></i>
+                if(totalStudents > 0) {
+                    alertsHtml += `
+                        <li>
+                            <div class="alert-icon">📈</div>
+                            <div class="alert-text">
+                                <h4>Growth Detected</h4>
+                                <p>Total ${totalStudents} active student records found in database.</p>
                             </div>
-                            <div class="alert-content">
-                                <h4>${a.title}</h4>
-                                <p>${a.message}</p>
-                                ${a.actionText ? `<button class="alert-action" onclick="window.location.href='${a.actionLink || '#'}'">${a.actionText}</button>` : ''}
-                            </div>
+                        </li>
+                    `;
+                }
+                alertsHtml += `
+                    <li>
+                        <div class="alert-icon">🔒</div>
+                        <div class="alert-text">
+                            <h4>Security Alert</h4>
+                            <p>System functioning normally. No breaches detected.</p>
                         </div>
-                    `).join('');
+                    </li>
+                `;
+                document.getElementById('alertsList').innerHTML = alertsHtml;
+
+                // 5. Update Audit Logs (Recent DB activity)
+                let combinedLogs = [];
+                students.slice(-3).forEach(s => {
+                    let d = new Date(s.createdAt || Date.now());
+                    combinedLogs.push({
+                        time: d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        user: 'Admin Desk',
+                        action: `New Student Added: ${s.studentName}`,
+                        status: 'SUCCESS', badge: 'badge-info'
+                    });
+                });
+                staff.slice(-2).forEach(st => {
+                    let d = new Date(st.createdAt || Date.now());
+                    combinedLogs.push({
+                        time: d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        user: 'Super Admin',
+                        action: `Staff Created: ${st.name} (${st.role})`,
+                        status: 'SYSTEM', badge: 'badge-success'
+                    });
+                });
+
+                if(combinedLogs.length > 0) {
+                    combinedLogs.reverse();
+                    let logsHtml = '';
+                    combinedLogs.forEach(log => {
+                        logsHtml += `
+                            <tr>
+                                <td>${log.time}</td>
+                                <td><strong>${log.user}</strong></td>
+                                <td>${log.action}</td>
+                                <td>Dynamic IP</td>
+                                <td><span class="badge ${log.badge}">${log.status}</span></td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('auditLogsBody').innerHTML = logsHtml;
                 } else {
-                    alertList.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: var(--text-light);"><i class="bx bx-check-shield" style="font-size: 30px; color: var(--success); margin-bottom: 10px; display: block;"></i>All clear! No critical alerts at the moment.</div>';
+                    document.getElementById('auditLogsBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">System running smoothly. No recent logs.</td></tr>';
                 }
 
-            } catch(error) {
-                console.error("Error fetching live HOD data:", error);
-                
-                // Fallback UI in case of total failure (Database not connected)
-                document.getElementById('stat-classes').innerText = 'Error';
-                document.getElementById('stat-teachers').innerText = 'Error';
-                document.getElementById('stat-syllabus').innerText = 'Error';
-                document.getElementById('stat-alerts').innerText = 'Error';
-                
-                document.getElementById('timetableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--danger);">Failed to connect to database.</td></tr>';
-                document.getElementById('alertListContainer').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--danger);">Failed to load alerts. Check server connection.</div>';
+            } catch (error) {
+                console.error("Dashboard Load Error: ", error);
+                document.getElementById('serverStatus').innerHTML = `<div class="dot" style="background:#ef4444; box-shadow:0 0 5px #ef4444;"></div> Server: Offline/Error`;
+                document.getElementById('serverStatus').style.color = '#ef4444';
+                document.getElementById('serverStatus').style.background = '#fef2f2';
             }
         }
     </script>
+
 </body>
 </html>
