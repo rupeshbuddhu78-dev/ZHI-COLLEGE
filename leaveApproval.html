@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | Leave Approvals (HOD)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* 🔴 FIXED HORIZONTAL SCROLL ISSUE 🔴 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a i { font-size: 20px; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--purple); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
+        .user-profile div { display: flex; flex-direction: column; }
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
+
+        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
+
+        /* ------------------ STATS CARDS (LEAVE FOCUSED) ------------------ */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; min-width: 0;}
+        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
+        .stat-info h4 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;}
+        .stat-info p { font-size: 12px; color: var(--text-light); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+
+        /* ------------------ LEAVE PANEL & TABS ------------------ */
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; max-width: 100%;}
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
+        .panel-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        
+        .filter-tabs { display: flex; gap: 10px; background: #f1f5f9; padding: 4px; border-radius: 8px;}
+        .filter-btn { padding: 8px 20px; border: none; background: transparent; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: 0.3s; }
+        .filter-btn.active { background: var(--white); color: var(--purple); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* ------------------ TABLE ------------------ */
+        .table-res { width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px;}
+        th { padding: 12px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; white-space: nowrap;}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500; vertical-align: top;}
+        tr:hover { background: #f8fafc; }
+        
+        .user-col { display: flex; align-items: center; gap: 12px;}
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: #e0e7ff; color: #1e40af; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px;}
+        .role-text { font-size: 11px; color: var(--text-light); margin-top: 3px; display: block;}
+        
+        .reason-box { max-width: 250px; white-space: normal; line-height: 1.4; color: #475569;}
+        .date-box { font-weight: 600; color: var(--primary); font-size: 12px;}
+
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; display: inline-block;}
+        .bg-blue { background: #eff6ff; color: #1e40af; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-yellow { background: #fef9c3; color: #854d0e; }
+        .bg-red { background: #fef2f2; color: #991b1b; }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-act { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: 0.2s;}
+        .btn-approve { background: var(--success); color: white; }
+        .btn-approve:hover { background: #059669; }
+        .btn-reject { background: white; border-color: var(--danger); color: var(--danger); }
+        .btn-reject:hover { background: #fef2f2; }
+
+        /* ------------------ MODAL (REMARKS) ------------------ */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(3px);}
+        .modal-box { background: white; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: popIn 0.3s ease;}
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;}
+        .modal-header h3 { font-size: 16px; color: var(--text-dark); }
+        .close-modal { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-light); }
+        
+        .modal-body { padding: 20px; }
+        .req-summary { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.5; color: #334155;}
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark);}
+        .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; resize: vertical; min-height: 80px; font-family: inherit;}
+        .form-group textarea:focus { border-color: var(--purple); }
+        
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc;}
+        .btn-cancel { padding: 9px 15px; background: white; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;}
+
+        /* 📱 MOBILE RESPONSIVENESS */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn, .sidebar-overlay.active { display: block; }
+            .topbar { padding: 0 15px; }
+            .user-profile b, .user-profile span { display: none; }
+            .content { padding: 15px; }
+            .panel-header { flex-direction: column; align-items: flex-start; }
+            .filter-tabs { width: 100%; display: flex; }
+            .filter-btn { flex: 1; text-align: center; }
+        }
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-img">
+                    <i class='bx bxs-book-bookmark' style="color:var(--purple); font-size: 26px;"></i>
+                </div>
+                <div>
+                    <h2>ZHI Academics</h2>
+                    <p>HOD / CO-ORDINATOR</p>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Management</li>
+            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            
+            <li class="active"><a href="leave_approvals.html"><i class='bx bx-calendar-exclamation'></i> Leave Approvals</a></li>
+            
+            <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
+            <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
+            <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
+            <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Leave Management</div>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <b id="adminName">Dr. Amit Kumar</b>
+                    <span>Head of Department</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="page-title">
+                <div>📬 Leave Requests & Approvals</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fffbeb; color: var(--warning);"><i class='bx bx-time-five'></i></div>
+                    <div class="stat-info">
+                        <h4>12</h4>
+                        <p>Pending Student Leaves</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-user-voice'></i></div>
+                    <div class="stat-info">
+                        <h4>03</h4>
+                        <p>Pending Teacher Leaves</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7; color: var(--success);"><i class='bx bx-check-circle'></i></div>
+                    <div class="stat-info">
+                        <h4>24</h4>
+                        <p>Approved This Week</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-x-circle'></i></div>
+                    <div class="stat-info">
+                        <h4>05</h4>
+                        <p>Rejected This Week</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-envelope'></i> Manage Requests</h3>
+                    <div class="filter-tabs">
+                        <button class="filter-btn active" id="tab-students" onclick="switchTab('students')">Students (12)</button>
+                        <button class="filter-btn" id="tab-teachers" onclick="switchTab('teachers')">Teachers (3)</button>
+                    </div>
+                </div>
+
+                <div class="table-res">
+                    <table>
+                        <thead>
+                            <tr id="tableHeader">
+                                </tr>
+                        </thead>
+                        <tbody id="leaveTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="actionModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">Process Leave Request</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="req-summary" id="modalSummary">
+                    <b>Applicant:</b> Rahul Sharma (BCA Sem 1)<br>
+                    <b>Duration:</b> 15 Apr to 18 Apr (4 Days)<br>
+                    <b>Reason:</b> Medical Issue (Viral Fever)
+                </div>
+                
+                <div class="form-group">
+                    <label>HOD Remark / Message (Optional)</label>
+                    <textarea id="hodRemark" placeholder="Add a comment... e.g. 'Approved, please submit medical certificate when you return.'"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-act btn-reject" onclick="submitAction('Rejected')"><i class='bx bx-x'></i> Reject Leave</button>
+                <button class="btn-act btn-approve" onclick="submitAction('Approved')"><i class='bx bx-check'></i> Approve Leave</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // 🔴 DUMMY DATA FOR DEMONSTRATION 🔴
+        const studentLeaves = [
+            { id: 1, name: "Rahul Sharma", role: "BCA (Sem 1)", avatar: "RS", dates: "15 Apr 2026 - 18 Apr 2026", days: 4, reason: "Suffering from severe viral fever. Doctor advised rest.", doc: "medical_cert.pdf" },
+            { id: 2, name: "Priya Singh", role: "BBA (Sem 3)", avatar: "PS", dates: "16 Apr 2026", days: 1, reason: "Family function out of town.", doc: null },
+            { id: 3, name: "Aman Verma", role: "MCA (Sem 5)", avatar: "AV", dates: "20 Apr 2026 - 21 Apr 2026", days: 2, reason: "Attending hackathon at IIT Delhi.", doc: "event_invite.pdf" }
+        ];
+
+        const teacherLeaves = [
+            { id: 101, name: "Vikas Kumar", role: "Sr. Faculty (BCA)", avatar: "VK", dates: "16 Apr 2026", days: 1, reason: "Personal emergency at home. Substitute: Sanjay Sir.", doc: null },
+            { id: 102, name: "Neha Gupta", role: "Asst. Professor", avatar: "NG", dates: "18 Apr 2026 - 22 Apr 2026", days: 5, reason: "Out of station for a wedding. Syllabus adjusted.", doc: null }
+        ];
+
+        let currentTab = 'students';
+        let currentRequestId = null;
+
+        // Initialize Table
+        window.onload = () => { switchTab('students'); };
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-students').classList.remove('active');
+            document.getElementById('tab-teachers').classList.remove('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHeader');
+            const tbody = document.getElementById('leaveTableBody');
+            
+            tbody.innerHTML = '';
+
+            if(currentTab === 'students') {
+                thead.innerHTML = `
+                    <th>Student Name & Class</th>
+                    <th>Leave Duration</th>
+                    <th>Reason & Attachments</th>
+                    <th>Action</th>
+                `;
+                studentLeaves.forEach(req => tbody.innerHTML += createRow(req));
+            } else {
+                thead.innerHTML = `
+                    <th>Staff Name & Designation</th>
+                    <th>Leave Duration</th>
+                    <th>Reason & Substitute Info</th>
+                    <th>Action</th>
+                `;
+                teacherLeaves.forEach(req => tbody.innerHTML += createRow(req));
+            }
+        }
+
+        function createRow(req) {
+            let docHtml = req.doc ? `<br><a href="#" style="font-size:11px; color:var(--primary); text-decoration:none; margin-top:5px; display:inline-block;"><i class='bx bx-paperclip'></i> ${req.doc}</a>` : '';
+            
+            // Encode data so we can pass it to Modal
+            let reqData = encodeURIComponent(JSON.stringify(req));
+
+            return `
+                <tr>
+                    <td>
+                        <div class="user-col">
+                            <div class="avatar">${req.avatar}</div>
+                            <div>
+                                <b>${req.name}</b>
+                                <span class="role-text">${req.role}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-box">${req.dates}</div>
+                        <span class="badge bg-yellow" style="margin-top:4px;">${req.days} Days</span>
+                    </td>
+                    <td>
+                        <div class="reason-box">${req.reason}</div>
+                        ${docHtml}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-act btn-approve" onclick="openModal('${reqData}')">Process</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // 🔴 MODAL LOGIC 🔴
+        function openModal(encodedData) {
+            const req = JSON.parse(decodeURIComponent(encodedData));
+            currentRequestId = req.id;
+            
+            let applicantType = currentTab === 'students' ? 'Student' : 'Staff';
+
+            document.getElementById('modalSummary').innerHTML = `
+                <div style="margin-bottom: 5px;"><b>${applicantType}:</b> ${req.name} (${req.role})</div>
+                <div style="margin-bottom: 5px;"><b>Duration:</b> ${req.dates} (${req.days} Days)</div>
+                <div><b>Reason:</b> ${req.reason}</div>
+            `;
+            
+            document.getElementById('hodRemark').value = ''; // clear previous remark
+            document.getElementById('actionModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('actionModal').style.display = 'none';
+        }
+
+        function submitAction(status) {
+            const remark = document.getElementById('hodRemark').value;
+            
+            // Here you would normally send an API request to your backend:
+            // fetch('/api/leaves/update-status', { method: 'POST', body: JSON.stringify({ id: currentRequestId, status, remark }) })
+            
+            let emoji = status === 'Approved' ? '✅' : '❌';
+            alert(`${emoji} Leave ${status} successfully!\nRemark sent: "${remark || 'No remark'}"`);
+            
+            closeModal();
+            // Optional: Remove row from table locally after processing
+        }
+    </script>
+</body>
+</html>
