@@ -151,7 +151,24 @@ const noticeSchema = new mongoose.Schema({
     fileUrl: { type: String, default: "" }, 
     postedBy: { type: String, default: "Director Office" }
 }, { timestamps: true });
-const Notice = mongoose.model('Notice', noticeSchema);
+
+const Notice = mongoose.model('Notice', noticeSchema);// 🔥 LEAVE SCHEMA (Isko baaki schemas ke paas paste karna hai) 🔥
+const leaveSchema = new mongoose.Schema({
+    applicantId: { type: String, required: true },
+    applicantName: { type: String, required: true },
+    applicantRole: { type: String, required: true }, 
+    leaveType: { type: String, default: "General" }, 
+    startDate: { type: String, required: true }, 
+    endDate: { type: String, required: true },
+    totalDays: { type: Number, required: true },
+    reason: { type: String, required: true },
+    documentUrl: { type: String, default: "" }, 
+    status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
+    hodRemark: { type: String, default: "" }
+}, { timestamps: true });
+
+const Leave = mongoose.model('Leave', leaveSchema);
+
 
 // STAFF SCHEMA
 const staffSchema = new mongoose.Schema({
