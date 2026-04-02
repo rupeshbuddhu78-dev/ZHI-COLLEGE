@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHI | Manage Notices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; 
+            --primary: #3b82f6; 
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
+
+        /* ------------------ SIDEBAR ------------------ */
+        .sidebar { 
+            width: 275px; 
+            min-width: 275px; 
+            flex-shrink: 0; 
+            background-color: var(--sidebar-bg); 
+            color: #fff; 
+            display: flex; flex-direction: column; 
+            z-index: 1001; transition: transform 0.3s ease; 
+        }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+        .logo-img { width: 45px; height: 45px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; border-left: 4px solid transparent;}
+        .sidebar-menu li a i { font-size: 20px; }
+        
+        .sidebar-menu li a:hover { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-left: 4px solid var(--primary); padding-left: 25px;}
+        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--purple); padding-left: 20px;}
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
+        .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
+
+        .content { padding: 25px 30px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
+
+        /* BUTTONS */
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; transition: 0.2s; text-align: center; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px);}
+
+        /* ------------------ GRIDS & PANELS ------------------ */
+        .grid-2-col { display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; width: 100%; align-items: start;}
+        
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden;}
+        .panel-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;}
+        .panel-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        
+        /* ------------------ FORM STYLES ------------------ */
+        .form-body { padding: 25px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+        .form-control { width: 100%; padding: 12px 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit; background: var(--bg);}
+        .form-control:focus { border-color: var(--purple); background: white; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);}
+        textarea.form-control { min-height: 120px; resize: vertical; }
+
+        .file-upload-box { border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 8px; background: #f8fafc; cursor: pointer; transition: 0.3s; position: relative;}
+        .file-upload-box:hover { border-color: var(--purple); background: #f5f3ff; }
+        .file-upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .file-upload-text { font-size: 13px; color: var(--text-light); margin-top: 8px;}
+        .file-upload-icon { font-size: 30px; color: var(--purple); }
+
+        /* ------------------ NOTICE LIST (HISTORY) ------------------ */
+        .notice-list { list-style: none; padding: 0; margin: 0; max-height: 500px; overflow-y: auto;}
+        .notice-item { padding: 18px 20px; border-bottom: 1px solid var(--border); transition: 0.2s; display: flex; flex-direction: column; gap: 10px;}
+        .notice-item:hover { background: #f8fafc; }
+        .notice-item:last-child { border-bottom: none; }
+        
+        .notice-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .notice-title { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        .notice-date { font-size: 11px; color: var(--text-light); }
+        .notice-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;}
+        .badge-all { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .badge-students { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-teachers { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+        .badge-office { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+        /* 📱 RESPONSIVE DESIGN */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
+        
+        @media (max-width: 992px) {
+            .grid-2-col { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -275px; height: 100vh; }
+            .sidebar.active { transform: translateX(275px); }
+            .menu-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .topbar { padding: 0 15px; }
+            
+            .user-profile b, .user-profile span { display: none; }
+            
+            .content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="logo-img">
+                    <i class='bx bxs-book-bookmark' style="color:var(--purple); font-size: 26px;"></i>
+                </div>
+                <div>
+                    <h2>ZHI Academics</h2>
+                    <p>HOD / CO-ORDINATOR</p>
+                </div>
+            </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Management</li>
+            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="LeaveApproval.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
+            <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
+            
+            <li class="active"><a href="manage_notices.html"><i class='bx bx-message-square-detail'></i> Manage Notices</a></li>
+            
+            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
+            <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
+            <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
+            <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Communication Hub</div>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <b id="adminName">Dr. Amit Kumar</b>
+                    <span>Head of Department</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="page-title">
+                <div>📢 Manage Notices & Announcements</div>
+            </div>
+
+            <div class="grid-2-col">
+                
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class='bx bx-edit'></i> Compose New Notice</h3>
+                    </div>
+                    <div class="form-body">
+                        <form id="noticeForm" onsubmit="submitNotice(event)">
+                            
+                            <div class="form-group">
+                                <label>Notice Title / Subject</label>
+                                <input type="text" class="form-control" id="noticeTitle" placeholder="e.g. Tomorrow Holiday due to Festival" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Target Audience (Who will see this?)</label>
+                                <select class="form-control" id="noticeAudience" required>
+                                    <option value="" disabled selected>-- Select Target Audience --</option>
+                                    <option value="ALL">Everyone (All Students, Teachers & Office)</option>
+                                    <option value="STUDENTS">Only Students</option>
+                                    <option value="TEACHERS">Only Teachers & Faculties</option>
+                                    <option value="OFFICE">Only Office & Admin Staff</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Notice Message / Description</label>
+                                <textarea class="form-control" id="noticeMessage" placeholder="Type the full notice message here..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Attach Document / Image (Optional)</label>
+                                <div class="file-upload-box">
+                                    <input type="file" id="noticeFile" accept=".pdf, .jpg, .jpeg, .png" onchange="updateFileName()">
+                                    <i class='bx bx-cloud-upload file-upload-icon'></i>
+                                    <div class="file-upload-text" id="fileNameDisplay">Click here to upload file (PDF, JPG, PNG)</div>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right; margin-top: 30px;">
+                                <button type="button" class="btn-primary" style="background: var(--text-light); display: inline-block; margin-right: 10px;" onclick="document.getElementById('noticeForm').reset(); document.getElementById('fileNameDisplay').innerText='Click here to upload file (PDF, JPG, PNG)';">Clear Form</button>
+                                <button type="submit" class="btn-primary" style="background: var(--purple); display: inline-block;" id="submitBtn">
+                                    <i class='bx bx-send'></i> Publish Notice
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class='bx bx-history'></i> Sent Notices History</h3>
+                        <a href="#" style="font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
+                    </div>
+                    <ul class="notice-list" id="noticeListBody">
+                        
+                        <li class="notice-item">
+                            <div class="notice-top">
+                                <span class="badge badge-all">ALL</span>
+                                <span class="notice-date">Today, 10:30 AM</span>
+                            </div>
+                            <div class="notice-title">College Foundation Day Celebration</div>
+                            <div class="notice-desc">All classes will remain suspended on Friday due to the annual foundation day celebrations. Attendance is mandatory for the event.</div>
+                        </li>
+
+                        <li class="notice-item">
+                            <div class="notice-top">
+                                <span class="badge badge-teachers">TEACHERS ONLY</span>
+                                <span class="notice-date">Yesterday, 04:15 PM</span>
+                            </div>
+                            <div class="notice-title">Submit Mid-Term Question Papers</div>
+                            <div class="notice-desc">Please submit the internal question papers to the examination department by the end of this week.</div>
+                        </li>
+
+                        <li class="notice-item">
+                            <div class="notice-top">
+                                <span class="badge badge-students">STUDENTS ONLY</span>
+                                <span class="notice-date">24 Mar, 09:00 AM</span>
+                            </div>
+                            <div class="notice-title">Semester Fee Submission Deadline</div>
+                            <div class="notice-desc">The last date to submit the upcoming semester fee without late fine is 31st March. Please clear your dues.</div>
+                        </li>
+                        
+                    </ul>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        window.onload = () => {
+            const userName = localStorage.getItem('userName') || 'Dr. Amit Kumar';
+            document.getElementById('adminName').innerText = userName;
+        };
+
+        // Display selected file name
+        function updateFileName() {
+            const fileInput = document.getElementById('noticeFile');
+            const display = document.getElementById('fileNameDisplay');
+            if (fileInput.files.length > 0) {
+                display.innerHTML = `<b style="color: var(--primary);">${fileInput.files[0].name}</b> selected.`;
+            } else {
+                display.innerText = "Click here to upload file (PDF, JPG, PNG)";
+            }
+        }
+
+        // Handle Form Submission (Publish Notice)
+        async function submitNotice(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Publishing...`;
+            btn.disabled = true;
+
+            const title = document.getElementById('noticeTitle').value;
+            const audience = document.getElementById('noticeAudience').value;
+            const message = document.getElementById('noticeMessage').value;
+            const file = document.getElementById('noticeFile').files[0];
+
+            // Real System Logic: Yahan FormData use karke backend me POST request bhejenge
+            // const formData = new FormData();
+            // formData.append('title', title);
+            // formData.append('audience', audience);
+            // formData.append('message', message);
+            // if(file) formData.append('file', file);
+            // await fetch('/api/notices', { method: 'POST', body: formData });
+
+            // SIMULATING NETWORK DELAY
+            setTimeout(() => {
+                alert(`✅ Success! Notice "${title}" has been sent to ${audience}.`);
+                
+                // Add to History UI dynamically
+                let badgeClass = 'badge-all';
+                let badgeText = 'ALL';
+                
+                if(audience === 'STUDENTS') { badgeClass = 'badge-students'; badgeText = 'STUDENTS ONLY'; }
+                else if(audience === 'TEACHERS') { badgeClass = 'badge-teachers'; badgeText = 'TEACHERS ONLY'; }
+                else if(audience === 'OFFICE') { badgeClass = 'badge-office'; badgeText = 'OFFICE STAFF'; }
+
+                const newNoticeHtml = `
+                    <li class="notice-item" style="background: #f0fdf4;">
+                        <div class="notice-top">
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                            <span class="notice-date">Just Now</span>
+                        </div>
+                        <div class="notice-title">${title}</div>
+                        <div class="notice-desc">${message}</div>
+                    </li>
+                `;
+                
+                const listBody = document.getElementById('noticeListBody');
+                listBody.insertAdjacentHTML('afterbegin', newNoticeHtml);
+
+                // Reset Form
+                document.getElementById('noticeForm').reset();
+                document.getElementById('fileNameDisplay').innerText = "Click here to upload file (PDF, JPG, PNG)";
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
