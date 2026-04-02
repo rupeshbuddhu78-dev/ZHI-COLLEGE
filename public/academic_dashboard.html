@@ -27,38 +27,49 @@
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
 
         /* ------------------ SIDEBAR ------------------ */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar { 
+            width: 275px; 
+            min-width: 275px; 
+            flex-shrink: 0; 
+            background-color: var(--sidebar-bg); 
+            color: #fff; 
+            display: flex; flex-direction: column; 
+            z-index: 1001; transition: transform 0.3s ease; 
+        }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+        .logo-img { width: 45px; height: 45px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px; }
-        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        
+        /* Sidebar Hover Effect */
+        .sidebar-menu li a:hover { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-left: 4px solid var(--primary); padding-left: 25px;}
+        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 20px;}
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
-        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
-        .user-profile div { display: flex; flex-direction: column; }
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
         .user-profile b { font-size: 13px; color: var(--text-dark); }
         .user-profile span { font-size: 11px; color: var(--text-light); }
 
-        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
+        .content { padding: 25px 30px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box;}
         .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
 
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; transition: 0.2s; text-align: center; }
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px);}
 
         /* ------------------ STATS CARDS ------------------ */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
-        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; min-width: 0;}
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; min-width: 0; cursor: pointer;}
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); border-color: #cbd5e1;}
         .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
         .stat-info { overflow: hidden; }
         .stat-info h4 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;}
@@ -68,12 +79,13 @@
         .quick-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
         .action-btn { background: var(--white); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 12px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: center; word-break: break-word;}
         .action-btn i { font-size: 26px; color: var(--purple); }
-        .action-btn:hover { background: #faf5ff; border-color: #e9d5ff; color: var(--purple); }
+        .action-btn:hover { background: #faf5ff; border-color: #e9d5ff; color: var(--purple); transform: translateY(-2px);}
 
         /* ------------------ PANELS & TABLES ------------------ */
         .grid-2-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; width: 100%;}
         
-        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; max-width: 100%;}
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; overflow: hidden; max-width: 100%; transition: 0.3s;}
+        .panel:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.04); }
         .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
         .panel-header h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
         
@@ -82,6 +94,8 @@
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
         th { padding: 12px 15px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; white-space: nowrap;}
         td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500;}
+        tr { transition: background 0.2s; }
+        tr:hover { background: #f1f5f9; }
         
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap;}
         .bg-blue { background: #eff6ff; color: #1e40af; }
@@ -90,7 +104,8 @@
         
         /* Alert List */
         .alert-list { display: flex; flex-direction: column; }
-        .alert-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+        .alert-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; transition: 0.2s; }
+        .alert-item:hover { background: #f8fafc; }
         .alert-item:last-child { border-bottom: none; }
         .alert-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0;}
         .alert-content h4 { font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
@@ -101,14 +116,13 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
         
         @media (max-width: 992px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .quick-actions { grid-template-columns: repeat(3, 1fr); }
+            .stats-grid, .quick-actions { grid-template-columns: repeat(2, 1fr); }
             .grid-2-col { grid-template-columns: 1fr; }
         }
         
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100vh; }
-            .sidebar.active { transform: translateX(260px); }
+            .sidebar { position: fixed; left: -275px; height: 100vh; }
+            .sidebar.active { transform: translateX(275px); }
             .menu-btn { display: block; }
             .sidebar-overlay.active { display: block; }
             .topbar { padding: 0 15px; }
@@ -250,7 +264,7 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3><i class='bx bx-time-five'></i> Ongoing & Upcoming Classes</h3>
-                        <span class="badge bg-blue">Today's Routine</span>
+                        <span class="badge bg-blue" id="todayBadge">Today's Routine</span>
                     </div>
                     <div class="table-res">
                         <table>
@@ -293,12 +307,17 @@
             overlay.classList.toggle('active');
         }
 
+        // Initialize Live Data on Load
         window.onload = () => {
             const userName = localStorage.getItem('userName') || 'HOD Sir';
             document.getElementById('adminName').innerText = userName;
-            document.getElementById('welcomeName').innerText = userName.split(' ')[0];
+            document.getElementById('welcomeName').innerText = userName.split(' ')[0]; // Show first name
 
-            fetchLiveHODData();
+            // Get Current Day Name
+            const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            document.getElementById('todayBadge').innerText = `${todayName}'s Routine`;
+
+            fetchLiveHODData(todayName);
         };
 
         const BASE_URL = 'https://zhi-college-rtya.onrender.com';
@@ -311,51 +330,88 @@
                 if (res.ok && contentType && contentType.includes("application/json")) {
                     return await res.json();
                 }
-                console.warn(`API ${endpoint} format issue ya abhi banayi nahi hai.`);
                 return fallbackData; 
             } catch (error) {
-                console.warn(`API Not Found/Error at: ${endpoint}. Ensure this exists in your server.js!`);
+                console.warn(`API Not Found/Error at: ${endpoint}.`);
                 return fallbackData;
             }
         }
 
-        async function fetchLiveHODData() {
+        // Format time properly if needed
+        function formatToAMPM(timeStr) {
+            if(!timeStr) return "TBA";
+            let [hours, minutes] = timeStr.split(':');
+            let h = parseInt(hours, 10);
+            let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12; 
+            let hStr = h < 10 ? '0' + h : h;
+            return `${hStr}:${minutes} ${ampm}`;
+        }
+
+        // 🔴 FUNCTION TO FETCH LIVE DATA USING CORRECT ROUTES 🔴
+        async function fetchLiveHODData(todayName) {
             try {
-                // Ye APIs tumhare server.js se directly data fetch kar rahi hain
+                // Fetching from your ACTUAL database routes
                 const staffData = await safeFetch('/api/staff', { success: true, data: [] });
-                // AGAR TIMETABLE KHALI AATA HAI, iska matlab server pe '/api/timetable/today' route ya toh nahi hai, ya db mein aaj koi class nahi hai.
-                const timetableData = await safeFetch('/api/routines/today', { success: true, data: [] });
+                // Note: Changing from /api/timetable/today to your actual /api/routines
+                const routinesData = await safeFetch('/api/routines', { success: true, data: [] });
+                
+                // Mocks for now until you create these APIs
                 const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
                 const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
+                // 1. Process Staff (Teachers)
                 let teachers = staffData.data ? staffData.data.filter(s => (s.role && s.role.toLowerCase().includes('teacher')) || s.category === 'teacher') : [];
                 let totalTeachers = teachers.length;
                 let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
 
-                let classesToday = timetableData.data || [];
+                // 2. Process Timetable (Filter ALL routines for TODAY)
+                let allRoutines = routinesData.data || [];
+                let classesToday = allRoutines.filter(r => r.dayOfWeek && r.dayOfWeek.toLowerCase() === todayName.toLowerCase());
+
+                // Sort classes by start time
+                classesToday.sort((a, b) => {
+                    if(!a.startTime || !b.startTime) return 0;
+                    return a.startTime.localeCompare(b.startTime);
+                });
+                
+                // 3. Process Alerts
                 let alerts = alertsData.data || [];
 
+                // UPDATE UI - STATS CARDS
                 document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
                 document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
                 document.getElementById('stat-syllabus').innerText = syllabusData.average ? `${syllabusData.average}%` : '0%'; 
                 document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
 
+                // UPDATE UI - TIMETABLE TABLE
                 const tbody = document.getElementById('timetableBody');
                 if (classesToday.length > 0) {
-                    tbody.innerHTML = classesToday.map(c => `
-                        <tr>
-                            <td>${c.time || 'N/A'}</td>
-                            <td>${c.course || 'N/A'}</td>
-                            <td>${c.subject || 'N/A'}</td>
-                            <td><b style="color: var(--primary);">${c.teacherName || 'N/A'}</b></td>
-                            <td><span class="badge bg-yellow">${c.room || 'TBD'}</span></td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = classesToday.map(c => {
+                        // Handle Teacher Name Extraction
+                        let tName = "Faculty";
+                        if (c.teacherId) {
+                            tName = c.teacherId.name || c.teacherId.teacherName || "Faculty";
+                        }
+                        
+                        let timeString = (c.startTime && c.endTime) ? `${formatToAMPM(c.startTime)} - ${formatToAMPM(c.endTime)}` : 'TBA';
+                        
+                        return `
+                            <tr>
+                                <td>${timeString}</td>
+                                <td>${c.course || 'N/A'} (Sem ${c.semester || '-'})</td>
+                                <td>${c.subject || 'N/A'}</td>
+                                <td><b style="color: var(--primary);">${tName}</b></td>
+                                <td><span class="badge bg-yellow">${c.roomNumber || 'TBA'}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
                 } else {
-                    // Yahan ye notice aayega jab tumhari API khali data degi
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);"><i class="bx bx-info-circle" style="font-size: 20px; vertical-align: middle;"></i> No classes fetched from database for today.</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--text-light);"><i class="bx bx-info-circle" style="font-size: 20px; vertical-align: middle; margin-right: 5px;"></i> No classes scheduled for today (${todayName}).</td></tr>`;
                 }
 
+                // UPDATE UI - CRITICAL ALERTS
                 const alertList = document.getElementById('alertListContainer');
                 if (alerts.length > 0) {
                     alertList.innerHTML = alerts.map(a => `
