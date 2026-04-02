@@ -65,7 +65,7 @@
         .stat-info p { font-size: 12px; color: var(--text-light); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
         /* ------------------ QUICK ACTIONS ------------------ */
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
+        .quick-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 25px; width: 100%;}
         .action-btn { background: var(--white); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 12px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: center; word-break: break-word;}
         .action-btn i { font-size: 26px; color: var(--purple); }
         .action-btn:hover { background: #faf5ff; border-color: #e9d5ff; color: var(--purple); }
@@ -101,7 +101,8 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
         
         @media (max-width: 992px) {
-            .stats-grid, .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .quick-actions { grid-template-columns: repeat(3, 1fr); }
             .grid-2-col { grid-template-columns: 1fr; }
         }
         
@@ -161,6 +162,7 @@
             <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
             <li><a href="LeaveApproval.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
             <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
+            <li><a href="manage_notices.html"><i class='bx bx-message-square-detail'></i> Manage Notices</a></li>
             
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
             <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
@@ -187,7 +189,7 @@
         <main class="content">
             <div class="page-title">
                 <div>👋 Welcome, <span id="welcomeName">HOD Sir</span>!</div>
-                <button class="btn-primary" style="background: var(--purple);"><i class='bx bx-calendar-plus'></i> Generate Timetable</button>
+                <button class="btn-primary" style="background: var(--purple);" onclick="window.location.href='HODtimetable_setup.html'"><i class='bx bx-calendar-plus'></i> Generate Timetable</button>
             </div>
 
             <div class="stats-grid">
@@ -230,13 +232,17 @@
                     <i class='bx bx-transfer'></i>
                     Assign Substitute
                 </a>
+                <a href="manage_notices.html" class="action-btn">
+                    <i class='bx bx-message-alt-add'></i>
+                    Post Notice
+                </a>
                 <a href="manage_syllabus.html" class="action-btn">
                     <i class='bx bx-book-reader'></i>
-                    Track Syllabus Progress
+                    Track Syllabus
                 </a>
                 <a href="performance_reports.html" class="action-btn">
                     <i class='bx bx-line-chart'></i>
-                    View Weak Students
+                    Weak Students
                 </a>
             </div>
 
@@ -287,16 +293,14 @@
             overlay.classList.toggle('active');
         }
 
-        // Display User Name
         window.onload = () => {
             const userName = localStorage.getItem('userName') || 'HOD Sir';
             document.getElementById('adminName').innerText = userName;
-            document.getElementById('welcomeName').innerText = userName.split(' ')[0]; // Show first name
+            document.getElementById('welcomeName').innerText = userName.split(' ')[0];
 
             fetchLiveHODData();
         };
 
-        // 🔴 SAFE FETCH FUNCTION: Prevents HTML parse error if backend API doesn't exist yet
         const BASE_URL = 'https://zhi-college-rtya.onrender.com';
         
         async function safeFetch(endpoint, fallbackData) {
@@ -304,60 +308,54 @@
                 const res = await fetch(BASE_URL + endpoint);
                 const contentType = res.headers.get("content-type");
                 
-                // Sirf tabhi JSON parse karo jab response success ho aur JSON format me ho
                 if (res.ok && contentType && contentType.includes("application/json")) {
                     return await res.json();
                 }
-                return fallbackData; // Agar API nahi hai ya error hai, toh fallback return karo
+                console.warn(`API ${endpoint} format issue ya abhi banayi nahi hai.`);
+                return fallbackData; 
             } catch (error) {
-                console.error("API error or missing at: " + endpoint, error);
+                console.warn(`API Not Found/Error at: ${endpoint}. Ensure this exists in your server.js!`);
                 return fallbackData;
             }
         }
 
-        // 🔴 FUNCTION TO FETCH LIVE DATA FROM DATABASE 🔴
         async function fetchLiveHODData() {
             try {
-                // Fetching safely so missing APIs don't crash the dashboard
+                // Ye APIs tumhare server.js se directly data fetch kar rahi hain
                 const staffData = await safeFetch('/api/staff', { success: true, data: [] });
-                const timetableData = await safeFetch('/api/timetable/today', { success: true, data: [] });
+                // AGAR TIMETABLE KHALI AATA HAI, iska matlab server pe '/api/timetable/today' route ya toh nahi hai, ya db mein aaj koi class nahi hai.
+                const timetableData = await safeFetch('/api/routines/today', { success: true, data: [] });
                 const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
                 const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
-                // 1. Process Staff (Teachers)
                 let teachers = staffData.data ? staffData.data.filter(s => (s.role && s.role.toLowerCase().includes('teacher')) || s.category === 'teacher') : [];
                 let totalTeachers = teachers.length;
                 let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
 
-                // 2. Process Timetable
                 let classesToday = timetableData.data || [];
-                
-                // 3. Process Alerts
                 let alerts = alertsData.data || [];
 
-                // UPDATE UI - STATS CARDS
                 document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
                 document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
                 document.getElementById('stat-syllabus').innerText = syllabusData.average ? `${syllabusData.average}%` : '0%'; 
                 document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
 
-                // UPDATE UI - TIMETABLE TABLE
                 const tbody = document.getElementById('timetableBody');
                 if (classesToday.length > 0) {
                     tbody.innerHTML = classesToday.map(c => `
                         <tr>
-                            <td>${c.time}</td>
-                            <td>${c.course}</td>
-                            <td>${c.subject}</td>
-                            <td><b style="color: var(--primary);">${c.teacherName}</b></td>
-                            <td><span class="badge bg-yellow">${c.room}</span></td>
+                            <td>${c.time || 'N/A'}</td>
+                            <td>${c.course || 'N/A'}</td>
+                            <td>${c.subject || 'N/A'}</td>
+                            <td><b style="color: var(--primary);">${c.teacherName || 'N/A'}</b></td>
+                            <td><span class="badge bg-yellow">${c.room || 'TBD'}</span></td>
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);">No classes scheduled for today.</td></tr>';
+                    // Yahan ye notice aayega jab tumhari API khali data degi
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-light);"><i class="bx bx-info-circle" style="font-size: 20px; vertical-align: middle;"></i> No classes fetched from database for today.</td></tr>';
                 }
 
-                // UPDATE UI - CRITICAL ALERTS
                 const alertList = document.getElementById('alertListContainer');
                 if (alerts.length > 0) {
                     alertList.innerHTML = alerts.map(a => `
