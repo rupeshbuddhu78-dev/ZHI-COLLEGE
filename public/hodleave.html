@@ -277,17 +277,7 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // --- 1. Load Real HOD Info ---
-        function loadAdminInfo() {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (userData) {
-                document.getElementById('adminName').innerText = userData.name || userData.studentName || "Faculty Member";
-                document.getElementById('adminRole').innerText = userData.dept ? `${userData.role} (${userData.dept})` : userData.role;
-                if(userData.profilePicUrl) document.getElementById('adminImg').src = userData.profilePicUrl;
-            } else {
-             
-            }
-        }
+        
 
         // --- 2. Fetch Leaves From API ---
         async function fetchLeaves() {
