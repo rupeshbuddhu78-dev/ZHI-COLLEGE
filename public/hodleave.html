@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Leave Approvals (HOD)</title>
+    
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'hod' ko entry milegi is page par
+        checkPageAccess(['hod']); 
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -25,27 +32,35 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; }
+        /* ------------------ SIDEBAR (Bada aur Accha) ------------------ */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        
+        /* New Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
 
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
-        .sidebar-menu li a i { font-size: 20px; }
-        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--purple); }
-        .menu-section { margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .menu-section { margin: 25px 24px 10px; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .sidebar-menu li a i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
+        
+        /* Hover & Active Effects */
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; padding-left: 32px; border-left-color: var(--purple); }
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--purple); transform: scale(1.1); }
 
-        /* MAIN CONTENT */
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; }
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         .user-profile { display: flex; align-items: center; gap: 10px; }
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--purple);}
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--purple);}
 
-        .content { padding: 25px; flex: 1; }
+        .content { padding: 25px 30px; flex: 1; }
         .page-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
 
         /* CLICKABLE STATS CARDS */
@@ -93,8 +108,8 @@
 
         @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100vh; }
-            .sidebar.active { transform: translateX(260px); }
+            .sidebar { position: fixed; left: -280px; height: 100vh; }
+            .sidebar.active { transform: translateX(280px); }
             .menu-btn { display: block; }
             .stats-grid { grid-template-columns: 1fr; }
         }
@@ -104,23 +119,31 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>ZHI Academics</h2>
-            <p>HOD / CO-ORDINATOR</p>
+            <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img">
+            <div>
+                <h2>ZHI Academics</h2>
+                <p>HOD / CO-ORDINATOR</p>
+            </div>
         </div>
         
         <ul class="sidebar-menu">
-            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li><a href="academic_dashboard.html"><i class='bx bxs-dashboard'></i> Dashboard Home</a></li>
             
             <li class="menu-section">Management</li>
-            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar-edit'></i> Timetable Setup</a></li>
             <li class="active"><a href="leave_approvals.html"><i class='bx bx-calendar-exclamation'></i> Leave Approvals</a></li>
             <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
             
             <li class="menu-section">Academics & Tracking</li>
-            <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
-            <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
+            <li><a href="manage_syllabus.html"><i class='bx bx-book-open'></i> Subjects & Syllabus</a></li>
+            <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a></li>
             <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
-            <li><a href="login.html" style="color: var(--danger);"><i class='bx bx-log-out'></i> Logout</a></li>
+            
+            <li style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutUser()" style="color: #ef4444; padding-top: 18px; padding-bottom: 18px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -128,12 +151,12 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600;">Leave Management</div>
+                <div style="font-size: 19px; font-weight: 700; color: var(--text-dark);">Leave Management</div>
             </div>
             <div class="user-profile">
                 <div style="text-align: right; margin-right: 10px;">
-                    <b id="adminName">HOD Office</b><br>
-                    <span style="font-size: 11px; color: var(--text-light);">Active Session</span>
+                    <div id="adminNameProfile" style="font-weight: 600; font-size: 14.5px;">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-light);">Active Session</div>
                 </div>
                 <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
             </div>
@@ -224,9 +247,11 @@
         let selectedLeaveId = null;
 
         window.onload = () => {
+            // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
+            const userName = currentUser.name || 'HOD Sir';
+            document.getElementById('adminNameProfile').innerText = userName;
+
             fetchLeaves();
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if(userData) document.getElementById('adminName').innerText = userData.name || userData.studentName || "HOD Office";
         };
 
         function toggleSidebar() {
@@ -320,7 +345,6 @@
                 const sDate = new Date(req.startDate).toLocaleDateString('en-GB');
                 const eDate = new Date(req.endDate).toLocaleDateString('en-GB');
                 
-                // 🔥 NAYA PROMINENT VIEW BUTTON 🔥
                 const docLink = req.documentUrl 
                     ? `<div style="margin-top: 10px;"><a href="${req.documentUrl}" target="_blank" class="bg-purple"><i class='bx bx-link-external'></i> View Attached Document</a></div>` 
                     : `<div style="margin-top: 10px; font-size: 12px; color: #94a3b8;"><i class='bx bx-block'></i> No Document Uploaded</div>`;
