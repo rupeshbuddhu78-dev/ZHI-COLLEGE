@@ -156,7 +156,7 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img">
+            <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img">
             <div>
                 <h2>ZHI Academics</h2>
                 <p>HOD / CO-ORDINATOR</p>
@@ -168,7 +168,7 @@
             
             <li class="menu-section">Management</li>
             <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
-            <li><a href="hodleave.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
+            <li><a href="leave_approvals.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
             <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
             <li><a href="manage_notices.html"><i class='bx bx-message-square-detail'></i> Manage Notices</a></li>
             
@@ -360,8 +360,8 @@
                 const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
                 const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
-                // 🔴 1. Process Staff (Teachers) & Calculate LIVE ATTENDANCE
-                let teachers = staffData.data ? staffData.data.filter(s => s.role === 'teacher') : [];
+                // 🔴 1. Process Staff (Teachers) & Calculate LIVE ATTENDANCE (FIXED category filter)
+                let teachers = staffData.data ? staffData.data.filter(s => s.category === 'teacher' || (s.role && s.role.toLowerCase().includes('teacher'))) : [];
                 let totalTeachers = teachers.length;
                 
                 let today = new Date();
@@ -371,7 +371,7 @@
 
                 if (leavesData.data && leavesData.data.length > 0) {
                     leavesData.data.forEach(leave => {
-                        if (leave.status === 'Approved' && leave.userId && leave.userId.role === 'teacher') {
+                        if (leave.status === 'Approved' && leave.userId && (leave.userId.category === 'teacher' || (leave.userId.role && leave.userId.role.toLowerCase().includes('teacher')))) {
                             let startDate = new Date(leave.startDate);
                             let endDate = new Date(leave.endDate);
                             
