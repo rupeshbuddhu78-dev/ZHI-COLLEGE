@@ -3,42 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZHI | Mark & Edit Attendance</title>
+    <title>ZHI | Mark Student Attendance</title>
     
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'teacher' ko entry milegi is page par
+        checkPageAccess(['teacher']); 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <style>
         :root {
-            --sidebar-bg: #0f172a; --primary: #14b8a6; --primary-hover: #0d9488; 
-            --warning: #f59e0b; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; 
-            --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; 
-            --border: #e2e8f0; --card-curve: 12px;
+            --sidebar-bg: #0f172a; 
+            --primary: #14b8a6; /* Teal color for Teacher Panel */
+            --primary-light: #ccfbf1;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --purple: #8b5cf6;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --card-curve: 12px;
         }
 
+        /* FIXED HORIZONTAL SCROLL ISSUE */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
 
-        /* SIDEBAR */
+        /* ------------------ SIDEBAR ------------------ */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+        .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         
+        .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
+
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
-        
-        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: var(--primary); border-left: 4px solid var(--primary); padding-left: 25px;}
-        .menu-heading { margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .menu-section { margin: 25px 24px 10px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
 
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        .sidebar-menu li a i { font-size: 20px; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); padding-left: 28px;}
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
+        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-profile div { display: flex; flex-direction: column; text-align: right;}
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
 
-        .content { padding: 30px; flex: 1; }
+        /* ------------------ PAGE SPECIFIC CONTENT ------------------ */
+        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw;}
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px;}
 
         /* FILTERS */
         .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
@@ -50,14 +77,14 @@
         /* Buttons */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; width: 100%;}
         .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
-        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-primary:hover { background: #0d9488; transform: translateY(-1px); }
         .btn-warning { background: var(--warning); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
-        .btn-warning:hover { background: #d97706; }
+        .btn-warning:hover { background: #d97706; transform: translateY(-1px); }
         .btn-outline { background: var(--bg); color: var(--text-dark); border: 1px solid var(--border); padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
         .btn-outline:hover { background: #e2e8f0; }
 
         /* ATTENDANCE TABLE */
-        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; }
+        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px; display: none;}
         .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
         
         .table-res { overflow-x: auto; }
@@ -71,7 +98,7 @@
         .text-p { color: var(--success); }
         .text-a { color: var(--danger); }
 
-        .btn-success { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; display: block; width: 100%; text-align: center; margin-top: 15px; font-size: 15px;}
+        .btn-success { background: var(--success); color: white; border: none; padding: 14px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; font-size: 15px; transition: 0.2s;}
         .btn-success:hover { background: #059669; }
 
         /* SUMMARY BOX */
@@ -88,30 +115,57 @@
         /* Loader */
         .loader { text-align: center; padding: 20px; font-size: 16px; font-weight: 600; color: var(--primary); display: none; }
 
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+        /* Mobile Responsiveness */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .topbar { padding: 0 15px; }
+            .user-profile b, .user-profile span { display: none; }
+            .content { padding: 15px; }
+            .card-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+        }
     </style>
 </head>
 <body>
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
-            <div><h2>ZHI Faculty</h2><p>TEACHER PANEL</p></div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
+                <div>
+                    <h2>ZHI Academics</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
+            </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
+
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
             
-            <li class="menu-heading">My Classes</li>
+            <li class="menu-section">My Classes</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
-            <li class="active"><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Daily Attendance</a></li>
+            <li class="active"><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
             
-            <li class="menu-heading">Academics</li>
-            <li><a href="upload_notes.html"><i class='bx bx-upload'></i> Upload Notes</a></li>
-            <li><a href="assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
-            <li><a href="enter_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
+            <li class="menu-section">Academics</li>
+            <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
+            <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
             
-            <li class="menu-heading">Personal</li>
-            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
-            <li><a href="my_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+            <li class="menu-section">Personal</li>
+            <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+            
+            <li style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutTeacher()" style="color: #ef4444; padding-top: 15px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -119,7 +173,15 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Mark / Edit Attendance</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-dark);">Faculty Portal</div>
+            </div>
+            
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <b id="adminName">Loading...</b>
+                    <span id="adminDept">Faculty Member</span>
+                </div>
+                <img id="profileImage" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Admin">
             </div>
         </header>
 
@@ -148,17 +210,17 @@
                     </select>
                 </div>
 
-            <div class="form-group">
-    <label>Semester</label>
-    <select class="form-control" id="attSem">
-        <option value="1">Semester 1</option>
-        <option value="2">Semester 2</option>
-        <option value="3">Semester 3</option>
-        <option value="4">Semester 4</option>
-        <option value="5">Semester 5</option>
-        <option value="6">Semester 6</option>
-    </select>
-</div>
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select class="form-control" id="attSem">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                    </select>
+                </div>
                 
                 <div class="form-group">
                     <label>Your Subjects (Skills)</label>
@@ -190,7 +252,7 @@
                 <i class='bx bx-loader-alt bx-spin'></i> Fetching Data...
             </div>
 
-            <div class="card" id="attendanceCard" style="display: none;">
+            <div class="card" id="attendanceCard">
                 <div class="card-header">
                     <div>
                         <span id="listTitle"><i class='bx bx-list-check' style="color: var(--primary);"></i> Students List</span>
@@ -242,19 +304,53 @@
     </main>
 
     <script>
-        // --- 🟢 API BASE URL 🟢 ---
         const API_BASE = 'https://zhi-college-rtya.onrender.com/api';
 
-        // Set Today's Date default
-        document.getElementById('attDate').valueAsDate = new Date();
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Secure Logout using sessionStorage
+        function logoutTeacher() {
+            if(confirm("Are you sure you want to logout?")) {
+                sessionStorage.clear(); 
+                localStorage.clear(); 
+                window.location.href = "login.html"; 
+            }
+        }
 
         let isEditModeActive = false;
         let loadedStudentsData = []; 
 
-        // ==========================================
-        // 1. FETCH DYNAMIC COURSES FROM DATABASE
-        // ==========================================
+        window.onload = function() {
+            // --- SECURITY AND PROFILE SETUP (USING SESSION STORAGE) ---
+            const staffId = typeof currentUser !== 'undefined' && currentUser ? currentUser.staffId || currentUser._id : sessionStorage.getItem("staffId");
+            
+            if (!staffId) {
+                alert("Security Alert: Please login first!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const staffName = typeof currentUser !== 'undefined' && currentUser ? currentUser.name : (sessionStorage.getItem("staffName") || "Faculty");
+            const profilePicUrl = typeof currentUser !== 'undefined' && currentUser && currentUser.profilePicUrl ? currentUser.profilePicUrl : sessionStorage.getItem("profilePicUrl");
+
+            // Update user details in Topbar
+            const adminNameEl = document.getElementById("adminName");
+            const profileImageEl = document.getElementById("profileImage");
+            
+            if (adminNameEl) adminNameEl.innerText = staffName;
+            if (profileImageEl) profileImageEl.src = profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
+
+            // Set current date
+            document.getElementById('attDate').valueAsDate = new Date();
+
+            // --- FETCH INITIAL DATA ---
+            fetchDynamicCourses();
+            fetchTeacherSubjects(staffId);
+        };
+
         async function fetchDynamicCourses() {
             try {
                 const response = await fetch(`${API_BASE}/get-courses`);
@@ -281,9 +377,6 @@
             }
         }
 
-        // ==========================================
-        // 2. FETCH DYNAMIC BATCHES BASED ON COURSE
-        // ==========================================
         async function fetchDynamicBatches() {
             const course = document.getElementById('attCourse').value;
             const batchSelect = document.getElementById('attBatch');
@@ -312,13 +405,9 @@
             }
         }
 
-        // ==========================================
-        // 3. FETCH DYNAMIC SUBJECTS (TEACHER SKILLS)
-        // ==========================================
-        async function fetchTeacherSubjects() {
+        async function fetchTeacherSubjects(staffIdStr) {
             try {
-                const staffId = localStorage.getItem("staffId") || ""; // Get staffId dynamically if implemented
-                const url = staffId ? `${API_BASE}/get-teacher-skills?staffId=${staffId}` : `${API_BASE}/get-teacher-skills`;
+                const url = staffIdStr ? `${API_BASE}/get-teacher-skills?staffId=${staffIdStr}` : `${API_BASE}/get-teacher-skills`;
                 
                 const response = await fetch(url); 
                 const data = await response.json();
@@ -341,22 +430,12 @@
             }
         }
 
-        // Window load par saari APIs trigger karo
-        window.onload = function() {
-            fetchDynamicCourses();
-            fetchTeacherSubjects();
-        };
-
-        // ==========================================
-        // 4. FETCH STUDENTS (BASED ON FILTERS)
-        // ==========================================
         async function fetchStudents(isEdit) {
             isEditModeActive = isEdit;
             
             const course = document.getElementById('attCourse').value;
             const batch = document.getElementById('attBatch').value;
             const sem = document.getElementById('attSem').value;
-            // Removed section logic entirely
             const date = document.getElementById('attDate').value;
             const subject = document.getElementById('attSubject').value;
             
@@ -365,7 +444,6 @@
                 return;
             }
 
-            // Updated List Title without Section
             document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem}`;
             document.getElementById('editBadge').style.display = isEdit ? 'inline-block' : 'none';
             document.getElementById('submitBtn').innerHTML = isEdit ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
@@ -375,7 +453,6 @@
             document.getElementById('loadingIndicator').style.display = 'block';
 
             try {
-                // Removed &section from Query String
                 const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
                 const response = await fetch(`${API_BASE}/get-students${queryStr}`); 
                 const data = await response.json();
@@ -437,9 +514,6 @@
             radios.forEach(radio => radio.checked = true);
         }
 
-        // ==========================================
-        // 5. SUBMIT REAL DATA TO BACKEND API
-        // ==========================================
         async function submitAttendance(e) {
             e.preventDefault();
             
@@ -489,7 +563,6 @@
                 batch: document.getElementById('attBatch').value,
                 course: document.getElementById('attCourse').value,
                 semester: document.getElementById('attSem').value,
-                // Removed Section parameter completely
                 subject: document.getElementById('attSubject').value,
                 startTime: timeParts[0], 
                 endTime: timeParts[1],     
