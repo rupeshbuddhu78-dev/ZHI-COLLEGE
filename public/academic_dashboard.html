@@ -307,6 +307,12 @@
             overlay.classList.toggle('active');
         }
 
+        // Helper for YYYY-MM-DD
+        function getTodayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
         // Initialize Live Data on Load
         window.onload = () => {
             // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
@@ -353,42 +359,35 @@
         // 🔴 FUNCTION TO FETCH LIVE DATA USING CORRECT ROUTES 🔴
         async function fetchLiveHODData(todayName) {
             try {
+                const todayStr = getTodayStr();
+
                 const staffData = await safeFetch('/api/staff', { success: true, data: [] });
+                // NAYA: Ab actual teacher attendance fetch kar rahe hain
+                const attData = await safeFetch(`/api/teacher-attendance?dateStr=${todayStr}`, { success: true, data: [] }); 
                 const routinesData = await safeFetch('/api/routines', { success: true, data: [] });
-                const leavesData = await safeFetch('/api/leaves', { success: true, data: [] }); 
                 
                 const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
                 const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
-                // 🔴 1. Process Staff (Teachers) & Calculate LIVE ATTENDANCE (FIXED category filter)
+                // 🔴 1. Process Staff (Total Teachers)
                 let teachers = staffData.data ? staffData.data.filter(s => s.category === 'teacher' || (s.role && s.role.toLowerCase().includes('teacher'))) : [];
                 let totalTeachers = teachers.length;
                 
-                let today = new Date();
-                today.setHours(0, 0, 0, 0); 
-
-                let teachersOnLeaveToday = 0;
-
-                if (leavesData.data && leavesData.data.length > 0) {
-                    leavesData.data.forEach(leave => {
-                        if (leave.status === 'Approved' && leave.userId && (leave.userId.category === 'teacher' || (leave.userId.role && leave.userId.role.toLowerCase().includes('teacher')))) {
-                            let startDate = new Date(leave.startDate);
-                            let endDate = new Date(leave.endDate);
-                            
-                            startDate.setHours(0, 0, 0, 0);
-                            endDate.setHours(23, 59, 59, 999); 
-
-                            if (today >= startDate && today <= endDate) {
-                                teachersOnLeaveToday++;
-                            }
+                // 🔴 2. PRESENT TEACHERS (Jo log sach mein aaj punch-in hain)
+                let presentTeachers = 0;
+                if (attData.data && attData.data.length > 0) {
+                    let presentSet = new Set();
+                    attData.data.forEach(log => {
+                        // Agar punchIn hua hai, ya status 'P' ya 'Present' hai
+                        if (log.punchIn || log.status === 'P' || log.status === 'Present') {
+                            let tid = log.teacherId ? (log.teacherId._id || log.teacherId).toString() : null;
+                            if (tid) presentSet.add(tid); // Unique count karega
                         }
                     });
+                    presentTeachers = presentSet.size;
                 }
 
-                let presentTeachers = totalTeachers - teachersOnLeaveToday;
-                if (presentTeachers < 0) presentTeachers = 0;
-
-                // 2. Process Timetable 
+                // 3. Process Timetable 
                 let allRoutines = routinesData.data || [];
                 let classesToday = allRoutines.filter(r => r.dayOfWeek && r.dayOfWeek.toLowerCase() === todayName.toLowerCase());
 
@@ -397,12 +396,15 @@
                     return a.startTime.localeCompare(b.startTime);
                 });
                 
-                // 3. Process Alerts
+                // 4. Process Alerts
                 let alerts = alertsData.data || [];
 
                 // UPDATE UI - STATS CARDS
                 document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
+                
+                // 🔴 Live Present ratio yahan update ho gaya
                 document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
+                
                 document.getElementById('stat-syllabus').innerText = syllabusData.average ? `${syllabusData.average}%` : '0%'; 
                 document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
 
