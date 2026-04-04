@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI Academics | Professional Timetable Manager</title>
     
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'hod' ko entry milegi is page par
+        checkPageAccess(['hod']); 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -33,7 +38,8 @@
         .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
         
-        .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; }
+        /* Logout ko neeche bhejne ke liye nav-menu mein flex-direction add kiya hai */
+        .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
         .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
@@ -130,6 +136,10 @@
             <a href="manage_syllabus.html" class="nav-item"><i class='bx bx-book-open'></i> Subjects & Syllabus</a>
             <a href="attendance_overview.html" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
             <a href="performance_reports.html" class="nav-item"><i class='bx bx-line-chart'></i> Student Performance</a>
+
+            <a href="#" onclick="logoutUser()" class="nav-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); color: #ef4444; padding-top: 15px;">
+                <i class='bx bx-log-out'></i> Secure Logout
+            </a>
         </nav>
     </aside>
 
@@ -140,7 +150,7 @@
                 <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light); border-right: 1px solid #e2e8f0; padding-right: 15px;"></span>
                 <div class="profile-section">
                     <div>
-                        <div class="profile-name">Karan Mishara</div>
+                        <div class="profile-name" id="adminNameProfile">Loading...</div>
                         <div class="profile-role">Head of Department</div>
                     </div>
                     <div class="profile-avatar">HO</div>
@@ -200,6 +210,10 @@
 
         // --- 1. INITIALIZATION & LIVE CLOCK ---
         window.addEventListener('DOMContentLoaded', () => {
+            // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
+            const userName = currentUser.name || 'HOD Sir';
+            document.getElementById('adminNameProfile').innerText = userName;
+
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -302,7 +316,7 @@
                     const parent = emptySlot.parentElement;
                     let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
                     
-                    // 🔥 NEW: Class box is now draggable! We attach data-routineid to identify it when dragged
+                    // Class box is now draggable! We attach data-routineid to identify it when dragged
                     parent.innerHTML = `
                         <div class="slot filled" draggable="true" ondragstart="dragStart(event)" 
                              data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}"
@@ -426,12 +440,10 @@
 
         // --- 6. ADVANCED DRAG AND DROP LOGIC ---
         function dragStart(ev) {
-            // Getting data from dragging item (Either Teacher from Tray OR Existing Class from Grid)
             ev.dataTransfer.setData("tId", ev.target.dataset.tid);
             ev.dataTransfer.setData("tName", ev.target.dataset.tname);
             ev.dataTransfer.setData("tSub", ev.target.dataset.tsub);
             
-            // 🔥 NEW: Check if dragging an already assigned class
             if(ev.target.dataset.routineid) {
                 ev.dataTransfer.setData("sourceRoutineId", ev.target.dataset.routineid);
             }
@@ -457,7 +469,7 @@
             const tId = ev.dataTransfer.getData("tId");
             const tName = ev.dataTransfer.getData("tName");
             const tSub = ev.dataTransfer.getData("tSub"); 
-            const sourceRoutineId = ev.dataTransfer.getData("sourceRoutineId"); // Gets ID if dragged from grid
+            const sourceRoutineId = ev.dataTransfer.getData("sourceRoutineId"); 
             
             if(!tId) return;
 
@@ -471,11 +483,10 @@
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = days[new Date(dateVal).getDay()];
 
-            // CLASH CHECK: Ignore checking itself if moving the same class
             const isBusy = currentDayRoutines.find(r => 
                 r.startTime === startTime && 
                 (r.teacherId === tId || (r.teacherId && r.teacherId._id === tId)) &&
-                r._id !== sourceRoutineId // NEW: Ignore self clash while moving
+                r._id !== sourceRoutineId 
             );
             
             if(isBusy) {
@@ -483,7 +494,6 @@
                 return;
             }
 
-            // Visual Loading Spinner on target slot
             let finalSub = tSub || "General";
             slot.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i>`;
 
@@ -502,12 +512,10 @@
             };
 
             try {
-                // 🔥 NEW: If this was dragged from another slot, delete the old one first!
                 if(sourceRoutineId) {
                     await fetch(`${API_BASE}/routines/${sourceRoutineId}`, { method: 'DELETE' });
                 }
 
-                // POST new routine to DB
                 const res = await fetch(`${API_BASE}/routines`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -528,7 +536,7 @@
             }
         }
 
-        // --- 7. DELETE SLOT (By clicking on X icon only) ---
+        // --- 7. DELETE SLOT ---
         async function deleteSlot(routineId, event) {
             if(event) event.stopPropagation(); 
             
