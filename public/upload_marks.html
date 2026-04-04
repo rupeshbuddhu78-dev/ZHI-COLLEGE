@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZHI | Upload Marks (Teacher)</title>
+    <title>ZHI | Enter Marks (Teacher)</title>
     
     <script src="security.js"></script>
     <script>
@@ -34,7 +34,7 @@
 
         /* ------------------ SIDEBAR (Premium Design) ------------------ */
         .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         
         /* Image Logo Styling */
         .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
@@ -63,7 +63,7 @@
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px;}
@@ -105,6 +105,7 @@
 
         /* Mobile Responsiveness */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { 
             .sidebar { position: fixed; left: -280px; height: 100vh; } 
             .sidebar.active { transform: translateX(280px); } 
@@ -123,7 +124,10 @@
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=10b981'">
-               
+                <div>
+                    <h2>ZHI Faculty</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
             </div>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
@@ -147,12 +151,12 @@
             <li class="menu-section">Academics</li>
             <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
             <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
-            <li class="active"><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
+            <li class="active"><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
             
             <li class="menu-section">Personal</li>
             <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
-
+            
             <li class="logout-btn" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
                 <a href="#" onclick="logoutTeacher()" style="padding-top: 15px;">
                     <i class='bx bx-log-out'></i> Secure Logout
@@ -171,14 +175,14 @@
             <div class="user-profile">
                 <div>
                     <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
-                    <span style="font-size: 11px; color: var(--text-light);">Faculty</span>
+                    <span style="font-size: 11px; color: var(--text-light);">Faculty Member</span>
                 </div>
                 <img id="teacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff" alt="Teacher">
             </div>
         </header>
 
         <div class="content">
-            <div class="page-header"><div class="page-title">Upload Examination Marks</div></div>
+            <div class="page-header"><div class="page-title">Enter Examination Marks</div></div>
 
             <div class="filter-card">
                 <div class="form-group">
@@ -284,8 +288,8 @@
 
         function logoutTeacher() {
             if(confirm("Are you sure you want to logout?")) {
-                sessionStorage.clear();
-                localStorage.clear();
+                sessionStorage.clear(); // Clear Secure Session
+                localStorage.clear();   // Clear Cache
                 window.location.href = "index.html"; 
             }
         }
@@ -314,7 +318,6 @@
             }
             
             document.getElementById('examDate').valueAsDate = new Date();
-            
             fetchTeacherSubjects();
         }
 
