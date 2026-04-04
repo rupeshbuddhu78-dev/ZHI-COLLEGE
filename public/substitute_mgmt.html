@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Substitute Management (HOD)</title>
     
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'hod' ko entry milegi is page par
+        checkPageAccess(['hod']); 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -19,27 +24,33 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR & TOPBAR (Standardized) */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+        /* ------------------ SIDEBAR (Bada aur Accha) ------------------ */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        
+        /* New Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
 
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
-        .sidebar-menu li a i { font-size: 20px; transition: transform 0.3s ease;}
-        .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
-        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .menu-header { margin: 25px 24px 10px; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .sidebar-menu li a i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
+        
+        /* Hover & Active Effects */
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; padding-left: 32px; border-left-color: var(--primary); }
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); transform: scale(1.1); }
 
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+        
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; }
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
-        .user-profile div { display: flex; flex-direction: column; text-align: right;}
-        .user-profile b { font-size: 13px; color: var(--text-dark); }
-        .user-profile span { font-size: 11px; color: var(--text-light); }
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -69,25 +80,39 @@
         .badge-success { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid #a7f3d0;}
 
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+        @media (max-width: 768px) { 
+            .sidebar { position: fixed; left: -280px; height: 100vh; } 
+            .sidebar.active { transform: translateX(280px); } 
+            .menu-btn { display: block; } 
+            .user-profile div { display: none; }
+        }
     </style>
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
+            <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img">
             <div><h2>ZHI Academics</h2><p>HOD PANEL</p></div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
-            <li><a href="timetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
-            <li><a href="assign_teacher.html"><i class='bx bx-user-pin'></i> Assign Teachers</a></li>
+            <li><a href="academic_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            
+            <li class="menu-header">MANAGEMENT</li>
+            <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
+            <li><a href="leave_approvals.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
             <li class="active"><a href="substitute_mgmt.html"><i class='bx bx-transfer-alt'></i> Substitute Mgmt</a></li>
-            <li><a href="manage_syllabus.html"><i class='bx bx-book-bookmark'></i> Manage Syllabus</a></li>
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Tracking</li>
+            <li><a href="manage_notices.html"><i class='bx bx-message-square-detail'></i> Manage Notices</a></li>
+            
+            <li class="menu-header">ACADEMICS & TRACKING</li>
+            <li><a href="manage_syllabus.html"><i class='bx bx-book-bookmark'></i> Subjects & Syllabus</a></li>
             <li><a href="attendance_overview.html"><i class='bx bx-check-shield'></i> Attendance Overview</a></li>
             <li><a href="performance_reports.html"><i class='bx bx-bar-chart-alt-2'></i> Performance Reports</a></li>
+
+            <li style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutUser()" style="color: #ef4444; padding-top: 18px; padding-bottom: 18px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -97,8 +122,12 @@
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academic Planning</div>
             </div>
+            
             <div class="user-profile">
-                <div><b id="hodName">Prof. Sharma</b><span>HOD - BCA Dept</span></div>
+                <div style="text-align: right; margin-right: 10px;">
+                    <div id="adminNameProfile" style="font-weight: 600; font-size: 14.5px;">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-light);">HOD - Dept</div>
+                </div>
                 <img src="https://ui-avatars.com/api/?name=HOD&background=3b82f6&color=fff" alt="HOD">
             </div>
         </header>
@@ -172,8 +201,15 @@
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // Set today's date automatically
-        document.getElementById('absDate').valueAsDate = new Date();
+        window.onload = () => {
+            // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
+            const userName = currentUser?.name || 'HOD Sir';
+            const nameEl = document.getElementById('adminNameProfile');
+            if(nameEl) nameEl.innerText = userName;
+
+            // Set today's date automatically
+            document.getElementById('absDate').valueAsDate = new Date();
+        };
 
         function handleSubstitute(e) {
             e.preventDefault();
