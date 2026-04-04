@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Manage Notices (HOD)</title>
+    
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'hod' ko entry milegi is page par
+        checkPageAccess(['hod']); 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,39 +33,34 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
 
-        /* ------------------ SIDEBAR ------------------ */
-        .sidebar { 
-            width: 275px; 
-            min-width: 275px; 
-            flex-shrink: 0; 
-            background-color: var(--sidebar-bg); 
-            color: #fff; 
-            display: flex; flex-direction: column; 
-            z-index: 1001; transition: transform 0.3s ease; 
-        }
-        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        .logo-img { width: 45px; height: 45px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; border-left: 4px solid transparent;}
-        .sidebar-menu li a i { font-size: 20px; }
+        /* ------------------ SIDEBAR (Bada aur Accha) ------------------ */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
         
-        .sidebar-menu li a:hover { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-left: 4px solid var(--primary); padding-left: 25px;}
-        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--purple); padding-left: 20px;}
+        /* New Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .menu-section { margin: 25px 24px 10px; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .sidebar-menu li a i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
+        
+        /* Hover & Active Effects */
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; padding-left: 32px; border-left-color: var(--purple); }
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--purple); transform: scale(1.1); }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer;}
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
-        .user-profile div { display: flex; flex-direction: column; text-align: right;}
-        .user-profile b { font-size: 13px; color: var(--text-dark); }
-        .user-profile span { font-size: 11px; color: var(--text-light); }
-
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple);}
+        
         .content { padding: 25px 30px; flex: 1; width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; display: flex; flex-direction: column;}
         .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; flex-shrink: 0;}
 
@@ -138,8 +139,8 @@
         }
         
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -275px; height: 100vh; }
-            .sidebar.active { transform: translateX(275px); }
+            .sidebar { position: fixed; left: -280px; height: 100vh; }
+            .sidebar.active { transform: translateX(280px); }
             .menu-btn { display: block; }
             .sidebar-overlay.active { display: block; }
             .topbar { padding: 0 15px; }
@@ -156,32 +157,33 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="logo-img">
-                    <i class='bx bxs-book-bookmark' style="color:var(--purple); font-size: 26px;"></i>
-                </div>
-                <div>
-                    <h2>ZHI Academics</h2>
-                    <p>HOD / CO-ORDINATOR</p>
-                </div>
+            <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img">
+            <div>
+                <h2>ZHI Academics</h2>
+                <p>HOD / CO-ORDINATOR</p>
             </div>
-            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
         
         <ul class="sidebar-menu">
-            <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li><a href="academic_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Management</li>
+            <li class="menu-section">Management</li>
             <li><a href="HODtimetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
-            <li><a href="LeaveApproval.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
+            <li><a href="leave_approvals.html"><i class='bx bx-chalkboard'></i> Leave Approval</a></li>
             <li><a href="substitute_mgmt.html"><i class='bx bx-transfer'></i> Substitute Mgmt.</a></li>
             
             <li class="active"><a href="manage_notices.html"><i class='bx bx-message-square-detail'></i> Manage Notices</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics & Tracking</li>
+            <li class="menu-section">Academics & Tracking</li>
             <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
             <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
             <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+
+            <li style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutUser()" style="color: #ef4444; padding-top: 18px; padding-bottom: 18px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -192,9 +194,9 @@
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Communication Hub</div>
             </div>
             <div class="user-profile">
-                <div style="text-align: right;">
-                    <b id="adminName">Dr. Amit Kumar</b>
-                    <span>Head of Department</span>
+                <div style="text-align: right; margin-right: 10px;">
+                    <div id="adminNameProfile" style="font-weight: 600; font-size: 14.5px;">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-light);">Active Session</div>
                 </div>
                 <img src="https://ui-avatars.com/api/?name=HOD&background=8b5cf6&color=fff" alt="Admin">
             </div>
@@ -288,8 +290,10 @@
         }
 
         window.onload = () => {
-            const userName = localStorage.getItem('userName') || 'Dr. Amit Kumar';
-            document.getElementById('adminName').innerText = userName;
+            // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
+            const userName = currentUser.name || 'HOD Sir';
+            document.getElementById('adminNameProfile').innerText = userName;
+            
             loadNotices();
         };
 
@@ -352,7 +356,7 @@
                                 </div>`;
                         }
 
-                        // Display who posted the notice (This uses the database value we save in sendNotice)
+                        // Display who posted the notice
                         let postedByHtml = notice.postedBy ? `<div style="font-size: 12px; color: var(--purple); margin-top: 8px; font-weight: 600;"><i class='bx bx-user-circle'></i> Issued by: ${notice.postedBy}</div>` : '';
 
                         let html = `
@@ -421,7 +425,7 @@
             formData.append('audience', JSON.stringify(audienceArray));
             
             // 🔥 YAHAN SENDER KA NAAM FRONTEND SE BHEJA JAA RAHA HAI 🔥
-            const senderName = document.getElementById('adminName').innerText;
+            const senderName = currentUser.name || "Department HOD";
             formData.append('postedBy', senderName + " (Department HOD)");
             
             if (fileInput) {
