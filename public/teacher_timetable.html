@@ -30,18 +30,15 @@
             --card-curve: 12px;
         }
 
+        /* 🔴 FIXED HORIZONTAL SCROLL ISSUE 🔴 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
         /* ------------------ SIDEBAR (Premium Design) ------------------ */
         .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         
-        /* Image Logo Styling */
-        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
-        
-        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
+        .sidebar-header h2 { font-size: 20px; color: #fff; font-weight: 800; letter-spacing: 1px;}
 
         /* Sidebar Profile Section (Chota Gola) */
         .sidebar-profile { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.1); }
@@ -111,13 +108,7 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
-                <div>
-                    <h2>ZHI Faculty</h2>
-                    <p>TEACHER PANEL</p>
-                </div>
-            </div>
+            <h2>ZHI Academics</h2>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
         
