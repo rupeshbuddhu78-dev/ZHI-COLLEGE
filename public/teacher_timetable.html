@@ -3,42 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZHI | My Timetable (Teacher)</title>
+    <title>ZHI | My Attendance (Teacher)</title>
     
     <script src="security.js"></script>
     <script>
         // Sirf 'teacher' ko entry milegi is page par
         checkPageAccess(['teacher']); 
     </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #14b8a6; /* Teal color for Teacher Panel */
+            --primary: #14b8a6; /* Teal Theme */
+            --primary-dark: #0f766e;
             --primary-light: #ccfbf1;
             --success: #10b981; 
+            --success-light: #d1fae5;
             --warning: #f59e0b; 
+            --warning-light: #fef3c7;
             --danger: #ef4444; 
-            --purple: #8b5cf6;
-            --bg: #f8fafc; 
-            --text-dark: #1e293b; 
-            --text-light: #64748b; 
-            --white: #ffffff; 
-            --border: #e2e8f0; 
-            --card-curve: 12px;
+            --danger-light: #fee2e2;
+            --bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
         }
 
-        /* 🔴 FIXED HORIZONTAL SCROLL ISSUE 🔴 */
+        /* Basic Reset */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
         /* ------------------ SIDEBAR (Premium Design) ------------------ */
         .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
         .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         
-        .sidebar-header h2 { font-size: 20px; color: #fff; font-weight: 800; letter-spacing: 1px;}
+        /* Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
 
         /* Sidebar Profile Section (Chota Gola) */
         .sidebar-profile { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.1); }
@@ -58,47 +65,86 @@
         .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); transform: scale(1.1); }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
         .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px;}
+        .user-profile { display: flex; align-items: center; gap: 10px; }
         .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
         .user-profile b { font-size: 13px; color: var(--text-dark); }
         .user-profile span { font-size: 11px; color: var(--text-light); }
 
-        .content { padding: 30px; flex: 1; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; flex-wrap: wrap; gap: 10px;}
+        .content { padding: 25px; flex: 1; width: 100%; max-width: 1200px; margin: 0 auto;}
+        
+        /* ------------------ TOP ACTION BAR ------------------ */
+        .action-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px;}
+        
+        .month-selector { padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-dark); background: var(--white); outline: none; cursor: pointer;}
+        .month-selector:focus { border-color: var(--primary); }
 
-        /* TIMETABLE CARD */
-        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px;}
-        .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; color: var(--text-dark);}
+        /* ------------------ PUNCH IN/OUT CARD ------------------ */
+        .punch-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 15px;}
+        .punch-info h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px;}
+        .punch-info p { font-size: 13px; color: var(--text-light);}
         
-        .table-res { overflow-x: auto; padding: 20px;}
-        table { width: 100%; border-collapse: collapse; text-align: center; min-width: 800px;}
-        th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #0d9488;} 
-        td { padding: 15px; border: 1px solid var(--border); vertical-align: middle; height: 80px;}
+        .punch-buttons { display: flex; gap: 15px; flex-wrap: wrap;}
+        .btn-punch { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; color: white;}
+        .btn-in { background: var(--primary); }
+        .btn-in:hover { background: var(--primary-dark); }
+        .btn-out { background: var(--warning); }
+        .btn-out:hover { background: #d97706; }
+        .btn-disabled { background: #cbd5e1; cursor: not-allowed; color: #64748b;}
         
-        /* Class Blocks */
-        .class-block { background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 6px; padding: 8px; display: inline-block; width: 100%; margin-bottom: 5px; transition: 0.2s;}
-        .class-block:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .class-block b { display: block; font-size: 13px; color: var(--text-dark); margin-bottom: 4px;}
-        .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; display: block; margin-top: 3px;}
-        .room-badge { display: inline-block; margin-top: 5px; font-size: 10px; color: var(--primary); font-weight: bold; }
+        /* ------------------ STATS CARDS ------------------ */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
+        .stat-info h4 { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 2px;}
+        .stat-info p { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase;}
+
+        .overall-card { grid-column: span 4; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 25px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3); margin-bottom: 20px;}
+        .overall-card h2 { font-size: 36px; font-weight: 800; margin-bottom: 5px;}
+        .overall-card p { font-size: 14px; opacity: 0.9;}
+        .overall-icon { font-size: 60px; opacity: 0.2; }
+
+        /* ------------------ TABLE & PANELS ------------------ */
+        .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px;}
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;}
+        .panel-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text-dark);}
+        
+        .table-res { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
+        th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 700; border-bottom: 1px solid var(--border);}
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 500;}
+        
+        /* Badges */
+        .badge { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-block; text-align: center;}
+        .badge-present { background: var(--success-light); color: var(--success); }
+        .badge-absent { background: var(--danger-light); color: var(--danger); }
+        .badge-leave { background: var(--warning-light); color: var(--warning); }
 
         /* Mobile Responsiveness */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
-        @media (max-width: 768px) { 
-            .sidebar { position: fixed; left: -280px; height: 100vh; } 
-            .sidebar.active { transform: translateX(280px); } 
-            .menu-btn { display: block; } 
+        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; height: 100vh; }
+            .sidebar.active { transform: translateX(280px); }
+            .menu-btn { display: block; }
             .sidebar-overlay.active { display: block; }
             .topbar { padding: 0 15px; }
-            .user-profile div { display: none; }
+            .user-profile b, .user-profile span { display: none; }
             .content { padding: 15px; }
-            .page-title { font-size: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 15px; gap: 10px; }
+            .stat-icon { width: 40px; height: 40px; font-size: 20px; }
+            .stat-info h4 { font-size: 18px; }
+            .overall-card { flex-direction: column; align-items: flex-start; gap: 15px; position: relative;}
+            .overall-icon { position: absolute; right: 20px; top: 20px; font-size: 50px;}
+            .punch-card { flex-direction: column; align-items: flex-start; }
+            .punch-buttons { width: 100%; }
+            .btn-punch { flex: 1; justify-content: center;}
         }
     </style>
 </head>
@@ -108,7 +154,13 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>ZHI Academics</h2>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
+                <div>
+                    <h2>ZHI Faculty</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
+            </div>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
         
@@ -122,10 +174,10 @@
 
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
-            <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
+            <li class="active"><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
             
             <li class="menu-section">My Classes</li>
-            <li class="active"><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
+            <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
             <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
             
             <li class="menu-section">Academics</li>
@@ -145,53 +197,127 @@
         </ul>
     </aside>
 
-    <main class="main-wrapper">
+    <div class="main-wrapper">
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics Portal</div>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Faculty Portal</div>
             </div>
             <div class="user-profile">
                 <div>
-                    <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
-                    <span style="font-size: 11px; color: var(--text-light);">Faculty Member</span>
+                    <b id="adminName">Loading...</b>
+                    <span id="adminDept">Faculty Member</span>
                 </div>
-                <img id="teacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Teacher">
+                <img id="profileImage" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Admin">
             </div>
         </header>
 
-        <div class="content">
-            <div class="page-header">
-                <div class="page-title">Timetable : <span id="headerTeacherName" style="color: var(--primary); margin-left: 8px;">Loading...</span></div>
+        <main class="content">
+            <div class="action-header">
+                <div class="page-title"><i class='bx bx-fingerprint'></i> My Attendance Record</div>
+                
+                <select class="month-selector" id="monthSelector" onchange="renderTableAndStats()">
+                </select>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Week's Schedule</span>
-                    <button style="background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;" onclick="window.print()">
-                        <i class='bx bx-printer'></i> Print
+            <div class="punch-card" id="punchCard">
+                <div class="punch-info">
+                    <h3>Mark Today's Attendance</h3>
+                    <p id="todayDateText">Loading today's date...</p>
+                </div>
+                <div class="punch-buttons">
+                    <button class="btn-punch btn-in" id="btnPunchIn" onclick="markPunch('IN')">
+                        <i class='bx bx-log-in-circle'></i> Punch In
                     </button>
+                    <button class="btn-punch btn-out btn-disabled" id="btnPunchOut" onclick="markPunch('OUT')" disabled>
+                        <i class='bx bx-log-out-circle'></i> Punch Out
+                    </button>
+                </div>
+            </div>
+
+            <div class="overall-card">
+                <div>
+                    <h2 id="overallPercentage">0%</h2>
+                    <p>Monthly Attendance Percentage (<span id="currentMonthText">Month</span>)</p>
+                </div>
+                <i class='bx bx-bar-chart-alt-2 overall-icon'></i>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);"><i class='bx bx-calendar'></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalDays">0</h4>
+                        <p>Total Days</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--success-light); color: var(--success);"><i class='bx bx-check-circle'></i></div>
+                    <div class="stat-info">
+                        <h4 id="presentDays">0</h4>
+                        <p>Present</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--danger-light); color: var(--danger);"><i class='bx bx-x-circle'></i></div>
+                    <div class="stat-info">
+                        <h4 id="absentDays">0</h4>
+                        <p>Absent</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--warning-light); color: var(--warning);"><i class='bx bx-calendar-minus'></i></div>
+                    <div class="stat-info">
+                        <h4 id="leaveDays">0</h4>
+                        <p>On Leave</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-list-ul'></i> Daily Attendance Log</h3>
                 </div>
                 <div class="table-res">
                     <table>
                         <thead>
-                            <tr id="ttHeadRow">
-                                <th>Date & Day</th>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Punch In Time</th>
+                                <th>Punch Out Time</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
                             </tr>
                         </thead>
-                        <tbody id="ttBody">
-                            <tr><td colspan="6" style="padding: 30px; text-align: center;"><b>Connecting to Server... Loading your routine ⏳</b></td></tr>
+                        <tbody id="attendanceTableBody">
+                            <tr><td colspan="6" style="text-align:center;">Fetching data from server...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </main>
+
+        </main>
+    </div>
 
     <script>
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('active'); 
-            document.getElementById('overlay').classList.toggle('active'); 
+        // Server URL Setup
+        const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/teacher-attendance";
+        
+        // 🔴 Fetching Staff Details from sessionStorage (currentUser) via security.js
+        let staffId = "";
+        let staffName = "Teacher";
+
+        if (typeof currentUser !== 'undefined' && currentUser) {
+            staffId = currentUser.staffId || currentUser._id || "";
+            staffName = currentUser.name || "Teacher";
+        }
+
+        let allLogs = []; // Global variable database se data store karne ke liye
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
         }
 
         function logoutTeacher() {
@@ -202,178 +328,230 @@
             }
         }
 
-        function formatToAMPM(timeStr) {
-            if(!timeStr) return "";
-            let [hours, minutes] = timeStr.split(':');
-            let h = parseInt(hours, 10);
-            let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12; 
-            let hStr = h < 10 ? '0' + h : h;
-            return `${hStr}:${minutes} ${ampm}`;
+        // Generate Last 6 Months for Dropdown
+        function setupMonthSelector() {
+            const selector = document.getElementById('monthSelector');
+            const today = new Date();
+            
+            for(let i=0; i<6; i++) {
+                let d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                let monthStr = d.toLocaleString('default', { month: 'long', year: 'numeric' }); 
+                let monthVal = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`; 
+                
+                let option = document.createElement('option');
+                option.value = monthVal;
+                option.text = monthStr;
+                selector.appendChild(option);
+            }
         }
 
-        // Function to get current week's dates (Monday to Saturday)
-        function getCurrentWeekDates() {
-            let curr = new Date(); 
-            let day = curr.getDay() || 7; // Convert Sunday (0) to 7
-            if (day !== 1) {
-                curr.setHours(-24 * (day - 1)); // Backtrack to Monday
-            }
-            
-            let weekDates = [];
-            for (let i = 0; i < 6; i++) { // Generate Mon to Sat
-                let nextDay = new Date(curr.getTime());
-                nextDay.setDate(curr.getDate() + i);
-                weekDates.push(nextDay);
-            }
-            return weekDates;
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            
-            // 🔴 SECURE SESSION DATA FETCH (From security.js / sessionStorage)
-            const staffId = currentUser ? currentUser.staffId : null;
-            const staffName = currentUser ? currentUser.name : "Faculty";
+        window.onload = () => {
+            // Profile Name set karega
             const userPhoto = currentUser && currentUser.profilePicUrl ? currentUser.profilePicUrl : `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
 
-            // Update Name in UI
-            document.getElementById("teacherNameTxt").innerText = staffName;
-            document.getElementById("headerTeacherName").innerText = staffName;
-            document.getElementById("teacherImg").src = userPhoto;
-            
-            // Update Sidebar Profile
-            document.getElementById("sidebarName").innerText = staffName;
-            document.getElementById("sidebarProfileImage").src = userPhoto;
+            // Topbar
+            document.getElementById('adminName').innerText = staffName;
+            document.getElementById('profileImage').src = userPhoto;
 
-            if (!staffId) {
-                document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 20px;">Unauthorized! Please login to view timetable.</td></tr>`;
+            // Sidebar Profile
+            document.getElementById('sidebarName').innerText = staffName;
+            document.getElementById('sidebarProfileImage').src = userPhoto;
+
+            // Date text set karega
+            const today = new Date();
+            document.getElementById('todayDateText').innerText = today.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+            setupMonthSelector();
+            
+            if(!staffId) {
+                alert("Teacher ID missing! Please login again.");
+                logoutTeacher();
                 return;
             }
 
+            // 🔴 LIVE: Fetch Attendance from MongoDB (Only for logged-in Staff ID)
+            fetchAttendanceData();
+        };
+
+        // Date and Time Formatters
+        function formatTime(date) {
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return hours + ':' + minutes + ' ' + ampm;
+        }
+
+        function getStandardDate() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        // 🔴 1. Fetch from Database (Without Token logic)
+        async function fetchAttendanceData() {
             try {
-                // FETCH 1: Get ALL college routines to build standard dynamic periods (columns)
-                const allRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines`);
-                const allRoutinesResult = await allRoutinesRes.json();
+                // Fetch all records strictly for THIS teacher using staffId
+                const response = await fetch(`${API_BASE_URL}/${staffId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
 
-                // FETCH 2: Get only this Teacher's classes
-                const teacherRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines?teacherId=${staffId}`);
-                const teacherRoutinesResult = await teacherRoutinesRes.json();
-
-                if (allRoutinesResult.success && teacherRoutinesResult.success) {
-                    
-                    // Filter: Make sure the ID strictly matches this teacher
-                    const strictTeacherRoutines = teacherRoutinesResult.data.filter(r => {
-                        if (!r.teacherId) return false;
-                        const idFromDB = r.teacherId._id ? r.teacherId._id.toString() : r.teacherId.toString();
-                        return idFromDB === staffId; 
-                    });
-
-                    renderTeacherRoutine(allRoutinesResult.data, strictTeacherRoutines);
+                if (result.success) {
+                    allLogs = result.data; // Server se aaye hue array ko yaha set karo
+                    checkTodayStatus();
+                    renderTableAndStats();
                 } else {
-                    document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Failed to load data!</td></tr>`;
+                    console.error("Failed to fetch data", result.message);
                 }
             } catch (error) {
-                console.error("API Error:", error);
-                document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Server is offline or unreachable.</td></tr>`;
+                console.error("Server connection error:", error);
+                document.getElementById('attendanceTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Server connection failed! Please check internet or wait for server to wake up.</td></tr>`;
             }
-        });
+        }
 
-        // Dynamic Render Logic with Current Date & Day Mapping
-        function renderTeacherRoutine(allRoutines, teacherRoutines) {
-            const theadRow = document.getElementById("ttHeadRow");
-            const tbody = document.getElementById("ttBody");
-            
-            tbody.innerHTML = ""; 
-            theadRow.innerHTML = "<th>Date & Day</th>";
+        // Check Button Status (In / Out / Completed)
+        function checkTodayStatus() {
+            const todayStr = getStandardDate();
+            const todayLog = allLogs.find(l => l.dateStr === todayStr);
 
-            // STEP 1: Extract all standard unique time slots from entire college data
-            const timeSlotsMap = new Map();
-            allRoutines.forEach(r => {
-                const key = `${r.startTime}-${r.endTime}`;
-                if(!timeSlotsMap.has(key)) {
-                    let [h, m] = r.startTime.split(':').map(Number);
-                    if (h >= 1 && h <= 7) {
-                        h += 12; // PM adjustment for sorting
-                    }
-                    const sortValue = h * 60 + m;
-                    timeSlotsMap.set(key, { start: r.startTime, end: r.endTime, sortValue });
-                }
-            });
+            const btnIn = document.getElementById('btnPunchIn');
+            const btnOut = document.getElementById('btnPunchOut');
 
-            // Sort periods from morning to evening
-            const uniqueTimeSlots = Array.from(timeSlotsMap.values()).sort((a, b) => a.sortValue - b.sortValue);
-
-            // Create standard Columns dynamically
-            uniqueTimeSlots.forEach(slot => {
-                let th = document.createElement("th");
-                th.innerText = `${formatToAMPM(slot.start)} - ${formatToAMPM(slot.end)}`;
-                theadRow.appendChild(th);
-            });
-
-            // STEP 2: Render Rows for Current Week (Mon-Sat dynamically)
-            const currentWeekDates = getCurrentWeekDates();
-            const todayStr = new Date().toDateString();
-
-            currentWeekDates.forEach(dateObj => {
-                let tr = document.createElement("tr");
-
-                // Get Day Name (Monday, Tuesday...) and Date string (01 Apr, 02 Apr...)
-                let dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-                let dateDisplay = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            if (!todayLog) {
+                // Not punched in yet
+                btnIn.classList.remove('btn-disabled'); btnIn.disabled = false;
+                btnOut.classList.add('btn-disabled'); btnOut.disabled = true;
+                btnIn.innerHTML = "<i class='bx bx-log-in-circle'></i> Punch In";
+            } else if (todayLog.punchIn && (!todayLog.punchOut || todayLog.punchOut === "")) {
+                // Punched in, waiting to punch out
+                btnIn.classList.add('btn-disabled'); btnIn.disabled = true;
+                btnIn.innerHTML = "<i class='bx bx-check-double'></i> In: " + todayLog.punchIn;
                 
-                let isToday = (dateObj.toDateString() === todayStr);
+                btnOut.classList.remove('btn-disabled'); btnOut.disabled = false;
+                btnOut.innerHTML = "<i class='bx bx-log-out-circle'></i> Punch Out";
+            } else if (todayLog.punchIn && todayLog.punchOut) {
+                // Shift completed
+                btnIn.classList.add('btn-disabled'); btnIn.disabled = true;
+                btnIn.innerHTML = "<i class='bx bx-check-double'></i> In: " + todayLog.punchIn;
                 
-                if (isToday) {
-                    tr.style.backgroundColor = "#f0fdf4"; // Halka green highlight for whole row
-                }
+                btnOut.classList.add('btn-disabled'); btnOut.disabled = true;
+                btnOut.innerHTML = "<i class='bx bx-check-double'></i> Out: " + todayLog.punchOut;
+            }
+        }
 
-                // Date & Day Cell
-                let tdDay = document.createElement("td");
-                tdDay.style.background = isToday ? "#ccfbf1" : "var(--bg)";
-                
-                // Set HTML: e.g., "Wednesday <br> 01 Apr"
-                if (isToday) {
-                    tdDay.innerHTML = `<b style="font-size: 14px;">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span><br><span style="font-size:11px; font-weight: bold; color:var(--primary); background: #fff; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;">Today</span>`;
-                } else {
-                    tdDay.innerHTML = `<b style="font-size: 14px;">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span>`;
-                }
-                tr.appendChild(tdDay);
+        // 🔴 2. Post Punch In / Punch Out to Database (Without Token logic)
+        async function markPunch(actionType) {
+            const now = new Date();
+            const timeStr = formatTime(now);
+            const dateStr = getStandardDate();
+            const monthVal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
 
-                // Fill class blocks per time slot
-                uniqueTimeSlots.forEach(slot => {
-                    let td = document.createElement("td");
+            const payload = {
+                teacherId: staffId, // Sirf apni ID pass karega
+                teacherName: staffName,
+                action: actionType, // 'IN' or 'OUT'
+                timeStr: timeStr,
+                dateStr: dateStr,
+                monthVal: monthVal,
+                dayName: dayName
+            };
 
-                    // Check if teacher has class at this exact time and day (Match DB dayOfWeek with Current Day Name)
-                    const classesAtThisTime = teacherRoutines.filter(r => 
-                        r.dayOfWeek.toLowerCase() === dayName.toLowerCase() && 
-                        r.startTime === slot.start &&
-                        r.endTime === slot.end
-                    );
+            // Loading state
+            const btn = actionType === 'IN' ? document.getElementById('btnPunchIn') : document.getElementById('btnPunchOut');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Saving...";
+            btn.disabled = true;
 
-                    if (classesAtThisTime.length > 0) {
-                        let cellHTML = "";
-                        classesAtThisTime.forEach(cls => {
-                            let sectionStr = cls.section ? cls.section : 'A'; 
-                            cellHTML += `
-                                <div class="class-block" style="${isToday ? 'background: #fff; border-color: var(--primary);' : ''}">
-                                    <b>${cls.subject}</b>
-                                    <span>${cls.course} - Sem ${cls.semester} (Sec: ${sectionStr})</span>
-                                    <span class="room-badge"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
-                                </div>
-                            `;
-                        });
-                        td.innerHTML = cellHTML;
-                    } else {
-                        // Free Period
-                        td.innerHTML = `<span style="color: #94a3b8; font-size: 13px;">- Free -</span>`;
-                    }
-
-                    tr.appendChild(td);
+            try {
+                const response = await fetch(`${API_BASE_URL}/punch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
-                tbody.appendChild(tr);
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Punched ${actionType} Successfully at ` + timeStr);
+                    fetchAttendanceData(); // Database se fresh data reload karo
+                } else {
+                    alert("Failed to save: " + result.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Error pushing punch:", error);
+                alert("Server error! Cannot save attendance.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 🔴 3. Live Percentage & Table Calculation based on Dropdown Month
+        function renderTableAndStats() {
+            const selectedMonthVal = document.getElementById('monthSelector').value; 
+            const selectedMonthText = document.getElementById('monthSelector').options[document.getElementById('monthSelector').selectedIndex].text;
+            
+            document.getElementById('currentMonthText').innerText = selectedMonthText;
+
+            // Database se aayi saari logs ko sirf us month ke hisaab se filter karega
+            const monthlyLogs = allLogs.filter(log => log.monthVal === selectedMonthVal);
+
+            // Present, Absent aur Leave count karega
+            let present = 0, absent = 0, leave = 0;
+            monthlyLogs.forEach(log => {
+                if(log.status === 'Present') present++;
+                else if(log.status === 'Absent') absent++;
+                else if(log.status === 'Leave') leave++;
             });
+
+            // LIVE PERCENTAGE CALCULATION logic: (Present / Total Working Days) * 100
+            const total = monthlyLogs.length;
+            const percentage = total === 0 ? 0 : Math.round((present / total) * 100);
+
+            // Interface pe Live data display karega
+            document.getElementById('totalDays').innerText = total;
+            document.getElementById('presentDays').innerText = present;
+            document.getElementById('absentDays').innerText = absent;
+            document.getElementById('leaveDays').innerText = leave;
+            document.getElementById('overallPercentage').innerText = percentage + "%";
+
+            // Draw Table
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = "";
+
+            if (monthlyLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">No attendance recorded for ${selectedMonthText} yet.</td></tr>`;
+            } else {
+                // Latest dates ko table ke upar dikhane ke liye reverse kiya gaya hai
+                let displayLogs = [...monthlyLogs].reverse(); 
+                
+                displayLogs.forEach(log => {
+                    let badgeClass = 'badge-leave';
+                    if(log.status === 'Present') badgeClass = 'badge-present';
+                    if(log.status === 'Absent') badgeClass = 'badge-absent';
+
+                    // String Date (YYYY-MM-DD) ko readable (15 Apr 2026) format mein change karega
+                    let d = new Date(log.dateStr);
+                    let niceDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>${niceDate}</b></td>
+                            <td>${log.dayName}</td>
+                            <td style="color:var(--primary); font-weight:600;">${log.punchIn || '-'}</td>
+                            <td style="color:var(--warning); font-weight:600;">${log.punchOut || '-'}</td>
+                            <td><span class="badge ${badgeClass}">${log.status}</span></td>
+                            <td>${log.remarks || '-'}</td>
+                        </tr>
+                    `;
+                });
+            }
         }
     </script>
 </body>
