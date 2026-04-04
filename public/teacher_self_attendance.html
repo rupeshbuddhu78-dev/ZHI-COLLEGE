@@ -41,6 +41,8 @@
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
         .sidebar-menu li a i { font-size: 20px; }
         .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        .logout-btn { color: #ef4444 !important; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; border-left: 4px solid #ef4444 !important; }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
@@ -158,6 +160,8 @@
             <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
             <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+            
+            <li style="margin-top: 20px;"><a href="#" class="logout-btn" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -265,18 +269,35 @@
     </div>
 
     <script>
+        // --- SECURITY CHECK (Authentication Guard) ---
+        // Yahan check hoga ki user sach me logged in hai aur 'teacher' hai ya nahi
+        const token = localStorage.getItem('token'); 
+        const role = localStorage.getItem('role');
+        const staffId = localStorage.getItem('userId') || localStorage.getItem('staffId'); // Id validation
+        const staffName = localStorage.getItem('userName') || localStorage.getItem('staffName') || "Teacher";
+
+        if (!token || (role !== 'teacher' && role !== 'faculty')) {
+            alert("Unauthorized Access! Please login as a Teacher.");
+            window.location.href = "index.html"; // Login page par bhej dega
+        }
+        // ---------------------------------------------
+
         // Server URL Setup
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/teacher-attendance";
         
-        // Logged-in Teacher Details (Id aur Name strictly match karenge backend ke liye)
-        const staffId = localStorage.getItem('staffId') || ""; 
-        const staffName = localStorage.getItem('staffName') || localStorage.getItem('userName') || "Teacher";
-
         let allLogs = []; // Global variable database se data store karne ke liye
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Logout Functionality
+        function logoutTeacher() {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.clear(); // Clear all saved teacher data
+                window.location.href = "index.html"; // Redirect to login
+            }
         }
 
         // Generate Last 6 Months for Dropdown
@@ -299,7 +320,7 @@
         window.onload = () => {
             // Profile Name set karega
             document.getElementById('adminName').innerText = staffName;
-            document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${staffName}&background=14b8a6&color=fff`;
+            document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
 
             // Date text set karega
             const today = new Date();
@@ -309,6 +330,7 @@
             
             if(!staffId) {
                 alert("Teacher ID missing! Please login again.");
+                logoutTeacher();
                 return;
             }
 
@@ -332,11 +354,17 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // 🔴 1. Fetch from Database
+        // 🔴 1. Fetch from Database (Secure with Token)
         async function fetchAttendanceData() {
             try {
                 // Fetch all records strictly for THIS teacher using staffId
-                const response = await fetch(`${API_BASE_URL}/${staffId}`);
+                const response = await fetch(`${API_BASE_URL}/${staffId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // Passing Token for Security
+                        'Content-Type': 'application/json'
+                    }
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -382,7 +410,7 @@
             }
         }
 
-        // 🔴 2. Post Punch In / Punch Out to Database
+        // 🔴 2. Post Punch In / Punch Out to Database (Secure with Token)
         async function markPunch(actionType) {
             const now = new Date();
             const timeStr = formatTime(now);
@@ -391,7 +419,7 @@
             const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
 
             const payload = {
-                teacherId: staffId,
+                teacherId: staffId, // Sirf apni ID pass karega
                 teacherName: staffName,
                 action: actionType, // 'IN' or 'OUT'
                 timeStr: timeStr,
@@ -409,7 +437,10 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/punch`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Passing Token for Security
+                    },
                     body: JSON.stringify(payload)
                 });
 
