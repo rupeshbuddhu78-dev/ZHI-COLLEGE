@@ -21,13 +21,14 @@
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styling Exact Same */
+        /* Sidebar Styling */
         .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
         .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
@@ -45,7 +46,7 @@
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header Exact Same */
+        /* Header */
         header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; flex-shrink:0; }
         .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
         .header-right { display: flex; align-items: center; gap: 20px; }
@@ -68,7 +69,7 @@
         .sem-container { background: var(--white); border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
         .sem-header { background: #f8fafc; padding: 10px 15px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main);}
         
-        /* Room Input Styling (New Auto-Save effects) */
+        /* Room Input Styling */
         .room-input { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 12px; width: 100px; font-weight: 600; color: var(--danger); transition: 0.3s;}
         .room-input.saving { border-color: var(--warning); background-color: #fffbeb; }
         .room-input.saved { border-color: var(--success); background-color: #ecfdf5; }
@@ -84,13 +85,14 @@
         .slot { height: 100%; width: 100%; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 3px; cursor: default; transition: 0.2s; position: relative;}
         .slot.empty { border: 2px dashed #cbd5e1; background: #f8fafc; color: #94a3b8; cursor: pointer; }
         .slot.empty.drag-over { background: #e0e7ff; border-color: var(--primary); color: var(--primary); }
-        .slot.filled { background: #eef2ff; border-left: 4px solid var(--primary); }
+        .slot.filled { background: #eef2ff; border-left: 4px solid var(--primary); cursor: grab; }
+        .slot.filled:active { cursor: grabbing; transform: scale(0.95); }
         .slot.filled:hover { background: #e0e7ff; }
         
         .slot .sub { font-weight: 800; font-size: 12px; color: var(--text-main); }
         .slot .teach { font-size: 11px; color: var(--primary); font-weight: 600;}
 
-        /* DELETE BUTTON STYLING ADDED HERE */
+        /* DELETE BUTTON STYLING */
         .delete-btn { position: absolute; top: 4px; right: 4px; font-size: 16px; color: #94a3b8; cursor: pointer; transition: 0.2s; border-radius: 50%; padding: 2px; }
         .delete-btn:hover { background: #ef4444; color: white; }
 
@@ -117,17 +119,17 @@
             </div>
         </div>
         <nav class="nav-menu">
-            <a href="#" class="nav-item"><i class='bx bxs-dashboard'></i> Dashboard Home</a>
+            <a href="hod_dashboard.html" class="nav-item"><i class='bx bxs-dashboard'></i> Dashboard Home</a>
             
             <div class="nav-category">MANAGEMENT</div>
-            <a href="#" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
-            <a href="#" class="nav-item"><i class='bx bx-desktop'></i> Assign Teachers</a>
-            <a href="#" class="nav-item"><i class='bx bx-transfer'></i> Substitute Mgmt.</a>
+            <a href="HODtimetable_setup.html" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
+            <a href="leave_approvals.html" class="nav-item"><i class='bx bx-calendar-exclamation'></i> Leave Approvals</a>
+            <a href="substitute_mgmt.html" class="nav-item"><i class='bx bx-transfer'></i> Substitute Mgmt.</a>
             
             <div class="nav-category">ACADEMICS & TRACKING</div>
-            <a href="#" class="nav-item"><i class='bx bx-book-open'></i> Subjects & Syllabus</a>
-            <a href="#" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
-            <a href="#" class="nav-item"><i class='bx bx-line-chart'></i> Student Performance</a>
+            <a href="manage_syllabus.html" class="nav-item"><i class='bx bx-book-open'></i> Subjects & Syllabus</a>
+            <a href="attendance_overview.html" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
+            <a href="performance_reports.html" class="nav-item"><i class='bx bx-line-chart'></i> Student Performance</a>
         </nav>
     </aside>
 
@@ -198,7 +200,6 @@
 
         // --- 1. INITIALIZATION & LIVE CLOCK ---
         window.addEventListener('DOMContentLoaded', () => {
-            // Yeh 100% Dynamic hai, aaj ka system date uthayega automatically
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -213,7 +214,7 @@
             document.getElementById('liveClock').innerText = new Date().toLocaleString('en-IN', { hour12: true }); 
         }, 1000);
 
-        // --- 2. BUILD 6 GRIDS (With Room Number Input Auto-Save Trigger) ---
+        // --- 2. BUILD 6 GRIDS ---
         function buildEmptyGrids() {
             const container = document.getElementById('allSemestersContainer');
             container.innerHTML = '';
@@ -263,17 +264,14 @@
             const course = document.getElementById('ttCourse').value;
             if(!dateVal) return;
 
-            // Date & Day display (Fully Dynamic based on selected date)
             const dateObj = new Date(dateVal);
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = days[dateObj.getDay()];
 
             document.getElementById('displayDateText').innerHTML = `<i class='bx bx-calendar'></i> ${dayName}, ${dateObj.toLocaleDateString('en-GB')}`;
 
-            // Fetch Present Teachers first (Bulletproof Logic)
             await fetchTeachers(false, dateVal);
 
-            // Fetch classes
             try {
                 const res = await fetch(`${API_BASE}/routines?course=${course}`);
                 const data = await res.json();
@@ -290,32 +288,35 @@
 
         // --- 4. FILL GRIDS WITH CLASSES ---
         function fillGridsWithData() {
-            // Reset all to empty first
             document.querySelectorAll('.slot:not(.empty)').forEach(el => {
                 const p = el.parentElement;
                 const sem = el.dataset.sem; const s = el.dataset.start; const e = el.dataset.end;
                 p.innerHTML = `<div class="slot empty" id="slot_${sem}_${s}" data-sem="${sem}" data-start="${s}" data-end="${e}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event)"><i class='bx bx-plus'></i></div>`;
             });
 
-            // Fill actual data
             currentDayRoutines.forEach(routine => {
                 const slotId = `slot_${routine.semester}_${routine.startTime}`;
                 const emptySlot = document.getElementById(slotId);
                 
                 if(emptySlot) {
                     const parent = emptySlot.parentElement;
-                    // Room Number slot me display hone ka logic agar room assign kiya gaya ho
                     let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
                     
+                    // 🔥 NEW: Class box is now draggable! We attach data-routineid to identify it when dragged
                     parent.innerHTML = `
-                        <div class="slot filled" data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}">
+                        <div class="slot filled" draggable="true" ondragstart="dragStart(event)" 
+                             data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}"
+                             data-tid="${routine.teacherId ? (routine.teacherId._id || routine.teacherId) : ''}" 
+                             data-tname="${routine.teacherName || (routine.teacherId ? routine.teacherId.name : 'Faculty')}" 
+                             data-tsub="${routine.subject}"
+                             data-routineid="${routine._id}">
+                             
                             <i class='bx bx-x delete-btn' onclick="deleteSlot('${routine._id}', event)" title="Remove Class"></i>
                             <div class="sub">${routine.subject}</div>
                             <div class="teach">${routine.teacherName || (routine.teacherId ? routine.teacherId.name : 'Faculty')}</div>
                             ${roomHTML}
                         </div>
                     `;
-                    // Automatically fill room number box if exists
                     if(routine.roomNumber) {
                         document.getElementById(`room_sem_${routine.semester}`).value = routine.roomNumber;
                     }
@@ -326,13 +327,11 @@
         // --- 4.5. AUTO-SAVE ROOM NUMBER LOGIC ---
         function handleRoomInput(sem, value) {
             const inputField = document.getElementById(`room_sem_${sem}`);
-            inputField.classList.add('saving'); // Yellow effect on typing
+            inputField.classList.add('saving'); 
             inputField.classList.remove('saved');
 
-            // Clear the previous timeout
             clearTimeout(roomSaveTimeout);
 
-            // Wait 1.5 seconds after typing stops before saving
             roomSaveTimeout = setTimeout(() => {
                 saveRoomToDatabase(sem, value, inputField);
             }, 1500); 
@@ -342,11 +341,9 @@
             const dateVal = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
 
-            // Find all classes assigned in this specific semester, date and course
             const routinesToUpdate = currentDayRoutines.filter(r => r.semester == sem && r.course === course);
 
             if(routinesToUpdate.length === 0) {
-                // If no class assigned yet, just visually show it's saved locally
                 inputField.classList.remove('saving');
                 inputField.classList.add('saved');
                 setTimeout(() => inputField.classList.remove('saved'), 1000);
@@ -354,7 +351,6 @@
             }
 
             try {
-                // Update all matching routines one by one via API
                 for (let r of routinesToUpdate) {
                     await fetch(`${API_BASE}/routines/${r._id}`, {
                         method: 'PUT',
@@ -363,29 +359,25 @@
                     });
                 }
                 
-                // Visual effect: green for success
                 inputField.classList.remove('saving');
                 inputField.classList.add('saved');
                 setTimeout(() => inputField.classList.remove('saved'), 1000);
                 
-                // Refresh grid to reflect new room numbers inside the boxes
                 loadFullDayData();
 
             } catch (e) {
-                console.error("Failed to update room numbers", e);
                 inputField.classList.remove('saving');
                 alert("Network error: Failed to auto-save room number!");
             }
         }
 
-        // --- 5. TEACHER TRAY (ONLY PRESENT TEACHERS - BULLETPROOF LOGIC) ---
+        // --- 5. TEACHER TRAY FETCHING ---
         async function fetchTeachers(forceAll = false, dateStr = "") {
             const pool = document.getElementById('teacherPool');
             pool.innerHTML = "<span style='color: #64748b;'><i class='bx bx-loader-alt bx-spin'></i> Loading teachers...</span>";
             const selectedDate = dateStr || document.getElementById('ttDate').value;
 
             try {
-                // Step 1: Fetch ALL staff from database to get their original subjects & details
                 const staffRes = await fetch(`${API_BASE}/staff`);
                 const staffData = await staffRes.json();
                 let allStaff = [];
@@ -395,7 +387,6 @@
 
                 let displayList = [];
 
-                // Step 2: Fetch Attendance to check who is present
                 if(!forceAll) {
                     const attRes = await fetch(`${API_BASE}/teacher-attendance?dateStr=${selectedDate}`);
                     const attData = await attRes.json();
@@ -413,13 +404,11 @@
                     displayList = allStaff;
                 }
 
-                // If no one is present or no attendance marked
                 if(displayList.length === 0) {
                     pool.innerHTML = "<span style='color:#ef4444; font-weight:600; font-size:13px;'>No faculty present today / Attendance not marked yet.</span>";
                     return;
                 }
 
-                // Step 3: Render the Teacher Cards (Name + Real Subject from DB)
                 pool.innerHTML = displayList.map(t => {
                     const subjectName = t.skills || t.subject || t.department || t.specialization || "General";
                     return `
@@ -431,16 +420,21 @@
                 `}).join('');
 
             } catch(e) {
-                console.error("Error fetching teachers: ", e);
                 pool.innerHTML = "<span style='color:red;'>Error loading faculty. Check API connection.</span>";
             }
         }
 
-        // --- 6. DRAG AND DROP LOGIC (PROMPT REMOVED, TBA REMOVED) ---
+        // --- 6. ADVANCED DRAG AND DROP LOGIC ---
         function dragStart(ev) {
+            // Getting data from dragging item (Either Teacher from Tray OR Existing Class from Grid)
             ev.dataTransfer.setData("tId", ev.target.dataset.tid);
             ev.dataTransfer.setData("tName", ev.target.dataset.tname);
             ev.dataTransfer.setData("tSub", ev.target.dataset.tsub);
+            
+            // 🔥 NEW: Check if dragging an already assigned class
+            if(ev.target.dataset.routineid) {
+                ev.dataTransfer.setData("sourceRoutineId", ev.target.dataset.routineid);
+            }
         }
 
         function allowDrop(ev) {
@@ -462,7 +456,8 @@
 
             const tId = ev.dataTransfer.getData("tId");
             const tName = ev.dataTransfer.getData("tName");
-            const tSub = ev.dataTransfer.getData("tSub"); // Sub pre-filled from card
+            const tSub = ev.dataTransfer.getData("tSub"); 
+            const sourceRoutineId = ev.dataTransfer.getData("sourceRoutineId"); // Gets ID if dragged from grid
             
             if(!tId) return;
 
@@ -471,20 +466,24 @@
             const endTime = slot.dataset.end;
             const dateVal = document.getElementById('ttDate').value;
             const course = document.getElementById('ttCourse').value;
-            
-            // Getting room number for that semester
             const roomNo = document.getElementById(`room_sem_${sem}`).value || "";
 
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = days[new Date(dateVal).getDay()];
 
-            // CLASH CHECK
-            const isBusy = currentDayRoutines.find(r => r.startTime === startTime && (r.teacherId === tId || (r.teacherId && r.teacherId._id === tId)));
+            // CLASH CHECK: Ignore checking itself if moving the same class
+            const isBusy = currentDayRoutines.find(r => 
+                r.startTime === startTime && 
+                (r.teacherId === tId || (r.teacherId && r.teacherId._id === tId)) &&
+                r._id !== sourceRoutineId // NEW: Ignore self clash while moving
+            );
+            
             if(isBusy) {
                 alert(`⚠️ CLASH DETECTED!\n${tName} is already assigned to Semester ${isBusy.semester} at ${startTime}.`);
                 return;
             }
 
+            // Visual Loading Spinner on target slot
             let finalSub = tSub || "General";
             slot.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i>`;
 
@@ -503,11 +502,18 @@
             };
 
             try {
+                // 🔥 NEW: If this was dragged from another slot, delete the old one first!
+                if(sourceRoutineId) {
+                    await fetch(`${API_BASE}/routines/${sourceRoutineId}`, { method: 'DELETE' });
+                }
+
+                // POST new routine to DB
                 const res = await fetch(`${API_BASE}/routines`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
                 const result = await res.json();
                 
                 if(result.success) {
@@ -522,9 +528,9 @@
             }
         }
 
-        // --- 7. DELETE SLOT (By clicking on X icon only, NO ALERT) ---
+        // --- 7. DELETE SLOT (By clicking on X icon only) ---
         async function deleteSlot(routineId, event) {
-            if(event) event.stopPropagation(); // Box ke kisi aur event ko trigger hone se rokega
+            if(event) event.stopPropagation(); 
             
             try {
                 const res = await fetch(`${API_BASE}/routines/${routineId}`, { method: 'DELETE' });
