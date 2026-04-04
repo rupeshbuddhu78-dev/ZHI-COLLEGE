@@ -33,19 +33,22 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styling */
-        .sidebar { width: 260px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
-        .sidebar-header { padding: 24px 20px; background: #1b2132; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo-box { width: 40px; height: 40px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--primary); box-shadow: 0 0 10px rgba(99,102,241,0.2);}
+        /* Sidebar Styling - Bada aur Accha banaya gaya hai */
+        .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
+        .sidebar-header { padding: 30px 24px; background: #1b2132; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         
-        /* Logout ko neeche bhejne ke liye nav-menu mein flex-direction add kiya hai */
-        .nav-menu { padding: 10px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        .nav-category { font-size: 10px; color: #64748b; margin: 20px 24px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* New Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(99,102,241,0.2); }
         
-        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; }
+        /* Nav Menu Container */
+        .nav-menu { padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .nav-category { font-size: 12px; color: #64748b; margin: 25px 24px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        /* Nav Item - Thora bada kiya gaya hai taaki acha dikhe */
+        .nav-item { padding: 14px 24px; display: flex; align-items: center; gap: 15px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 15px; font-weight: 500; border-left: 4px solid transparent; }
         .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 32px; border-left-color: var(--primary); }
         .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
-        .nav-item i { font-size: 18px; color: #94a3b8; transition: all 0.3s ease; }
+        .nav-item i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
         .nav-item:hover i { color: var(--primary); transform: scale(1.1); }
         .nav-item.active i { color: var(--primary); }
 
@@ -53,39 +56,39 @@
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
         /* Header */
-        header { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; flex-shrink:0; }
-        .header-title { font-weight: 700; font-size: 18px; color: #1e293b; }
+        header { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; flex-shrink:0; }
+        .header-title { font-weight: 700; font-size: 19px; color: #1e293b; }
         .header-right { display: flex; align-items: center; gap: 20px; }
         .profile-section { display: flex; align-items: center; gap: 12px; text-align: right; }
-        .profile-name { font-weight: 600; font-size: 14px; color: var(--text-main); line-height: 1.2; }
-        .profile-role { font-size: 11px; color: var(--text-light); }
-        .profile-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+        .profile-name { font-weight: 600; font-size: 14.5px; color: var(--text-main); line-height: 1.2; }
+        .profile-role { font-size: 12px; color: var(--text-light); }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; }
         
         /* Filter Section */
         .filter-card { background: var(--white); padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; gap: 20px; align-items: center; flex-shrink:0;}
         .form-group { display: flex; align-items: center; gap: 10px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
-        .form-control { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background: var(--bg);}
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;}
+        .form-group label { font-size: 13.5px; font-weight: 600; color: var(--text-light); }
+        .form-control { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14.5px; outline: none; background: var(--bg);}
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;}
         
         /* Grids Area */
         .grids-wrapper { flex: 1; padding: 20px 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
-        .date-display { font-size: 18px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; margin-bottom: -5px;}
+        .date-display { font-size: 19px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; margin-bottom: -5px;}
         
         .sem-container { background: var(--white); border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
-        .sem-header { background: #f8fafc; padding: 10px 15px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main);}
+        .sem-header { background: #f8fafc; padding: 12px 18px; font-weight: 700; font-size: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main);}
         
         /* Room Input Styling */
-        .room-input { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 12px; width: 100px; font-weight: 600; color: var(--danger); transition: 0.3s;}
+        .room-input { padding: 5px 10px; border: 1px solid #cbd5e1; border-radius: 4px; outline: none; font-size: 12.5px; width: 110px; font-weight: 600; color: var(--danger); transition: 0.3s;}
         .room-input.saving { border-color: var(--warning); background-color: #fffbeb; }
         .room-input.saved { border-color: var(--success); background-color: #ecfdf5; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { padding: 10px; background: white; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); text-align: center;}
-        td { border-right: 1px solid var(--border); vertical-align: middle; height: 80px; padding: 6px;}
+        th { padding: 12px; background: white; font-size: 11.5px; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); text-align: center;}
+        td { border-right: 1px solid var(--border); vertical-align: middle; height: 85px; padding: 6px;}
         
         /* Lunch Break Fix */
-        .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; letter-spacing: 2px; width: 35px !important; font-size: 11px; vertical-align: middle;}
+        .lunch-break { background: #f1f5f9; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; font-weight: 800; color: #94a3b8; letter-spacing: 2px; width: 35px !important; font-size: 12px; vertical-align: middle;}
 
         /* Slots */
         .slot { height: 100%; width: 100%; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 3px; cursor: default; transition: 0.2s; position: relative;}
@@ -104,13 +107,13 @@
 
         /* Teacher Tray (Bottom) */
         .teacher-tray { height: 150px; background: var(--white); border-top: 1px solid var(--border); padding: 15px 20px; flex-shrink: 0; display: flex; flex-direction: column; box-shadow: 0 -4px 10px rgba(0,0,0,0.03);}
-        .tray-header { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: flex; justify-content: space-between;}
+        .tray-header { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: flex; justify-content: space-between;}
         .draggable-teachers { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 5px; flex: 1; align-items: center;}
         
         .teacher-card { background: var(--bg); border: 1px solid #cbd5e1; padding: 10px 15px; border-radius: 8px; cursor: grab; min-width: 140px; text-align: center; user-select: none; transition: 0.2s;}
         .teacher-card:active { cursor: grabbing; transform: scale(0.95); opacity: 0.8;}
-        .teacher-card b { display: block; font-size: 13px; color: var(--primary); }
-        .teacher-card span { font-size: 11px; color: var(--text-light); font-weight: 600; display: block; margin-top: 4px;}
+        .teacher-card b { display: block; font-size: 13.5px; color: var(--primary); }
+        .teacher-card span { font-size: 11.5px; color: var(--text-light); font-weight: 600; display: block; margin-top: 4px;}
 
     </style>
 </head>
@@ -118,10 +121,10 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-box"><i class='bx bxs-book-alt'></i></div>
+            <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img">
             <div>
-                <h4 style="font-size: 15px; font-weight: 700; color: white;">ZHI Academics</h4>
-                <p style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">HOD / CO-ORDINATOR</p>
+                <h4 style="font-size: 16px; font-weight: 700; color: white;">ZHI Academics</h4>
+                <p style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">HOD / CO-ORDINATOR</p>
             </div>
         </div>
         <nav class="nav-menu">
@@ -137,7 +140,7 @@
             <a href="attendance_overview.html" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
             <a href="performance_reports.html" class="nav-item"><i class='bx bx-line-chart'></i> Student Performance</a>
 
-            <a href="#" onclick="logoutUser()" class="nav-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); color: #ef4444; padding-top: 15px;">
+            <a href="#" onclick="logoutUser()" class="nav-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); color: #ef4444; padding-top: 18px; padding-bottom: 18px;">
                 <i class='bx bx-log-out'></i> Secure Logout
             </a>
         </nav>
@@ -147,7 +150,7 @@
         <header>
             <h3 class="header-title">Academic Department</h3>
             <div class="header-right">
-                <span id="liveClock" style="font-size: 13px; font-weight: 600; color: var(--text-light); border-right: 1px solid #e2e8f0; padding-right: 15px;"></span>
+                <span id="liveClock" style="font-size: 14px; font-weight: 600; color: var(--text-light); border-right: 1px solid #e2e8f0; padding-right: 15px;"></span>
                 <div class="profile-section">
                     <div>
                         <div class="profile-name" id="adminNameProfile">Loading...</div>
@@ -185,10 +188,10 @@
         <div class="teacher-tray">
             <div class="tray-header">
                 <span><i class='bx bx-user-pin' style="color: var(--primary);"></i> Available Present Faculty</span>
-                <button onclick="fetchTeachers(true)" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight: 600; font-size: 12px;">Force Load All Faculty</button>
+                <button onclick="fetchTeachers(true)" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight: 600; font-size: 13px;">Force Load All Faculty</button>
             </div>
             <div class="draggable-teachers" id="teacherPool">
-                <div style="color: #64748b; font-size: 13px;"><i class='bx bx-loader-alt bx-spin'></i> Loading teachers...</div>
+                <div style="color: #64748b; font-size: 14px;"><i class='bx bx-loader-alt bx-spin'></i> Loading teachers...</div>
             </div>
         </div>
     </main>
@@ -239,7 +242,7 @@
                     <div class="sem-header">
                         <span><i class='bx bxs-graduation'></i> Semester ${sem}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <label style="font-size:11px; color:var(--text-light);">ROOM NO:</label>
+                            <label style="font-size:11.5px; color:var(--text-light);">ROOM NO:</label>
                             <input type="text" class="room-input" id="room_sem_${sem}" placeholder="e.g. 101" onkeyup="handleRoomInput(${sem}, this.value)">
                         </div>
                     </div>
@@ -419,7 +422,7 @@
                 }
 
                 if(displayList.length === 0) {
-                    pool.innerHTML = "<span style='color:#ef4444; font-weight:600; font-size:13px;'>No faculty present today / Attendance not marked yet.</span>";
+                    pool.innerHTML = "<span style='color:#ef4444; font-weight:600; font-size:13.5px;'>No faculty present today / Attendance not marked yet.</span>";
                     return;
                 }
 
