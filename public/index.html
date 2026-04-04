@@ -130,12 +130,20 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Save user details
-                    localStorage.setItem('userRole', loginData.role);
-                    if(result.staffName) localStorage.setItem('userName', result.staffName);
-                    if(result.staffId) localStorage.setItem('staffId', result.staffId);
+                    // 🌟 NAYA LOGIC: Pura data ek object mein banakar sessionStorage mein daalo
+                    const userData = {
+                        role: loginData.role,
+                        name: result.staffName || result.name || result.data?.name || "User",
+                        staffId: result.staffId || result.empId || result.data?.empId || "",
+                        _id: result.data?._id || result._id || "",
+                        email: loginData.email,
+                        profilePicUrl: result.data?.profilePicUrl || ""
+                    };
+
+                    // LocalStorage ki jagah SessionStorage
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(userData));
                     
-                    // 🔴 File routing based on exactly what you asked for 🔴
+                    // 🔴 File routing exactly wahi hai jo aapne di thi 🔴
                     if (loginData.role === 'director') {
                         window.location.href = 'admin_dashboard.html'; 
                     } else if (loginData.role === 'accountant') {
