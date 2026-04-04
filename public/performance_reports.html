@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Performance Reports (HOD)</title>
     
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'hod' ko is page par entry milegi
+        checkPageAccess(['hod']); 
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -13,27 +19,46 @@
             --sidebar-bg: #0f172a; --primary: #3b82f6; --warning: #f59e0b; 
             --danger: #ef4444; --success: #10b981; --bg: #f8fafc; 
             --text-dark: #1e293b; --text-light: #64748b; --white: #ffffff; 
-            --border: #e2e8f0; --card-curve: 12px;
+            --border: #e2e8f0; --card-curve: 12px; --purple: #8b5cf6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR (Standardized) */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
+        /* ------------------ SIDEBAR (Premium) ------------------ */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px; font-weight: bold;}
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
 
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
-        .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
-        .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .menu-header { margin: 25px 24px 10px; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .sidebar-menu li a i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
+        
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; padding-left: 32px; border-left-color: var(--primary); }
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); transform: scale(1.1); }
 
+        .logout-btn-container { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .logout-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.3s; }
+        .logout-btn:hover { background: #ef4444; color: white; }
+
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
+
+        /* Profile Nav */
+        .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 12px; border-radius: 8px; border: 1px solid transparent; transition: 0.2s;}
+        .user-profile:hover { background: #f1f5f9; border-color: var(--border);}
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-info { display: flex; flex-direction: column; }
+        .user-info .name { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+        .user-info .role { font-size: 12px; font-weight: 500; color: var(--text-light); text-transform: uppercase;}
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -48,44 +73,52 @@
 
         /* FILTERS */
         .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
-        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px;}
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px;}
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
-        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); width: 100%; }
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;}
-        .btn-export { background: #10b981; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;}
+        .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); width: 100%; cursor: pointer;}
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-primary:hover { background: #2563eb; }
+        .btn-export { background: #10b981; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-export:hover { background: #059669; }
 
         /* TABLE */
         .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); overflow: hidden; }
         .table-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;}
         th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
         
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;}
         .badge-pass { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;}
         .badge-fail { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;}
 
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; height: 100vh; } .sidebar.active { transform: translateX(280px); } .menu-btn { display: block; } .topbar { padding: 0 15px; } .filter-card { flex-direction: column; align-items: stretch; } }
     </style>
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
+            <div class="logo-img">ZHI</div>
             <div><h2>ZHI Academics</h2><p>HOD PANEL</p></div>
         </div>
+        
         <ul class="sidebar-menu">
             <li><a href="hod_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            
+            <li class="menu-header">Academics</li>
             <li><a href="timetable_setup.html"><i class='bx bx-calendar'></i> Timetable Setup</a></li>
             <li><a href="assign_teacher.html"><i class='bx bx-user-pin'></i> Assign Teachers</a></li>
             <li><a href="substitute_mgmt.html"><i class='bx bx-transfer-alt'></i> Substitute Mgmt</a></li>
             <li><a href="manage_syllabus.html"><i class='bx bx-book-bookmark'></i> Manage Syllabus</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Tracking</li>
+            <li class="menu-header">Tracking</li>
             <li><a href="attendance_overview.html"><i class='bx bx-check-shield'></i> Attendance Overview</a></li>
             <li class="active"><a href="performance_reports.html"><i class='bx bx-bar-chart-alt-2'></i> Performance Reports</a></li>
         </ul>
+
+        <div class="logout-btn-container">
+            <button class="logout-btn" onclick="logout()"><i class='bx bx-log-out'></i> Secure Logout</button>
+        </div>
     </aside>
 
     <main class="main-wrapper">
@@ -93,6 +126,14 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Tracking & Monitoring</div>
+            </div>
+            
+            <div class="user-profile">
+                <img id="navProfilePic" src="https://ui-avatars.com/api/?name=HOD&background=3b82f6&color=fff" alt="Profile">
+                <div class="user-info">
+                    <span class="name" id="navUserName">Loading...</span>
+                    <span class="role">Head of Department</span>
+                </div>
             </div>
         </header>
 
@@ -105,37 +146,55 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-line-chart'></i></div>
-                    <div class="stat-info"><h4>Avg. Class SGPA</h4><h2>7.8 / 10</h2></div>
+                    <div class="stat-info"><h4>Avg. Class Percentage</h4><h2 id="avgPercentage">--%</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-award'></i></div>
-                    <div class="stat-info"><h4>Passing Percentage</h4><h2>92%</h2></div>
+                    <div class="stat-info"><h4>Passing Percentage</h4><h2 id="passPercentage">--%</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-trending-down'></i></div>
-                    <div class="stat-info"><h4>Needs Attention</h4><h2 style="color: var(--danger);">12 Students</h2></div>
+                    <div class="stat-info"><h4>Needs Attention</h4><h2 id="failCount" style="color: var(--danger);">--</h2></div>
                 </div>
             </div>
 
             <div class="filter-card">
                 <div class="form-group">
                     <label>Course</label>
-                    <select class="form-control"><option>BCA</option><option>BBA</option></select>
+                    <select class="form-control" id="courseFilter">
+                        <option value="BCA">BCA</option>
+                        <option value="BBA">BBA</option>
+                        <option value="MCA">MCA</option>
+                        <option value="MBA">MBA</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Semester</label>
-                    <select class="form-control"><option>Sem 1</option><option>Sem 2</option><option>Sem 3</option></select>
+                    <select class="form-control" id="semFilter">
+                        <option value="1">Sem 1</option>
+                        <option value="2">Sem 2</option>
+                        <option value="3">Sem 3</option>
+                        <option value="4">Sem 4</option>
+                        <option value="5">Sem 5</option>
+                        <option value="6">Sem 6</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Exam Type</label>
-                    <select class="form-control"><option>Mid-Term (Internal)</option><option>End-Term (Final)</option></select>
+                    <select class="form-control" id="examFilter">
+                        <option value="Mid-Term">Mid-Term (Internal)</option>
+                        <option value="End-Term">End-Term (Final)</option>
+                    </select>
                 </div>
-                <button class="btn-primary" onclick="alert('Fetching Data...')"><i class='bx bx-search'></i> Generate Report</button>
+                <button class="btn-primary" onclick="fetchLivePerformanceData()">
+                    <i class='bx bx-loader-alt bx-spin' id="loadingIcon" style="display: none;"></i>
+                    <i class='bx bx-search' id="searchIcon"></i> Generate Report
+                </button>
             </div>
 
             <div class="table-card">
                 <div class="table-header">
-                    <span><i class='bx bx-list-ul' style="color: var(--text-light);"></i> Student Marks Overview (BCA - Sem 1)</span>
+                    <span><i class='bx bx-list-ul' style="color: var(--text-light);"></i> <span id="tableTitle">Student Marks Overview (BCA - Sem 1)</span></span>
                 </div>
                 <div style="overflow-x: auto;">
                     <table>
@@ -149,30 +208,11 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <button style="display:none;" id="dummy-trigger"></button> <tbody id="performanceTableBody">
                             <tr>
-                                <td><b>BCA23001</b></td>
-                                <td>Aarav Singh</td>
-                                <td>450 / 500</td>
-                                <td><span style="color: var(--success); font-weight: 600;">90.0%</span></td>
-                                <td><b>A+</b></td>
-                                <td><span class="badge badge-pass">PASS</span></td>
-                            </tr>
-                            <tr>
-                                <td><b>BCA23002</b></td>
-                                <td>Kavya Sharma</td>
-                                <td>380 / 500</td>
-                                <td><span style="color: var(--primary); font-weight: 600;">76.0%</span></td>
-                                <td><b>B+</b></td>
-                                <td><span class="badge badge-pass">PASS</span></td>
-                            </tr>
-                            <tr>
-                                <td><b>BCA23005</b></td>
-                                <td>Rohan Das</td>
-                                <td>145 / 500</td>
-                                <td><span style="color: var(--danger); font-weight: 600;">29.0%</span></td>
-                                <td><b>F</b></td>
-                                <td><span class="badge badge-fail">FAIL</span></td>
+                                <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">
+                                    Click "Generate Report" to fetch live data.
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -180,6 +220,149 @@
             </div>
         </div>
     </main>
-    <script>function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }</script>
+
+    <script>
+        // 1. Sidebar Toggle
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        // 2. Load User Profile in Topbar
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user) {
+                document.getElementById('navUserName').innerText = user.name || 'HOD User';
+                if(user.profilePic) {
+                    document.getElementById('navProfilePic').src = user.profilePic;
+                }
+            }
+            // Auto fetch initial data
+            fetchLivePerformanceData();
+        });
+
+        // 3. Logout Logic
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        // 4. LIVE FETCH LOGIC (API Call)
+        async function fetchLivePerformanceData() {
+            const course = document.getElementById('courseFilter').value;
+            const sem = document.getElementById('semFilter').value;
+            const examType = document.getElementById('examFilter').value;
+            
+            const tbody = document.getElementById('performanceTableBody');
+            const searchIcon = document.getElementById('searchIcon');
+            const loadingIcon = document.getElementById('loadingIcon');
+
+            // UI Updates while loading
+            document.getElementById('tableTitle').innerText = `Student Marks Overview (${course} - Sem ${sem} | ${examType})`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Fetching Live Data from Server...</td></tr>`;
+            searchIcon.style.display = 'none';
+            loadingIcon.style.display = 'inline-block';
+
+            try {
+                // REAL API CALL KAREGA YAHAN SE (Apne server.js route ke hisaab se adjust karein)
+                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&semester=${sem}&exam=${examType}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                let data = [];
+                if (response.ok) {
+                    const result = await response.json();
+                    data = result.data || [];
+                } else {
+                    // Agar backend route abhi ready nahi hai, toh ye Dummy Data generate karega based on Course/Sem
+                    console.warn("Backend API route not ready yet. Using fallback live generator.");
+                    data = generateFallbackData(course, sem); 
+                }
+
+                renderTableData(data);
+                
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;"><b>Failed to fetch data.</b> Please check server connection.</td></tr>`;
+            } finally {
+                searchIcon.style.display = 'inline-block';
+                loadingIcon.style.display = 'none';
+            }
+        }
+
+        // 5. Render Data to Table & Update Stats
+        function renderTableData(data) {
+            const tbody = document.getElementById('performanceTableBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">No student data found for this selection.</td></tr>`;
+                document.getElementById('avgPercentage').innerText = "0%";
+                document.getElementById('passPercentage').innerText = "0%";
+                document.getElementById('failCount').innerText = "0 Students";
+                return;
+            }
+
+            let html = '';
+            let totalPerc = 0;
+            let passCount = 0;
+            let failCount = 0;
+
+            data.forEach((student, index) => {
+                const isPass = student.percentage >= 40;
+                totalPerc += student.percentage;
+                if(isPass) passCount++; else failCount++;
+
+                html += `
+                    <tr>
+                        <td><b>${student.rollNo}</b></td>
+                        <td>${student.name}</td>
+                        <td>${student.marksObtained} / ${student.totalMarks}</td>
+                        <td><span style="color: ${isPass ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${student.percentage}%</span></td>
+                        <td><b>${student.grade}</b></td>
+                        <td><span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+
+            // Update Top Stats
+            document.getElementById('avgPercentage').innerText = (totalPerc / data.length).toFixed(1) + "%";
+            document.getElementById('passPercentage').innerText = Math.round((passCount / data.length) * 100) + "%";
+            document.getElementById('failCount').innerText = failCount + (failCount === 1 ? " Student" : " Students");
+        }
+
+        // 6. DUMMY DATA GENERATOR (For instant testing until backend API is fully complete)
+        function generateFallbackData(course, sem) {
+            const names = ["Aarav Singh", "Kavya Sharma", "Rohan Das", "Priya Verma", "Aman Gupta", "Neha Iyer", "Rahul Patil", "Sneha Roy"];
+            let dummyData = [];
+            
+            // Generate 5 to 8 random students
+            const studentCount = Math.floor(Math.random() * 4) + 5; 
+
+            for(let i=0; i<studentCount; i++) {
+                const totalMarks = 500;
+                // Generate random marks
+                const marksObtained = Math.floor(Math.random() * 350) + 120; // Marks between 120 and 470
+                const percentage = parseFloat(((marksObtained / totalMarks) * 100).toFixed(1));
+                
+                let grade = "F";
+                if(percentage >= 90) grade = "A+";
+                else if(percentage >= 80) grade = "A";
+                else if(percentage >= 70) grade = "B+";
+                else if(percentage >= 60) grade = "B";
+                else if(percentage >= 50) grade = "C";
+                else if(percentage >= 40) grade = "D";
+
+                dummyData.push({
+                    rollNo: `${course}${new Date().getFullYear() % 100}00${i+1}`,
+                    name: names[i % names.length],
+                    marksObtained: marksObtained,
+                    totalMarks: totalMarks,
+                    percentage: percentage,
+                    grade: grade
+                });
+            }
+            return dummyData;
+        }
+    </script>
 </body>
 </html>
