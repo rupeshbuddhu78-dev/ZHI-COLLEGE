@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | My Attendance (Teacher)</title>
+    
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'teacher' ko entry milegi is page par
+        checkPageAccess(['teacher']); 
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -32,7 +39,7 @@
 
         /* ------------------ SIDEBAR ------------------ */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
         .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
@@ -161,7 +168,7 @@
             <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
             
-            <li style="margin-top: 20px;"><a href="#" class="logout-btn" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout</a></li>
+            <li style="margin-top: 20px;"><a href="#" class="logout-btn" onclick="logoutUser()"><i class='bx bx-log-out'></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -185,7 +192,7 @@
                 <div class="page-title"><i class='bx bx-fingerprint'></i> My Attendance Record</div>
                 
                 <select class="month-selector" id="monthSelector" onchange="renderTableAndStats()">
-                    </select>
+                </select>
             </div>
 
             <div class="punch-card" id="punchCard">
@@ -269,35 +276,23 @@
     </div>
 
     <script>
-        // --- SECURITY CHECK (Authentication Guard) ---
-        // Yahan check hoga ki user sach me logged in hai aur 'teacher' hai ya nahi
-        const token = localStorage.getItem('token'); 
-        const role = localStorage.getItem('role');
-        const staffId = localStorage.getItem('userId') || localStorage.getItem('staffId'); // Id validation
-        const staffName = localStorage.getItem('userName') || localStorage.getItem('staffName') || "Teacher";
-
-        if (!token || (role !== 'teacher' && role !== 'faculty')) {
-            alert("Unauthorized Access! Please login as a Teacher.");
-            window.location.href = "index.html"; // Login page par bhej dega
-        }
-        // ---------------------------------------------
-
         // Server URL Setup
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/teacher-attendance";
         
+        // 🔴 Fetching Staff Details from sessionStorage (currentUser) via security.js
+        let staffId = "";
+        let staffName = "Teacher";
+
+        if (typeof currentUser !== 'undefined' && currentUser) {
+            staffId = currentUser.staffId || currentUser._id || "";
+            staffName = currentUser.name || "Teacher";
+        }
+
         let allLogs = []; // Global variable database se data store karne ke liye
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
-        }
-
-        // Logout Functionality
-        function logoutTeacher() {
-            if(confirm("Are you sure you want to logout?")) {
-                localStorage.clear(); // Clear all saved teacher data
-                window.location.href = "index.html"; // Redirect to login
-            }
         }
 
         // Generate Last 6 Months for Dropdown
@@ -330,7 +325,6 @@
             
             if(!staffId) {
                 alert("Teacher ID missing! Please login again.");
-                logoutTeacher();
                 return;
             }
 
@@ -354,17 +348,15 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // 🔴 1. Fetch from Database (Secure with Token)
+        // 🔴 1. Fetch from Database (Without Token logic)
         async function fetchAttendanceData() {
             try {
                 // Fetch all records strictly for THIS teacher using staffId
                 const response = await fetch(`${API_BASE_URL}/${staffId}`, {
                     method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`, // Passing Token for Security
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
+                
                 const result = await response.json();
 
                 if (result.success) {
@@ -410,7 +402,7 @@
             }
         }
 
-        // 🔴 2. Post Punch In / Punch Out to Database (Secure with Token)
+        // 🔴 2. Post Punch In / Punch Out to Database (Without Token logic)
         async function markPunch(actionType) {
             const now = new Date();
             const timeStr = formatTime(now);
@@ -437,10 +429,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/punch`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Passing Token for Security
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
