@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Academic & HOD Dashboard</title>
+    
+    <script src="security.js"></script>
+    <script>
+        checkPageAccess(['hod']); 
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -41,7 +46,7 @@
         .sidebar-header p { font-size: 11px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
         .logo-img { width: 45px; height: 45px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column;}
         .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px; }
         
@@ -182,6 +187,12 @@
             <li><a href="manage_syllabus.html"><i class='bx bx-book-content'></i> Subjects & Syllabus</a></li>
             <li><a href="attendance_overview.html"><i class='bx bx-bar-chart-square'></i> Monitor Attendance</a></li>
             <li><a href="performance_reports.html"><i class='bx bx-line-chart'></i> Student Performance</a></li>
+
+            <li style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logoutUser()" style="color: #ef4444;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -309,7 +320,7 @@
 
         // Initialize Live Data on Load
         window.onload = () => {
-            const userName = localStorage.getItem('userName') || 'HOD Sir';
+            const userName = currentUser.name || 'HOD Sir';
             document.getElementById('adminName').innerText = userName;
             document.getElementById('welcomeName').innerText = userName.split(' ')[0]; // Show first name
 
@@ -354,23 +365,47 @@
             try {
                 // Fetching from your ACTUAL database routes
                 const staffData = await safeFetch('/api/staff', { success: true, data: [] });
-                // Note: Changing from /api/timetable/today to your actual /api/routines
                 const routinesData = await safeFetch('/api/routines', { success: true, data: [] });
+                const leavesData = await safeFetch('/api/leaves', { success: true, data: [] }); // 👈 Leaves fetch kar rahe hain for live status
                 
-                // Mocks for now until you create these APIs
                 const alertsData = await safeFetch('/api/alerts/hod', { success: true, data: [] });
                 const syllabusData = await safeFetch('/api/syllabus/progress', { success: true, average: 0 });
 
-                // 1. Process Staff (Teachers)
-                let teachers = staffData.data ? staffData.data.filter(s => (s.role && s.role.toLowerCase().includes('teacher')) || s.category === 'teacher') : [];
+                // 🔴 1. Process Staff (Teachers) & Calculate LIVE ATTENDANCE
+                let teachers = staffData.data ? staffData.data.filter(s => s.role === 'teacher') : [];
                 let totalTeachers = teachers.length;
-                let presentTeachers = teachers.filter(t => t.status !== 'On Leave').length;
+                
+                // Aaj ki date nikalo check karne ke liye ki aaj kon leave pe hai
+                let today = new Date();
+                today.setHours(0, 0, 0, 0); // Raat 12 baje set kar diya compare karne ke liye
+
+                let teachersOnLeaveToday = 0;
+
+                if (leavesData.data && leavesData.data.length > 0) {
+                    leavesData.data.forEach(leave => {
+                        // Agar teacher ki leave approved hai
+                        if (leave.status === 'Approved' && leave.userId && leave.userId.role === 'teacher') {
+                            let startDate = new Date(leave.startDate);
+                            let endDate = new Date(leave.endDate);
+                            
+                            startDate.setHours(0, 0, 0, 0);
+                            endDate.setHours(23, 59, 59, 999); // Din ke end tak 
+
+                            // Agar aaj ki date leave period ke beech mein hai, tab usko leave par maano
+                            if (today >= startDate && today <= endDate) {
+                                teachersOnLeaveToday++;
+                            }
+                        }
+                    });
+                }
+
+                let presentTeachers = totalTeachers - teachersOnLeaveToday;
+                if (presentTeachers < 0) presentTeachers = 0; // Just safe fallback
 
                 // 2. Process Timetable (Filter ALL routines for TODAY)
                 let allRoutines = routinesData.data || [];
                 let classesToday = allRoutines.filter(r => r.dayOfWeek && r.dayOfWeek.toLowerCase() === todayName.toLowerCase());
 
-                // Sort classes by start time
                 classesToday.sort((a, b) => {
                     if(!a.startTime || !b.startTime) return 0;
                     return a.startTime.localeCompare(b.startTime);
@@ -381,7 +416,10 @@
 
                 // UPDATE UI - STATS CARDS
                 document.getElementById('stat-classes').innerText = classesToday.length > 0 ? classesToday.length : '0';
+                
+                // 🔴 YE HUA LIVE UPDATE WALA CODE
                 document.getElementById('stat-teachers').innerText = totalTeachers > 0 ? `${presentTeachers} / ${totalTeachers}` : '0 / 0';
+                
                 document.getElementById('stat-syllabus').innerText = syllabusData.average ? `${syllabusData.average}%` : '0%'; 
                 document.getElementById('stat-alerts').innerText = alerts.length > 0 ? alerts.length : '0';
 
@@ -389,12 +427,10 @@
                 const tbody = document.getElementById('timetableBody');
                 if (classesToday.length > 0) {
                     tbody.innerHTML = classesToday.map(c => {
-                        // Handle Teacher Name Extraction
                         let tName = "Faculty";
                         if (c.teacherId) {
                             tName = c.teacherId.name || c.teacherId.teacherName || "Faculty";
                         }
-                        
                         let timeString = (c.startTime && c.endTime) ? `${formatToAMPM(c.startTime)} - ${formatToAMPM(c.endTime)}` : 'TBA';
                         
                         return `
