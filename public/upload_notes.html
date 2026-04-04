@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZHI | Upload Notes (Teacher)</title>
     
+    <script src="security.js"></script>
+    <script>
+        // Sirf 'teacher' ko entry milegi is page par
+        checkPageAccess(['teacher']); 
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     
@@ -27,30 +33,46 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
-        .sidebar-header p { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 1px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 26px;}
-
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
+        /* ------------------ SIDEBAR (Premium Design) ------------------ */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         
-        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
-        .sidebar-menu li.active a { padding-left: 20px; }
+        /* Image Logo Styling */
+        .logo-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
+        .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px; letter-spacing: 0.5px; }
+
+        /* Sidebar Profile Section (Chota Gola) */
+        .sidebar-profile { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.1); }
+        .sidebar-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .sidebar-profile-info { display: flex; flex-direction: column; }
+        .sidebar-profile-info h4 { font-size: 13px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .sidebar-profile-info p { font-size: 11px; color: #94a3b8; }
+
+        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .menu-section { margin: 25px 24px 10px; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 14px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .sidebar-menu li a i { font-size: 22px; color: #94a3b8; transition: all 0.3s ease; }
+        
+        /* Hover & Active Effects */
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; padding-left: 32px; border-left-color: var(--primary); }
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); transform: scale(1.1); }
         .logout-btn a { color: var(--danger) !important; }
         .logout-btn a:hover { border-left-color: var(--danger) !important; background: rgba(239, 68, 68, 0.1) !important; }
 
         /* MAIN WRAPPER & TOPBAR */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
+        .topbar { height: 75px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         /* Topbar User Info & Logout */
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; }
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);}
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px;}
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -76,43 +98,64 @@
         th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
 
+        /* Mobile Responsiveness */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+        @media (max-width: 768px) { 
+            .sidebar { position: fixed; left: -280px; height: 100vh; } 
+            .sidebar.active { transform: translateX(280px); } 
+            .menu-btn { display: block; } 
+            .sidebar-overlay.active { display: block; }
+            .topbar { padding: 0 15px; }
+            .user-profile div { display: none; }
+        }
     </style>
 </head>
 <body>
     
-    <script>
-        const staffId = localStorage.getItem("staffId");
-        if (!staffId) {
-            alert("Security Alert: Please login first!");
-            window.location.href = "login.html"; 
-        }
-    </script>
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img"><i class='bx bx-book-reader'></i></div>
-            <div><h2>ZHI Academics</h2><p>TEACHER PANEL</p></div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="YOUR_LOGO_HERE.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=10b981'">
+                <div>
+                    <h2>ZHI Faculty</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
+            </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
+
+        <div class="sidebar-profile">
+            <img id="sidebarProfileImage" src="https://ui-avatars.com/api/?name=Teacher&background=10b981&color=fff" alt="Teacher">
+            <div class="sidebar-profile-info">
+                <h4 id="sidebarName">Loading...</h4>
+                <p>Faculty Member</p>
+            </div>
+        </div>
+
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li class="menu-section">My Classes</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
+            <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
+            
+            <li class="menu-section">Academics</li>
             <li class="active"><a href="upload_notes.html"><i class='bx bx-folder-plus'></i> Upload Notes</a></li>
             <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
-            
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Classroom</li>
-            <li><a href="mark_attendance.html"><i class='bx bx-check-shield'></i> Mark Attendance</a></li>
             <li><a href="upload_marks.html"><i class='bx bx-bar-chart-alt-2'></i> Upload Marks</a></li>
-            <li><a href="apply_leave.html"><i class='bx bx-envelope'></i> Apply Leave</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
-            <li><a href="teacher_profile.html"><i class='bx bx-user'></i> My Profile</a></li>
+            <li class="menu-section">Personal</li>
+            <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
 
-            <li class="logout-btn" style="margin-top: 20px;">
-                <a href="#" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout Securely</a>
+            <li class="logout-btn" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logoutTeacher()" style="padding-top: 15px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
             </li>
         </ul>
     </aside>
@@ -200,6 +243,10 @@
     </main>
 
     <script>
+        // 🔴 SECURE SESSION FETCH (security.js wala logic)
+        let staffId = null;
+        let staffName = "Faculty";
+
         const subjectsData = {
             "Semester 1": ["C Programming", "Mathematics-I", "English", "Computer Fundamentals"],
             "Semester 2": ["Data Structures", "Mathematics-II", "Environment Science", "Digital Electronics"],
@@ -211,23 +258,40 @@
 
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('active'); 
+            document.getElementById('overlay').classList.toggle('active');
         }
 
         function logoutTeacher() {
             if(confirm("Are you sure you want to logout?")) {
-                localStorage.clear();
-                window.location.href = "login.html"; 
+                sessionStorage.clear(); // Clear Secure Session
+                localStorage.clear();   // Clear Cache
+                window.location.href = "index.html"; 
             }
         }
 
         window.onload = function() {
-            // Use the staffName from local storage, dynamically!
-            const staffName = localStorage.getItem("staffName") || "Faculty";
-            
-            // Update UI Name
-            document.getElementById("teacherNameTxt").innerText = staffName;
-            document.getElementById("teacherImg").src = `https://ui-avatars.com/api/?name=${staffName.replace(" ", "+")}&background=10b981&color=fff`;
+            // 🔴 Populate User Info Securely
+            if (typeof currentUser !== 'undefined' && currentUser) {
+                staffId = currentUser.staffId || currentUser._id;
+                staffName = currentUser.name || "Faculty";
+                const userPhoto = currentUser.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=10b981&color=fff`;
 
+                // Update UI Labels
+                document.getElementById("teacherNameTxt").innerText = staffName;
+                document.getElementById("teacherImg").src = userPhoto;
+                
+                const sbName = document.getElementById("sidebarName");
+                const sbImg = document.getElementById("sidebarProfileImage");
+                if(sbName) sbName.innerText = staffName;
+                if(sbImg) sbImg.src = userPhoto;
+            }
+
+            if (!staffId) {
+                alert("Security Alert: Please login first!");
+                logoutTeacher();
+                return;
+            }
+            
             // Set Default Date
             document.getElementById('nDate').valueAsDate = new Date();
             
@@ -270,7 +334,7 @@
             formData.append('title', document.getElementById('nTitle').value);
             formData.append('file', fileInput.files[0]);
             
-            // SENDING REAL TEACHER ID FROM LOCAL STORAGE SO BACKEND KNOWS WHO UPLOADED IT
+            // 🔴 SENDING SECURE TEACHER ID 
             formData.append('teacherId', staffId);
 
             try {
@@ -299,20 +363,23 @@
             }
         }
 
-        // 2. Fetch Notes Logic
+        // 2. Fetch Notes Logic (Optional: Modify backend to filter notes by teacherId)
         async function fetchNotes() {
             try {
-                // Modified fetch URL slightly so it doesn't cache incorrectly (Optional safety)
                 const response = await fetch(`${API_BASE_URL}`);
                 const resData = await response.json();
                 
-                const notes = resData.data || []; 
+                // Show ONLY notes uploaded by this specific teacher
+                let notes = resData.data || []; 
+                if(staffId) {
+                    notes = notes.filter(n => n.teacherId === staffId || (n.teacherId && n.teacherId._id === staffId));
+                }
                 
                 const tbody = document.getElementById('notesTable');
                 tbody.innerHTML = ""; 
 
                 if(notes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes uploaded yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes uploaded by you yet.</td></tr>';
                     return;
                 }
 
