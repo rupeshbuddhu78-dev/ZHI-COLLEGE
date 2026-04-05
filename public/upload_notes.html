@@ -342,6 +342,8 @@
             formData.append('subject', document.getElementById('nSubject').value);
             formData.append('title', document.getElementById('nTitle').value);
             formData.append('file', fileInput.files[0]);
+            
+            // Ye ekdum sahi hai, yahan se form me staffId ja raha hai
             formData.append('teacherId', staffId);
 
             try {
@@ -370,16 +372,17 @@
             }
         }
 
-        // 2. Fetch Notes Logic
+        // 2. Fetch Notes Logic (Updated to send teacherId in URL)
         async function fetchNotes() {
             try {
-                const response = await fetch(`${API_BASE_URL}`);
+                // 🔴 Yahan query parameters me teacherId bhej rahe hain taaki DB filter kare
+                const fetchUrl = staffId ? `${API_BASE_URL}?teacherId=${staffId}` : API_BASE_URL;
+                
+                const response = await fetch(fetchUrl);
                 const resData = await response.json();
                 
+                // Ab filter karne ki extra zarurat nahi, API sirf hamare hi notes bhej rahi hai
                 let notes = resData.data || []; 
-                if(staffId) {
-                    notes = notes.filter(n => n.teacherId === staffId || (n.teacherId && n.teacherId._id === staffId));
-                }
                 
                 const tbody = document.getElementById('notesTable');
                 tbody.innerHTML = ""; 
