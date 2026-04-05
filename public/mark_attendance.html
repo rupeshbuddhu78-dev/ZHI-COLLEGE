@@ -366,10 +366,14 @@
             }
         }
 
-        // 🔴 Smart Auto-Selector for Time Slot based on Routine
+        // 🔴 ULTRA-SMART AUTO TIME SELECTOR
         function autoSelectTimeSlot() {
             const dateVal = document.getElementById('attDate').value;
-            if(!dateVal || teacherOfficialTimetable.length === 0) return;
+            // Agar date na ho ya routine load na hua ho toh return kardo aur text clear kardo
+            if(!dateVal || teacherOfficialTimetable.length === 0) {
+                document.getElementById('timeHint').innerText = "";
+                return;
+            }
 
             const dateObj = new Date(dateVal);
             const daysArr = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -379,8 +383,8 @@
             const sem = document.getElementById('semSelect').value;
             const subject = document.getElementById('subjectSelect').value;
 
-            // Find matching schedule
-            const schedule = teacherOfficialTimetable.find(t => 
+            // Saari matching classes dhoondna
+            const schedules = teacherOfficialTimetable.filter(t => 
                 t.day === dayName &&
                 t.course === course &&
                 t.semester === sem &&
@@ -390,8 +394,24 @@
             const timeSelect = document.getElementById('timeSelect');
             let hint = document.getElementById('timeHint');
 
-            if (schedule) {
-                let timeVal = schedule.timeSlot || schedule.time || `${schedule.startTime} - ${schedule.endTime}`;
+            if (schedules.length > 0) {
+                let timeVal = "";
+                
+                // Agar 1 se jyada class hai toh ghadi ke hisab se select karo
+                if (schedules.length > 1) {
+                    const currentHour = new Date().getHours();
+                    timeVal = schedules[0].timeSlot || schedules[0].time || `${schedules[0].startTime} - ${schedules[0].endTime}`;
+                    
+                    schedules.forEach(sch => {
+                        let tVal = sch.timeSlot || sch.time || `${sch.startTime} - ${sch.endTime}`;
+                        if(tVal && currentHour >= 12 && tVal.toLowerCase().includes('pm')) {
+                            timeVal = tVal;
+                        }
+                    });
+                } else {
+                    timeVal = schedules[0].timeSlot || schedules[0].time || `${schedules[0].startTime} - ${schedules[0].endTime}`;
+                }
+
                 if(!timeVal || timeVal.includes('undefined')) return;
 
                 let optionExists = Array.from(timeSelect.options).some(opt => opt.value === timeVal);
@@ -405,13 +425,13 @@
                 timeSelect.value = timeVal;
                 
                 if(hint) {
-                    hint.innerText = "✓ Auto-selected from Routine";
+                    hint.innerText = schedules.length > 1 ? "✓ Auto-selected by Current Time" : "✓ Auto-selected from Routine";
                     hint.style.color = "var(--success)";
                 }
             } else {
+                // 🔴 HATA DIYA LAAL MESSAGE! Jab class nahi hogi toh kuch warning nahi aayegi.
                 if(hint) {
-                    hint.innerText = "No class found in routine. Select manually.";
-                    hint.style.color = "var(--danger)";
+                    hint.innerText = ""; 
                 }
             }
         }
