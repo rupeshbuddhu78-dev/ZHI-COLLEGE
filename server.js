@@ -208,6 +208,7 @@ const noteSchema = new mongoose.Schema({
     title: { type: String, required: true },
     fileUrl: { type: String, required: true },
     cloudinaryId: { type: String, required: true },
+    teacherId: { type: String, required: true }  // 🔴 YE LINE NAYI ADD HUI HAI
 }, { timestamps: true });
 const Note = mongoose.model('Note', noteSchema);
 
@@ -805,9 +806,12 @@ app.delete('/api/staff/:id', async (req, res) => {
 });
 
 // NOTES (STUDY MATERIAL) APIs
+
+// 1. POST API (Note Upload)
 app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     try {
-        const { date, semester, subject, title } = req.body;
+        // 🔴 Yahan req.body se 'teacherId' ko bhi nikalna hai
+        const { date, semester, subject, title, teacherId } = req.body;
         let fileUrl = "";
         let cloudinaryId = "";
 
@@ -819,7 +823,8 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
             return res.status(400).json({ success: false, message: "No file provided!" });
         }
 
-        const newNote = new Note({ date, semester, subject, title, fileUrl, cloudinaryId });
+        // 🔴 Yahan new Note banate time 'teacherId' ko DB me save karwana hai
+        const newNote = new Note({ date, semester, subject, title, fileUrl, cloudinaryId, teacherId });
         await newNote.save();
 
         res.status(201).json({ success: true, message: "Study Material uploaded successfully!", data: newNote });
@@ -828,13 +833,18 @@ app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     }
 });
 
+// 2. GET API (Fetch Notes)
 app.get('/api/notes', async (req, res) => {
     try {
-        const { semester, subject } = req.query;
+        // 🔴 Yahan query se 'teacherId' ko bhi fetch karna hai
+        const { semester, subject, teacherId } = req.query;
         let filter = {};
 
         if (semester) filter.semester = new RegExp(`^${semester}$`, 'i');
         if (subject) filter.subject = new RegExp(`^${subject}$`, 'i');
+        
+        // 🔴 Agar URL mein teacherId aaya hai, toh filter lagao (Sirf us teacher ke notes)
+        if (teacherId) filter.teacherId = teacherId;
 
         const notes = await Note.find(filter).sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: notes });
@@ -843,6 +853,7 @@ app.get('/api/notes', async (req, res) => {
     }
 });
 
+// 3. DELETE API (Delete Notes - isme koi change nahi)
 app.delete('/api/notes/:id', async (req, res) => {
     try {
         const note = await Note.findById(req.params.id);
