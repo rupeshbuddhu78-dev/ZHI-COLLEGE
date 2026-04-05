@@ -72,9 +72,15 @@
 
         /* FILTERS */
         .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
-        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px;}
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 130px;}
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); width: 100%; cursor: pointer;}
+        
+        /* NEW HIGHLIGHTED EXAM FILTER */
+        .exam-filter-group { flex: 2; min-width: 250px; border-left: 2px dashed var(--border); padding-left: 15px; margin-left: 5px;}
+        .exam-filter-group label { color: var(--primary); font-weight: 700; }
+        .exam-filter-group select { border-color: var(--primary); background: #eff6ff; font-weight: 600;}
+
         .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; transition: 0.2s; min-width: 160px;}
         .btn-primary:hover { background: #2563eb; }
         .btn-export { background: #10b981; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
@@ -96,7 +102,7 @@
         .exam-tag { background: #eff6ff; color: #1d4ed8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; white-space: nowrap;}
         .teacher-name { color: #64748b; font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 4px;}
 
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; height: 100vh; } .sidebar.active { transform: translateX(280px); } .menu-btn { display: block; } .topbar { padding: 0 15px; } .filter-card { flex-direction: column; align-items: stretch; } }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; height: 100vh; } .sidebar.active { transform: translateX(280px); } .menu-btn { display: block; } .topbar { padding: 0 15px; } .filter-card { flex-direction: column; align-items: stretch; } .exam-filter-group { border-left: none; padding-left: 0; margin-left: 0; margin-top: 10px; border-top: 2px dashed var(--border); padding-top: 15px; } }
     </style>
 </head>
 <body>
@@ -193,8 +199,15 @@
                 </div>
                 <button class="btn-primary" onclick="fetchLivePerformanceData()">
                     <i class='bx bx-loader-alt bx-spin' id="loadingIcon" style="display: none;"></i>
-                    <i class='bx bx-search' id="searchIcon"></i> Fetch Database Records
+                    <i class='bx bx-search' id="searchIcon"></i> Fetch
                 </button>
+
+                <div class="form-group exam-filter-group">
+                    <label><i class='bx bx-filter-alt'></i> Select Specific Exam</label>
+                    <select class="form-control" id="examFilter" onchange="filterAndRenderTable()">
+                        <option value="">-- Fetch Data First --</option>
+                    </select>
+                </div>
             </div>
 
             <div class="table-card">
@@ -218,7 +231,7 @@
                         <tbody id="performanceTableBody">
                             <tr>
                                 <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">
-                                    Select Course, Batch and Semester, then click "Fetch Database Records" to view live data.
+                                    Select Course, Batch and Semester, then click "Fetch" to view live data.
                                 </td>
                             </tr>
                         </tbody>
@@ -229,6 +242,9 @@
     </main>
 
     <script>
+        // GLOBAL VARIABLE TO HOLD ALL FETCHED DATA
+        let allFetchedData = [];
+
         // 1. Sidebar Toggle
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
@@ -278,7 +294,7 @@
             }
         }
 
-        // 4. LIVE DATABASE FETCH LOGIC (Simple Fetch jaisa leave_approvals me hai)
+        // 4. LIVE DATABASE FETCH LOGIC
         async function fetchLivePerformanceData() {
             const course = document.getElementById('courseFilter').value;
             const batch = document.getElementById('batchFilter').value;
@@ -287,15 +303,18 @@
             const tbody = document.getElementById('performanceTableBody');
             const searchIcon = document.getElementById('searchIcon');
             const loadingIcon = document.getElementById('loadingIcon');
+            const examFilter = document.getElementById('examFilter');
 
             // UI Updates while loading
             document.getElementById('tableTitle').innerText = `Full Marks Ledger (${course} - Batch ${batch} - Sem ${sem})`;
             tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Scanning Live Database for Exams & Marks...</td></tr>`;
             searchIcon.style.display = 'none';
             loadingIcon.style.display = 'inline-block';
+            
+            // Reset Dropdown
+            examFilter.innerHTML = '<option value="">Loading Exams...</option>';
 
             try {
-                // Bina Token ka simple fetch call jaise pehle karte the
                 const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&sessionBatch=${batch}&semester=${sem}`);
                 const result = await response.json();
                 
@@ -303,12 +322,10 @@
                     let studentsData = [];
                     if(result.data && result.data.length > 0) {
                         result.data.forEach(examRecord => {
-                            // Extracting Exam Meta Data
                             const examName = examRecord.examName || "Unnamed Assessment";
                             const subject = examRecord.subject || "Subject Not Specified";
                             const maxMarks = examRecord.maxMarks || 100;
                             
-                            // Extracting Teacher Name 
                             let teacherName = "Unknown Teacher";
                             if (examRecord.teacherId && examRecord.teacherId.name) {
                                 teacherName = examRecord.teacherId.name;
@@ -316,13 +333,11 @@
                                 teacherName = examRecord.teacherName;
                             }
 
-                            // Formatting Correct Exam Date
                             let examDate = "N/A";
                             if(examRecord.examDate || examRecord.createdAt) {
                                 examDate = new Date(examRecord.examDate || examRecord.createdAt).toLocaleDateString('en-GB');
                             }
 
-                            // Pushing all student records
                             if(examRecord.studentsMarkList && examRecord.studentsMarkList.length > 0) {
                                 examRecord.studentsMarkList.forEach(student => {
                                     studentsData.push({
@@ -337,19 +352,70 @@
                             }
                         });
                     }
-                    renderTableData(studentsData);
+                    
+                    // SAVE ALL DATA GLOBALLY
+                    allFetchedData = studentsData;
+                    
+                    // POPULATE THE NEW DROPDOWN
+                    populateExamDropdown(studentsData);
+
                 } else {
                     tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;">Failed to fetch data: ${result.message}</td></tr>`;
                     resetStats();
+                    examFilter.innerHTML = '<option value="">No Exams Found</option>';
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;"><b>Connection Error</b><br>Could not reach the server. Make sure backend is running.</td></tr>`;
                 resetStats();
+                examFilter.innerHTML = '<option value="">Error Loading</option>';
             } finally {
                 searchIcon.style.display = 'inline-block';
                 loadingIcon.style.display = 'none';
             }
+        }
+
+        // NEW: 4.1 POPULATE EXAM DROPDOWN DYNAMICALLY
+        function populateExamDropdown(data) {
+            const examFilter = document.getElementById('examFilter');
+            
+            if (data.length === 0) {
+                examFilter.innerHTML = '<option value="">No Exams Found in Database</option>';
+                renderTableData([]); // Render empty table
+                return;
+            }
+
+            // Extract unique exam combinations (Exam Name + Subject)
+            const uniqueExams = [...new Set(data.map(item => `${item.examName} | ${item.subject}`))];
+            
+            // Add options to dropdown
+            examFilter.innerHTML = '<option value="ALL">Show All Exams & Subjects</option>';
+            uniqueExams.forEach(examStr => {
+                examFilter.innerHTML += `<option value="${examStr}">${examStr}</option>`;
+            });
+
+            // Automatically filter and render based on default selection (ALL)
+            filterAndRenderTable();
+        }
+
+        // NEW: 4.2 FILTER DATA BASED ON SELECTED EXAM
+        function filterAndRenderTable() {
+            const selectedExam = document.getElementById('examFilter').value;
+            let filteredData = allFetchedData;
+
+            if (selectedExam !== "ALL" && selectedExam !== "") {
+                // User has selected a specific exam, filter the main array
+                filteredData = allFetchedData.filter(item => `${item.examName} | ${item.subject}` === selectedExam);
+                document.getElementById('tableTitle').innerText = `Marks Ledger: ${selectedExam}`;
+            } else {
+                // Show everything
+                const course = document.getElementById('courseFilter').value;
+                const sem = document.getElementById('semFilter').value;
+                document.getElementById('tableTitle').innerText = `Full Marks Ledger (${course} - Sem ${sem})`;
+            }
+
+            // Send filtered data to the render function
+            renderTableData(filteredData);
         }
 
         // 5. Render Real Database Data to Table & Update Stats
@@ -357,7 +423,7 @@
             const tbody = document.getElementById('performanceTableBody');
             
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">No exam records found in the database for this specific Batch and Semester.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">No exam records found for this selection.</td></tr>`;
                 resetStats();
                 return;
             }
@@ -375,7 +441,7 @@
                 
                 let isPass = percentage >= 40;
                 
-                // Checking Attendance Status (Present, Absent, Debarred)
+                // Checking Attendance Status
                 let attendance = student.attendanceStatus || 'Present';
                 let statusBadge = '';
                 let grade = "F";
@@ -389,7 +455,6 @@
                     grade = "N/A";
                     isPass = false;
                 } else {
-                    // Regular Grade calculation for Present students
                     if(percentage >= 90) grade = "A+";
                     else if(percentage >= 80) grade = "A";
                     else if(percentage >= 70) grade = "B+";
@@ -427,7 +492,7 @@
 
             tbody.innerHTML = html;
 
-            // Update Top Stats
+            // Update Top Stats based ONLY on the filtered rows visible
             if(validStudentCount > 0) {
                 document.getElementById('avgPercentage').innerText = (totalPerc / validStudentCount).toFixed(1) + "%";
                 document.getElementById('passPercentage').innerText = Math.round((passCount / validStudentCount) * 100) + "%";
