@@ -98,7 +98,7 @@
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-img">ZHI</div>
+            <img src="image_abca65.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=3b82f6'">
             <div><h2>ZHI Academics</h2><p>HOD PANEL</p></div>
         </div>
         
@@ -208,10 +208,10 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <button style="display:none;" id="dummy-trigger"></button> <tbody id="performanceTableBody">
+                        <tbody id="performanceTableBody">
                             <tr>
                                 <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">
-                                    Click "Generate Report" to fetch live data.
+                                    Click "Generate Report" to fetch live database data.
                                 </td>
                             </tr>
                         </tbody>
@@ -225,27 +225,58 @@
         // 1. Sidebar Toggle
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // 2. Load User Profile in Topbar
+        // 2. Load User Profile Securely (Using SessionStorage / currentUser)
         document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if (user) {
-                document.getElementById('navUserName').innerText = user.name || 'HOD User';
-                if(user.profilePic) {
-                    document.getElementById('navProfilePic').src = user.profilePic;
+            try {
+                let hodName = "HOD Admin";
+                let profilePicUrl = null;
+
+                // Priority 1: Check security.js currentUser object
+                if (typeof currentUser !== 'undefined' && currentUser) {
+                    hodName = currentUser.name || "HOD Admin";
+                    profilePicUrl = currentUser.profilePicUrl;
+                } else {
+                    // Priority 2: Check sessionStorage directly
+                    let storedUser = sessionStorage.getItem('currentUser') || sessionStorage.getItem('user');
+                    if (storedUser) {
+                        let parsedUser = JSON.parse(storedUser);
+                        hodName = parsedUser.name || "HOD Admin";
+                        profilePicUrl = parsedUser.profilePicUrl;
+                    } else {
+                        // Fallback check for single keys
+                        hodName = sessionStorage.getItem('staffName') || "HOD Admin";
+                        profilePicUrl = sessionStorage.getItem('profilePicUrl');
+                    }
                 }
+
+                // Update UI
+                document.getElementById('navUserName').innerText = hodName;
+                
+                if(profilePicUrl && profilePicUrl !== "undefined" && profilePicUrl !== "null") {
+                    document.getElementById('navProfilePic').src = profilePicUrl;
+                } else {
+                    document.getElementById('navProfilePic').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hodName)}&background=3b82f6&color=fff`;
+                }
+
+            } catch (error) {
+                console.error("Error setting user profile:", error);
+                document.getElementById('navUserName').innerText = 'HOD Admin';
             }
-            // Auto fetch initial data
+            
+            // Auto fetch initial data from Real DB
             fetchLivePerformanceData();
         });
 
-        // 3. Logout Logic
+        // 3. SECURE LOGOUT LOGIC (SessionStorage cleared)
         function logout() {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
+            if(confirm("Are you sure you want to securely logout?")) {
+                sessionStorage.clear();
+                localStorage.clear(); 
+                window.location.href = 'index.html';
+            }
         }
 
-        // 4. LIVE FETCH LOGIC (API Call)
+        // 4. LIVE DATABASE FETCH LOGIC (API Call Only)
         async function fetchLivePerformanceData() {
             const course = document.getElementById('courseFilter').value;
             const sem = document.getElementById('semFilter').value;
@@ -257,46 +288,56 @@
 
             // UI Updates while loading
             document.getElementById('tableTitle').innerText = `Student Marks Overview (${course} - Sem ${sem} | ${examType})`;
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Fetching Live Data from Server...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Fetching Live Data from Database...</td></tr>`;
             searchIcon.style.display = 'none';
             loadingIcon.style.display = 'inline-block';
 
             try {
-                // REAL API CALL KAREGA YAHAN SE (Apne server.js route ke hisaab se adjust karein)
-                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&semester=${sem}&exam=${examType}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                // Fetching token securely from sessionStorage
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&semester=${sem}&examName=${examType}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                let data = [];
                 if (response.ok) {
                     const result = await response.json();
-                    data = result.data || [];
-                } else {
-                    // Agar backend route abhi ready nahi hai, toh ye Dummy Data generate karega based on Course/Sem
-                    console.warn("Backend API route not ready yet. Using fallback live generator.");
-                    data = generateFallbackData(course, sem); 
-                }
+                    
+                    // DB array response ko handle kar raha hai (multiple marks documents mil sakte hai ek course/sem/exam ke liye)
+                    let studentsData = [];
+                    if(result.data && result.data.length > 0) {
+                        // Har ek document ke andar 'studentsMarkList' array hota hai
+                        result.data.forEach(examRecord => {
+                            if(examRecord.studentsMarkList) {
+                                studentsData = studentsData.concat(examRecord.studentsMarkList);
+                            }
+                        });
+                    }
 
-                renderTableData(data);
+                    renderTableData(studentsData);
+                } else {
+                    const errorData = await response.json();
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;"><b>Error:</b> ${errorData.message || "Failed to fetch marks from Database."}</td></tr>`;
+                    resetStats();
+                }
                 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;"><b>Failed to fetch data.</b> Please check server connection.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;"><b>Failed to fetch data.</b> Please check your server connection.</td></tr>`;
+                resetStats();
             } finally {
                 searchIcon.style.display = 'inline-block';
                 loadingIcon.style.display = 'none';
             }
         }
 
-        // 5. Render Data to Table & Update Stats
+        // 5. Render Real Database Data to Table & Update Stats
         function renderTableData(data) {
             const tbody = document.getElementById('performanceTableBody');
             
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">No student data found for this selection.</td></tr>`;
-                document.getElementById('avgPercentage').innerText = "0%";
-                document.getElementById('passPercentage').innerText = "0%";
-                document.getElementById('failCount').innerText = "0 Students";
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">No student data found in the Database for this selection.</td></tr>`;
+                resetStats();
                 return;
             }
 
@@ -304,46 +345,22 @@
             let totalPerc = 0;
             let passCount = 0;
             let failCount = 0;
+            let validStudentCount = 0;
 
-            data.forEach((student, index) => {
-                const isPass = student.percentage >= 40;
-                totalPerc += student.percentage;
+            data.forEach((student) => {
+                // Database se ayi percentage ya total marks handle karna
+                // By default percentage agar DB me nahi h toh calculate kare
+                let marksObt = Number(student.marksObtained) || 0;
+                let maxMarks = 100; // Agar backend se total marks nahi aa raha toh default 100 maan liya hai
+                let percentage = (marksObt / maxMarks) * 100;
+                
+                const isPass = percentage >= 40;
+                totalPerc += percentage;
+                validStudentCount++;
+                
                 if(isPass) passCount++; else failCount++;
 
-                html += `
-                    <tr>
-                        <td><b>${student.rollNo}</b></td>
-                        <td>${student.name}</td>
-                        <td>${student.marksObtained} / ${student.totalMarks}</td>
-                        <td><span style="color: ${isPass ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${student.percentage}%</span></td>
-                        <td><b>${student.grade}</b></td>
-                        <td><span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span></td>
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = html;
-
-            // Update Top Stats
-            document.getElementById('avgPercentage').innerText = (totalPerc / data.length).toFixed(1) + "%";
-            document.getElementById('passPercentage').innerText = Math.round((passCount / data.length) * 100) + "%";
-            document.getElementById('failCount').innerText = failCount + (failCount === 1 ? " Student" : " Students");
-        }
-
-        // 6. DUMMY DATA GENERATOR (For instant testing until backend API is fully complete)
-        function generateFallbackData(course, sem) {
-            const names = ["Aarav Singh", "Kavya Sharma", "Rohan Das", "Priya Verma", "Aman Gupta", "Neha Iyer", "Rahul Patil", "Sneha Roy"];
-            let dummyData = [];
-            
-            // Generate 5 to 8 random students
-            const studentCount = Math.floor(Math.random() * 4) + 5; 
-
-            for(let i=0; i<studentCount; i++) {
-                const totalMarks = 500;
-                // Generate random marks
-                const marksObtained = Math.floor(Math.random() * 350) + 120; // Marks between 120 and 470
-                const percentage = parseFloat(((marksObtained / totalMarks) * 100).toFixed(1));
-                
+                // Grade calculation
                 let grade = "F";
                 if(percentage >= 90) grade = "A+";
                 else if(percentage >= 80) grade = "A";
@@ -352,16 +369,35 @@
                 else if(percentage >= 50) grade = "C";
                 else if(percentage >= 40) grade = "D";
 
-                dummyData.push({
-                    rollNo: `${course}${new Date().getFullYear() % 100}00${i+1}`,
-                    name: names[i % names.length],
-                    marksObtained: marksObtained,
-                    totalMarks: totalMarks,
-                    percentage: percentage,
-                    grade: grade
-                });
+                html += `
+                    <tr>
+                        <td><b>${student.rollNo}</b></td>
+                        <td>${student.studentName || 'N/A'}</td>
+                        <td>${marksObt} / ${maxMarks}</td>
+                        <td><span style="color: ${isPass ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${percentage.toFixed(1)}%</span></td>
+                        <td><b>${grade}</b></td>
+                        <td><span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+
+            // Update Top Stats
+            if(validStudentCount > 0) {
+                document.getElementById('avgPercentage').innerText = (totalPerc / validStudentCount).toFixed(1) + "%";
+                document.getElementById('passPercentage').innerText = Math.round((passCount / validStudentCount) * 100) + "%";
+                document.getElementById('failCount').innerText = failCount + (failCount === 1 ? " Student" : " Students");
+            } else {
+                resetStats();
             }
-            return dummyData;
+        }
+
+        // Helper function to reset stat cards if no data
+        function resetStats() {
+            document.getElementById('avgPercentage').innerText = "0%";
+            document.getElementById('passPercentage').innerText = "0%";
+            document.getElementById('failCount').innerText = "0 Students";
         }
     </script>
 </body>
