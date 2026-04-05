@@ -21,6 +21,14 @@
             --white: #ffffff;
             --border: #e2e8f0;
         }
+        .logo-img { 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    object-fit: cover; /* Ye image ko fatne ya stretch hone se rokega */
+    background: var(--white); 
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); /* Admin theme glow */
+}
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); -webkit-font-smoothing: antialiased; }
@@ -97,17 +105,17 @@
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="logo-img">
-                    <i class='bx bxs-graduation' style="color:var(--primary); font-size: 26px;"></i>
-                </div>
-                <div>
-                    <h2>ZHI College</h2>
-                    <p>ADMIN OFFICE</p>
-                </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            
+            <img src="image_abca65.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=3b82f6'">
+            
+            <div>
+                <h2>ZHI College</h2>
+                <p>ADMIN OFFICE</p>
             </div>
+        </div>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
         
