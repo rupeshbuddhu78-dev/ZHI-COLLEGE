@@ -7,7 +7,7 @@
     
     <script src="security.js"></script>
     <script>
-        // Sirf 'teacher' ko entry milegi
+        // Sirf 'teacher' ko entry milegi is page par
         checkPageAccess(['teacher']); 
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,12 +16,12 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #14b8a6; 
-            --primary-dark: #0f766e;
+            --primary: #14b8a6; /* Teal color for Teacher Panel */
+            --primary-light: #ccfbf1;
             --success: #10b981; 
             --warning: #f59e0b; 
-            --warning-light: #fef3c7;
             --danger: #ef4444; 
+            --purple: #8b5cf6;
             --bg: #f8fafc;
             --text-dark: #1e293b;
             --text-light: #64748b;
@@ -33,7 +33,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
-        /* ------------------ SIDEBAR ------------------ */
+        /* ------------------ SIDEBAR (FIXED - ALL MENUS ARE BACK) ------------------ */
         .logo-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); padding: 2px; display: flex; align-items: center; justify-content: center; }
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
@@ -52,7 +52,7 @@
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px;}
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; transition: 0.2s;}
         .user-profile img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
 
@@ -60,37 +60,50 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); }
 
-        /* FILTER CARD (Auto Filled) */
+        /* AUTOMATIC FILTER CARD */
         .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;}
         .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px;}
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--white); width: 100%; transition: 0.2s;}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         
-        /* Disabled Input Style */
+        /* Disabled Box Style */
         .form-control:disabled { background: #f1f5f9; color: #475569; border-color: #e2e8f0; font-weight: 600; cursor: not-allowed; }
-        
+
         .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;}
         .btn-primary:hover { background: var(--primary-dark); }
 
         /* ATTENDANCE TABLE CARD */
         .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; display: none;}
-        .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
+        .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
         
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
         th { padding: 12px 20px; background: #f1f5f9; font-size: 13px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
+        tr:hover { background: #f8fafc; }
         
+        /* Custom Radio Buttons */
         .attendance-toggle { display: flex; align-items: center; gap: 10px;}
         .radio-btn { display: none; }
         .radio-label { padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: 0.2s; background: #f1f5f9; color: var(--text-light);}
+        
         .radio-btn:checked + .radio-label.present { background: #dcfce7; color: #16a34a; border-color: #16a34a; }
         .radio-btn:checked + .radio-label.absent { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
 
-        .btn-success { background: var(--success); color: white; border: none; padding: 14px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; width: 100%; font-size: 15px;}
+        .btn-success { background: var(--success); color: white; border: none; padding: 14px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; font-size: 15px; transition: 0.2s; margin-top: 20px;}
+        .btn-success:hover { background: #059669; }
+
         .summary-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; text-align: center; margin-top: 20px; display: none; }
-        
+        .summary-box h3 { color: #1e3a8a; font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .stat-grid { display: flex; justify-content: center; gap: 30px; margin-top: 15px; flex-wrap: wrap;}
+        .stat-item { background: white; padding: 10px 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-item span { display: block; font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; margin-bottom: 5px;}
+        .stat-item b { font-size: 18px; color: var(--text-dark);}
+
+        /* Alert Box */
         .alert-box { padding: 15px 20px; border-radius: 8px; font-weight: 600; display: none; align-items: center; gap: 10px; margin-bottom: 20px; }
         .alert-warning { background: var(--warning-light); color: #b45309; border: 1px solid #fde68a; }
+        .alert-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
         @media (max-width: 768px) { 
             .sidebar { position: fixed; left: -260px; height: 100vh; } 
@@ -106,13 +119,18 @@
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
-                <div><h2>ZHI Faculty</h2><p>TEACHER PANEL</p></div>
+                <div>
+                    <h2>ZHI Faculty</h2>
+                    <p>TEACHER PANEL</p>
+                </div>
             </div>
         </div>
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
-            <li class="active"><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
+            <li class="active"><a href="mark.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
+            <li><a href="manage_leave.html"><i class='bx bx-calendar-x'></i> Leave Management</a></li>
+            <li><a href="notice_board.html"><i class='bx bx-bell'></i> Notice Board</a></li>
             <li><a href="#" class="logout-btn" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout</a></li>
         </ul>
     </aside>
@@ -133,11 +151,18 @@
         </header>
 
         <div class="content">
-            <div class="page-header"><div class="page-title">Mark Auto-Attendance</div></div>
+            <div class="page-header">
+                <div class="page-title">Auto-Mark Attendance</div>
+            </div>
 
             <div id="noClassAlert" class="alert-box alert-warning">
                 <i class='bx bx-info-circle' style="font-size: 20px;"></i>
-                <span id="noClassMsgTxt">Loading your schedule...</span>
+                <span id="noClassMsgTxt">Checking today's schedule...</span>
+            </div>
+
+            <div id="editAlert" class="alert-box alert-info">
+                <i class='bx bx-edit' style="font-size: 20px;"></i>
+                <span>You are currently <b>EDITING</b> an already saved attendance record.</span>
             </div>
 
             <div class="filter-card" id="autoFilterCard" style="display: none;">
@@ -162,7 +187,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Date</label>
+                    <label>Date (Auto Local)</label>
                     <input type="date" id="attDate" class="form-control" disabled>
                 </div>
 
@@ -176,9 +201,9 @@
             <div class="card" id="attendanceCard">
                 <div class="card-header">
                     <span id="tableTitle"><i class='bx bx-edit'></i> Student List</span>
-                    <div>
-                        <button type="button" onclick="markAll('Present')" style="background: #dcfce7; color: #16a34a; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 5px;">Mark All Present</button>
-                        <button type="button" onclick="markAll('Absent')" style="background: #fee2e2; color: #dc2626; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">Mark All Absent</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="markAll('Present')" style="background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px;"><i class='bx bx-check'></i> Mark All Present</button>
+                        <button type="button" onclick="markAll('Absent')" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px;"><i class='bx bx-x'></i> Mark All Absent</button>
                     </div>
                 </div>
                 <form onsubmit="submitAttendance(event)">
@@ -192,18 +217,27 @@
                                     <th>Attendance Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="studentTableBody"></tbody>
+                            <tbody id="studentTableBody">
+                                </tbody>
                         </table>
                     </div>
                     <div style="padding: 20px; border-top: 1px solid var(--border); background: #f8fafc;">
-                        <button type="submit" class="btn-success" id="submitBtn"><i class='bx bx-cloud-upload'></i> Secure Save Attendance</button>
+                        <button type="submit" class="btn-success" id="submitBtn"><i class='bx bx-cloud-upload'></i> Submit Record</button>
                     </div>
                 </form>
             </div>
 
             <div class="summary-box" id="summaryBox">
                 <h3 id="summaryTitle"><i class='bx bx-check-circle'></i> Attendance Saved Successfully!</h3>
+                <p style="color: var(--text-light); font-size: 14px;">Database has been updated securely.</p>
+                <div class="stat-grid">
+                    <div class="stat-item"><span>Total Students</span><b id="sumTotal">0</b></div>
+                    <div class="stat-item"><span>Present</span><b id="sumPresent" style="color: var(--success);">0</b></div>
+                    <div class="stat-item"><span>Absent</span><b id="sumAbsent" style="color: var(--danger);">0</b></div>
+                    <div class="stat-item"><span>Percentage</span><b id="sumPercent" style="color: var(--primary);">0%</b></div>
+                </div>
             </div>
+            
         </div>
     </main>
 
@@ -219,7 +253,6 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function logoutTeacher() { sessionStorage.clear(); localStorage.clear(); window.location.href = "index.html"; }
 
-        // Time to 12-hour format converter
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
             let [hours, minutes] = timeStr.split(':');
@@ -229,7 +262,6 @@
             return `${h < 10 ? '0'+h : h}:${minutes} ${ampm}`;
         }
         
-        // Time to Minutes for exact auto-selection
         function timeToMinutes(timeStr) {
             let [h, m] = timeStr.split(':').map(Number);
             return (h * 60) + m;
@@ -244,24 +276,27 @@
 
             if (!staffId) { alert("Please login first!"); window.location.href = "index.html"; return; }
             
-            // Aaj ki date set kardi, Disabled form me
-            document.getElementById('attDate').valueAsDate = new Date();
+            // ============================================================
+            // 🚀 PERFECT LOCAL DATE FIX (NEVER SHOWS WRONG DATE)
+            // ============================================================
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const formattedLocalTime = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('attDate').value = formattedLocalTime;
             
             await fetchAndAutoSetRoutine();
         }
 
-        // ============================================================
-        // 🚀 DATABASE SE FETCH KARKE AUTO SELECT KARNE WALA MAGIC
-        // ============================================================
         async function fetchAndAutoSetRoutine() {
             try {
                 const response = await fetch(`${API_BASE_URL}/routines?teacherId=${staffId}`);
                 const result = await response.json();
                 
                 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const todayName = days[new Date().getDay()]; // e.g. "Monday"
+                const todayName = days[new Date().getDay()]; 
 
-                // Sirf aaj ke din ki classes filter karo
                 todaysRoutines = (result.data || []).filter(r => r.dayOfWeek === todayName);
 
                 const alertBox = document.getElementById('noClassAlert');
@@ -269,18 +304,17 @@
 
                 if (todaysRoutines.length === 0) {
                     alertBox.style.display = "flex";
-                    document.getElementById('noClassMsgTxt').innerText = `As per HOD Routine, you have NO classes scheduled for today (${todayName}).`;
+                    document.getElementById('noClassMsgTxt').innerText = `No classes assigned for you today (${todayName}) by HOD.`;
                     filterCard.style.display = "none";
                     return;
                 }
 
-                // Agar classes hain, toh unhe Dropdown me daalo
                 const scheduleSelect = document.getElementById('scheduleSelect');
                 scheduleSelect.innerHTML = "";
                 
                 const now = new Date();
                 const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-                let selectedIndex = 0; // Default first class
+                let selectedIndex = 0; 
 
                 todaysRoutines.forEach((r, index) => {
                     let timeLabel = `${formatToAMPM(r.startTime)} - ${formatToAMPM(r.endTime)}`;
@@ -289,7 +323,6 @@
                     opt.text = `${timeLabel} | ${r.course} (${r.subject})`;
                     scheduleSelect.appendChild(opt);
 
-                    // SMART LOGIC: Agar current time is class ke beech me hai, toh isko Auto-Select karo
                     let startMins = timeToMinutes(r.startTime);
                     let endMins = timeToMinutes(r.endTime);
                     if (currentMinutes >= startMins && currentMinutes <= endMins) {
@@ -301,7 +334,6 @@
                 alertBox.style.display = "none";
                 filterCard.style.display = "flex";
 
-                // UI Disable Labels update kardo
                 onClassSelectChange();
 
             } catch (e) {
@@ -310,7 +342,6 @@
             }
         }
 
-        // Jab class change ho (ya auto select ho), baaki input boxes disable rahenge aur data set ho jayega
         function onClassSelectChange() {
             const index = document.getElementById('scheduleSelect').value;
             activeRoutine = todaysRoutines[index];
@@ -319,21 +350,17 @@
             document.getElementById('semTxt').value = `Sem ${activeRoutine.semester}`;
             document.getElementById('subjectTxt').value = activeRoutine.subject;
             
-            // Clear old tables
             document.getElementById('attendanceCard').style.display = 'none';
             document.getElementById('summaryBox').style.display = 'none';
+            document.getElementById('editAlert').style.display = 'none';
         }
 
-        // ============================================================
-        // 📝 GET STUDENTS LIST
-        // ============================================================
         async function loadStudentsForAttendance() {
             if(!activeRoutine) return;
 
             const btn = document.getElementById('fetchBtn');
             btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Loading...";
 
-            // Values database routine se hi lenge
             const course = activeRoutine.course;
             const batch = activeRoutine.sessionBatch;
             const sem = activeRoutine.semester;
@@ -342,24 +369,27 @@
             const timeSlotFormatted = `${formatToAMPM(activeRoutine.startTime)} - ${formatToAMPM(activeRoutine.endTime)}`;
 
             try {
-                // Check if attendance already exists
                 const checkRes = await fetch(`${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlotFormatted}`);
                 const checkResult = await checkRes.json();
                 
                 let existingData = null;
                 isEditModeActive = false;
+                document.getElementById('editAlert').style.display = 'none';
 
                 if(checkResult.exists) {
                     if(confirm("Attendance for this class is already taken! Do you want to edit it?")) {
                         existingData = checkResult.data.attendanceList;
                         isEditModeActive = true;
+                        document.getElementById('editAlert').style.display = 'flex';
+                        document.getElementById('submitBtn').innerHTML = "<i class='bx bx-refresh'></i> Update Attendance";
                     } else {
                         btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Students";
                         return;
                     }
+                } else {
+                    document.getElementById('submitBtn').innerHTML = "<i class='bx bx-cloud-upload'></i> Submit Record";
                 }
 
-                // Fetch students
                 const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`);
                 const studentResult = await studentRes.json();
 
@@ -367,7 +397,7 @@
                 tbody.innerHTML = "";
 
                 if(studentResult.success && studentResult.students.length > 0) {
-                    document.getElementById('tableTitle').innerHTML = `<i class='bx bx-check-shield'></i> Class: ${course} | Time: ${timeSlotFormatted}`;
+                    document.getElementById('tableTitle').innerHTML = `<b>${course} (Sem ${sem})</b> | <span style="color:var(--primary)">${subject}</span> | ${timeSlotFormatted}`;
                     
                     studentResult.students.forEach((student, index) => {
                         let isPresent = true; 
@@ -380,8 +410,8 @@
                         tr.dataset.studentid = student._id;
                         tr.innerHTML = `
                             <td>${index + 1}</td>
-                            <td><b>${student.roll}</b></td>
-                            <td>${student.name}</td>
+                            <td><b style="color: var(--primary-dark);">${student.roll}</b></td>
+                            <td style="font-weight: 500;">${student.name}</td>
                             <td>
                                 <div class="attendance-toggle">
                                     <input type="radio" name="att_${student._id}" id="p_${student._id}" value="Present" class="radio-btn" ${isPresent ? 'checked' : ''}>
@@ -396,12 +426,14 @@
                     });
 
                     document.getElementById('attendanceCard').style.display = 'block';
+                    document.getElementById('summaryBox').style.display = 'none';
                 } else {
                     alert("No students found in this Course & Semester.");
                 }
 
             } catch (error) {
-                alert("Database connect error!");
+                console.error("Fetch Error:", error);
+                alert("Database connection error! Check if server is running.");
             } finally {
                 btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Students";
             }
@@ -415,28 +447,35 @@
             });
         }
 
-        // ============================================================
-        // 🔒 SUBMIT ATTENDANCE TO DATABASE
-        // ============================================================
         async function submitAttendance(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Saving to Database...";
+            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Processing...";
             btn.disabled = true;
 
             const attData = [];
+            let totalStudents = 0;
+            let presentCount = 0;
+            let absentCount = 0;
+
             const rows = document.querySelectorAll('#studentTableBody tr');
             rows.forEach(row => {
+                totalStudents++;
                 const sid = row.dataset.studentid;
+                const isPresent = document.getElementById(`p_${sid}`).checked;
+                
+                if(isPresent) presentCount++; else absentCount++;
+
                 attData.push({
                     studentId: sid,
                     rollNo: row.children[1].innerText,
                     studentName: row.children[2].innerText,
-                    status: document.getElementById(`p_${sid}`).checked ? "Present" : "Absent"
+                    status: isPresent ? "Present" : "Absent"
                 });
             });
 
-            // Yahan bhi values activeRoutine se hi jayengi taaki hack na ho
+            const percentage = totalStudents === 0 ? 0 : Math.round((presentCount / totalStudents) * 100);
+
             const finalPayload = {
                 teacherId: staffId,
                 course: activeRoutine.course,
@@ -454,19 +493,27 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(finalPayload)
                 });
+
                 const result = await response.json();
 
                 if(result.success) {
+                    document.getElementById('summaryTitle').innerHTML = isEditModeActive ? "<i class='bx bx-check-circle'></i> Attendance Updated Successfully!" : "<i class='bx bx-check-circle'></i> Attendance Saved Successfully!";
+                    document.getElementById('sumTotal').innerText = totalStudents;
+                    document.getElementById('sumPresent').innerText = presentCount;
+                    document.getElementById('sumAbsent').innerText = absentCount;
+                    document.getElementById('sumPercent').innerText = percentage + '%';
+
                     document.getElementById('attendanceCard').style.display = 'none';
-                    document.getElementById('summaryTitle').innerHTML = isEditModeActive ? "Attendance Updated!" : "Attendance Saved Database Me!";
                     document.getElementById('summaryBox').style.display = 'block';
+                    document.getElementById('editAlert').style.display = 'none';
                 } else {
-                    alert("Error: " + result.message);
+                    alert("Backend Error: " + (result.message || "Could not save attendance."));
                 }
             } catch(error) {
-                alert("Failed to submit to server.");
+                console.error("Submission Error:", error);
+                alert("Failed to submit to server. Check your connection / API.");
             } finally {
-                btn.innerHTML = "<i class='bx bx-cloud-upload'></i> Secure Save Attendance";
+                btn.innerHTML = isEditModeActive ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
                 btn.disabled = false;
             }
         }
