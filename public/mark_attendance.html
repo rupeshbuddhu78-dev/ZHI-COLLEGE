@@ -36,7 +36,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
-        /* ------------------ SIDEBAR (ORIGINAL FULL MENU RESTORED) ------------------ */
+        /* ------------------ SIDEBAR (FULL MENU RESTORED) ------------------ */
         .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
         .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
@@ -107,9 +107,10 @@
         .stat-item b { font-size: 18px; color: var(--text-dark);}
 
         /* Alert Box */
-        .alert-box { padding: 15px 20px; border-radius: 8px; font-weight: 600; display: none; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .alert-box { padding: 15px 20px; border-radius: 8px; font-weight: 600; display: none; align-items: center; gap: 10px; margin-bottom: 20px; word-break: break-word; }
         .alert-warning { background: var(--warning-light); color: #b45309; border: 1px solid #fde68a; }
         .alert-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .alert-danger { background: var(--danger-light); color: #991b1b; border: 1px solid #fecaca; display: none;}
 
         @media (max-width: 768px) { 
             .sidebar { position: fixed; left: -260px; height: 100vh; } 
@@ -184,6 +185,11 @@
             <div id="noClassAlert" class="alert-box alert-warning">
                 <i class='bx bx-info-circle' style="font-size: 20px;"></i>
                 <span id="noClassMsgTxt">Checking today's schedule...</span>
+            </div>
+
+            <div id="realErrorAlert" class="alert-box alert-danger">
+                <i class='bx bx-error-circle' style="font-size: 20px;"></i>
+                <span id="realErrorTxt"></span>
             </div>
 
             <div id="editAlert" class="alert-box alert-info">
@@ -276,16 +282,8 @@
         let activeRoutine = null;
         let isEditModeActive = false;
 
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('active'); 
-            document.getElementById('overlay').classList.toggle('active');
-        }
-        
-        function logoutTeacher() { 
-            sessionStorage.clear(); 
-            localStorage.clear(); 
-            window.location.href = "index.html"; 
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+        function logoutTeacher() { sessionStorage.clear(); localStorage.clear(); window.location.href = "index.html"; }
 
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
@@ -301,6 +299,13 @@
             return (h * 60) + m;
         }
 
+        function showRealError(message) {
+            const errBox = document.getElementById('realErrorAlert');
+            errBox.style.display = 'flex';
+            document.getElementById('realErrorTxt').innerText = message;
+            setTimeout(() => { errBox.style.display = 'none'; }, 8000);
+        }
+
         window.onload = async function() {
             if (typeof currentUser !== 'undefined' && currentUser) {
                 staffId = currentUser.staffId || currentUser._id;
@@ -311,7 +316,6 @@
 
             if (!staffId) { alert("Please login first!"); window.location.href = "index.html"; return; }
             
-            // EXACT CURRENT DATE (IST COMPATIBLE)
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -371,7 +375,7 @@
 
             } catch (e) {
                 console.error("Routine fetch failed:", e);
-                document.getElementById('noClassMsgTxt').innerText = "Server error while fetching timetable!";
+                showRealError("Routine Load Error: Failed to fetch routines. Check if server is running.");
             }
         }
 
@@ -386,25 +390,41 @@
             document.getElementById('attendanceCard').style.display = 'none';
             document.getElementById('summaryBox').style.display = 'none';
             document.getElementById('editAlert').style.display = 'none';
+            document.getElementById('realErrorAlert').style.display = 'none';
         }
 
+        // ============================================================
+        // 🛠️ SMART ENCODED FETCH LOGIC WITH REAL ERROR DETECTOR
+        // ============================================================
         async function loadStudentsForAttendance() {
             if(!activeRoutine) return;
 
             const btn = document.getElementById('fetchBtn');
             btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Loading...";
 
-            const course = activeRoutine.course;
-            const batch = activeRoutine.sessionBatch;
-            const sem = activeRoutine.semester;
-            const subject = activeRoutine.subject;
-            const date = document.getElementById('attDate').value;
+            // URL ENCODING (To Fix Spaces & Hyphens Issue)
+            const course = encodeURIComponent(activeRoutine.course);
+            const batch = encodeURIComponent(activeRoutine.sessionBatch);
+            const sem = encodeURIComponent(activeRoutine.semester);
+            const subject = encodeURIComponent(activeRoutine.subject);
+            const date = encodeURIComponent(document.getElementById('attDate').value);
+            
             const timeSlotFormatted = `${formatToAMPM(activeRoutine.startTime)} - ${formatToAMPM(activeRoutine.endTime)}`;
+            const timeSlot = encodeURIComponent(timeSlotFormatted);
 
             try {
-                // Ye API backend me honi zaroori hai tabhi Database error nahi aayega!
-                const checkRes = await fetch(`${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlotFormatted}`);
-                const checkResult = await checkRes.json();
+                // 1. Check if attendance already exists
+                const checkUrl = `${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlot}`;
+                const checkRes = await fetch(checkUrl);
+                
+                // Read text first to catch HTML error pages instead of crashing .json()
+                const checkText = await checkRes.text();
+                let checkResult;
+                try {
+                    checkResult = JSON.parse(checkText);
+                } catch(e) {
+                    throw new Error(`API Endpoint missing in server.js or Server crashed. Server responded with: ${checkText.substring(0, 80)}...`);
+                }
                 
                 let existingData = null;
                 isEditModeActive = false;
@@ -424,14 +444,23 @@
                     document.getElementById('submitBtn').innerHTML = "<i class='bx bx-cloud-upload'></i> Submit Record";
                 }
 
-                const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`);
-                const studentResult = await studentRes.json();
+                // 2. Fetch students list
+                const studentUrl = `${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`;
+                const studentRes = await fetch(studentUrl);
+                const studentText = await studentRes.text();
+                
+                let studentResult;
+                try {
+                    studentResult = JSON.parse(studentText);
+                } catch(e) {
+                    throw new Error(`Get Students API failed. Server responded with: ${studentText.substring(0, 80)}...`);
+                }
 
                 const tbody = document.getElementById('studentTableBody');
                 tbody.innerHTML = "";
 
-                if(studentResult.success && studentResult.students.length > 0) {
-                    document.getElementById('tableTitle').innerHTML = `<b>${course} (Sem ${sem})</b> | <span style="color:var(--primary)">${subject}</span> | ${timeSlotFormatted}`;
+                if(studentResult.success && studentResult.students && studentResult.students.length > 0) {
+                    document.getElementById('tableTitle').innerHTML = `<b>${activeRoutine.course} (Sem ${activeRoutine.semester})</b> | <span style="color:var(--primary)">${activeRoutine.subject}</span> | ${timeSlotFormatted}`;
                     
                     studentResult.students.forEach((student, index) => {
                         let isPresent = true; 
@@ -462,12 +491,13 @@
                     document.getElementById('attendanceCard').style.display = 'block';
                     document.getElementById('summaryBox').style.display = 'none';
                 } else {
-                    alert("No students found in this Course & Semester.");
+                    alert("No students found in this Course & Semester in the database.");
                 }
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                alert("Database connection error! (Make sure Attendance APIs are added to server.js and deployed)");
+                // YE HAI ASLI ERROR DIKHANE WALA BOX
+                showRealError("Backend Error: " + error.message);
             } finally {
                 btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Students";
             }
@@ -541,11 +571,11 @@
                     document.getElementById('summaryBox').style.display = 'block';
                     document.getElementById('editAlert').style.display = 'none';
                 } else {
-                    alert("Backend Error: " + (result.message || "Could not save attendance."));
+                    showRealError("Submit Error: " + (result.message || "Could not save attendance."));
                 }
             } catch(error) {
                 console.error("Submission Error:", error);
-                alert("Failed to submit to server. Check your connection / API.");
+                showRealError("Failed to submit. API /attendance/mark might be missing or crashed.");
             } finally {
                 btn.innerHTML = isEditModeActive ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
                 btn.disabled = false;
