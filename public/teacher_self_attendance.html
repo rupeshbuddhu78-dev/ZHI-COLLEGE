@@ -38,6 +38,14 @@
         html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
         /* ------------------ SIDEBAR ------------------ */
+        .logo-img { 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    object-fit: cover; /* Ye image ko stretch hone se rokega */
+    background: var(--white); 
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); 
+    }
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
@@ -139,14 +147,18 @@
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="logo-img"><i class='bx bx-book-reader' style="color:var(--primary); font-size: 24px;"></i></div>
-                <div>
-                    <h2>ZHI Faculty</h2>
-                    <p>TEACHER PANEL</p>
-                </div>
+ <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            
+            <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
+            
+            <div>
+                <h2>ZHI Faculty</h2>
+                <p>TEACHER PANEL</p>
+            </div>
+        </div>
+    </div>
             </div>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
