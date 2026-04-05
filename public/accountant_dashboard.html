@@ -30,7 +30,7 @@
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; }
+        .logo-img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; display: flex; align-items: center; justify-content: center; object-fit: cover; }
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
@@ -120,18 +120,16 @@
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="logo-img">
-                    <i class='bx bx-wallet' style="color:var(--success); font-size: 26px;"></i>
-                </div>
-                <div>
-                    <h2>ZHI Finance</h2>
-                    <p>ACCOUNTANT PANEL</p>
-                </div>
-            </div> 
-    </aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="image_abca65.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=10b981&color=fff'">
+                
+                <div>
+                    <h2>ZHI Finance</h2>
+                    <p>ACCOUNTANT PANEL</p>
+                </div>
+            </div> 
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
         
