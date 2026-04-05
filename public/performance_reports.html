@@ -60,13 +60,13 @@
         .user-info .role { font-size: 12px; font-weight: 500; color: var(--text-light); text-transform: uppercase;}
 
         .content { padding: 30px; flex: 1; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;}
         .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
 
         /* METRICS */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .stat-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;}
         .stat-info h4 { font-size: 13px; color: var(--text-light); font-weight: 600; text-transform: uppercase; margin-bottom: 5px;}
         .stat-info h2 { font-size: 24px; color: var(--text-dark); }
 
@@ -75,21 +75,26 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px;}
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); width: 100%; cursor: pointer;}
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; transition: 0.2s; min-width: 160px;}
         .btn-primary:hover { background: #2563eb; }
         .btn-export { background: #10b981; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
         .btn-export:hover { background: #059669; }
 
         /* TABLE */
-        .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); overflow: hidden; }
+        .table-card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
         .table-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;}
-        th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
-        td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
+        
+        .table-responsive { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1100px; /* Increased for more columns */ }
+        th { padding: 15px 12px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap;}
+        td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle;}
         
         .badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;}
         .badge-pass { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;}
         .badge-fail { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;}
+
+        .exam-tag { background: #eff6ff; color: #1d4ed8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; white-space: nowrap;}
+        .teacher-name { color: #64748b; font-size: 12px; display: flex; align-items: center; gap: 4px; margin-top: 4px;}
 
         @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; height: 100vh; } .sidebar.active { transform: translateX(280px); } .menu-btn { display: block; } .topbar { padding: 0 15px; } .filter-card { flex-direction: column; align-items: stretch; } }
     </style>
@@ -145,11 +150,11 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #eff6ff; color: var(--primary);"><i class='bx bx-line-chart'></i></div>
-                    <div class="stat-info"><h4>Avg. Class Percentage</h4><h2 id="avgPercentage">--%</h2></div>
+                    <div class="stat-info"><h4>Avg. Performance</h4><h2 id="avgPercentage">--%</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i class='bx bx-award'></i></div>
-                    <div class="stat-info"><h4>Passing Percentage</h4><h2 id="passPercentage">--%</h2></div>
+                    <div class="stat-info"><h4>Overall Pass Rate</h4><h2 id="passPercentage">--%</h2></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #fef2f2; color: var(--danger);"><i class='bx bx-trending-down'></i></div>
@@ -178,31 +183,25 @@
                         <option value="6">Sem 6</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Exam Type</label>
-                    <select class="form-control" id="examFilter">
-                        <option value="Mid-Term">Mid-Term (Internal)</option>
-                        <option value="End-Term">End-Term (Final)</option>
-                    </select>
-                </div>
                 <button class="btn-primary" onclick="fetchLivePerformanceData()">
                     <i class='bx bx-loader-alt bx-spin' id="loadingIcon" style="display: none;"></i>
-                    <i class='bx bx-search' id="searchIcon"></i> Generate Report
+                    <i class='bx bx-search' id="searchIcon"></i> Fetch Database Records
                 </button>
             </div>
 
             <div class="table-card">
                 <div class="table-header">
-                    <span><i class='bx bx-list-ul' style="color: var(--text-light);"></i> <span id="tableTitle">Student Marks Overview (BCA - Sem 1)</span></span>
+                    <span><i class='bx bx-list-ul' style="color: var(--text-light);"></i> <span id="tableTitle">Student Marks Ledger</span></span>
                 </div>
-                <div style="overflow-x: auto;">
+                <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
+                                <th>Exam Date</th>
+                                <th>Exam Name & Details</th>
                                 <th>Roll No</th>
                                 <th>Student Name</th>
-                                <th>Subject</th>
-                                <th>Total Marks</th>
+                                <th>Score (Obt/Max)</th>
                                 <th>Percentage</th>
                                 <th>Grade</th>
                                 <th>Status</th>
@@ -210,8 +209,8 @@
                         </thead>
                         <tbody id="performanceTableBody">
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-light);">
-                                    Click "Generate Report" to fetch live database data.
+                                <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">
+                                    Select Course and Semester, then click "Fetch Database Records" to view live data.
                                 </td>
                             </tr>
                         </tbody>
@@ -271,34 +270,40 @@
             }
         }
 
-        // 4. LIVE DATABASE FETCH LOGIC (100% Real API, Error proof)
+        // 4. LIVE DATABASE FETCH LOGIC (Secure with Token)
         async function fetchLivePerformanceData() {
             const course = document.getElementById('courseFilter').value;
             const sem = document.getElementById('semFilter').value;
-            const examType = document.getElementById('examFilter').value;
             
             const tbody = document.getElementById('performanceTableBody');
             const searchIcon = document.getElementById('searchIcon');
             const loadingIcon = document.getElementById('loadingIcon');
 
             // UI Updates while loading
-            document.getElementById('tableTitle').innerText = `Student Marks Overview (${course} - Sem ${sem} | ${examType})`;
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-light);"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Fetching Live Data from Database...<br><small>(Please wait up to 50 seconds if server is waking up)</small></td></tr>`;
+            document.getElementById('tableTitle').innerText = `Full Marks Ledger (${course} - Sem ${sem})`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);"><i class='bx bx-loader-alt bx-spin' style='font-size: 30px; color: var(--primary);'></i><br><br>Scanning Live Database for Exams & Marks...<br><small>(Please wait if server is waking up)</small></td></tr>`;
             searchIcon.style.display = 'none';
             loadingIcon.style.display = 'inline-block';
 
             try {
-                // Backend API se fetch: (course aur semester pe filter)
-                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&semester=${sem}`);
+                // 🔴 SECURE TOKEN FETCH
+                const token = sessionStorage.getItem('token') || '';
 
-                // Handle server sleep/html error safely
+                // Fetching ALL marks for this course and semester securely
+                const response = await fetch(`https://zhi-college-rtya.onrender.com/api/marks?course=${course}&semester=${sem}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
                 if (!response.ok) {
                     const contentType = response.headers.get("content-type");
                     if (contentType && contentType.includes("application/json")) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || "Server Error");
                     } else {
-                        throw new Error("Server is currently waking up or offline. Please wait a minute and try again.");
+                        throw new Error("Server is waking up or offline. Please wait a minute and try again.");
                     }
                 }
 
@@ -307,20 +312,36 @@
                 let studentsData = [];
                 if(result.success && result.data && result.data.length > 0) {
                     result.data.forEach(examRecord => {
-                        // Backend directly examName ko filter nahi karta, toh hum frontend me check kar rahe hain
-                        const recordExamName = (examRecord.examName || "").toLowerCase();
-                        const filterExamName = examType.toLowerCase();
+                        // Extracting Exam Meta Data safely
+                        const examName = examRecord.examName || "Unnamed Assessment";
+                        const subject = examRecord.subject || "Subject Not Specified";
+                        const maxMarks = examRecord.maxMarks || 100;
+                        
+                        // Extracting Teacher Name (Handling object population or plain string)
+                        let teacherName = "Unknown Teacher";
+                        if (examRecord.teacherName) teacherName = examRecord.teacherName;
+                        else if (examRecord.teacherId && examRecord.teacherId.name) teacherName = examRecord.teacherId.name;
 
-                        if(recordExamName.includes(filterExamName)) {
-                            if(examRecord.studentsMarkList && examRecord.studentsMarkList.length > 0) {
-                                examRecord.studentsMarkList.forEach(student => {
-                                    studentsData.push({
-                                        ...student,
-                                        subject: examRecord.subject || "N/A", // Adding subject info
-                                        maxMarks: examRecord.maxMarks || 100
-                                    });
+                        // Formatting Date
+                        let examDate = "N/A";
+                        if(examRecord.date || examRecord.createdAt) {
+                            examDate = new Date(examRecord.date || examRecord.createdAt).toLocaleDateString('en-IN', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                            });
+                        }
+
+                        // Pushing all student records for this exam
+                        if(examRecord.studentsMarkList && examRecord.studentsMarkList.length > 0) {
+                            examRecord.studentsMarkList.forEach(student => {
+                                studentsData.push({
+                                    ...student,
+                                    examName: examName,
+                                    subject: subject,
+                                    teacherName: teacherName,
+                                    examDate: examDate,
+                                    maxMarks: maxMarks
                                 });
-                            }
+                            });
                         }
                     });
                 }
@@ -329,7 +350,7 @@
                 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red; padding: 20px;"><b>Failed to fetch data.</b><br><small>${error.message}</small><br>Ensure backend is running.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;"><b>Failed to fetch data.</b><br><small>${error.message}</small><br>Ensure backend is running.</td></tr>`;
                 resetStats();
             } finally {
                 searchIcon.style.display = 'inline-block';
@@ -342,7 +363,7 @@
             const tbody = document.getElementById('performanceTableBody');
             
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-light);">No marks records found in the Database for this specific exam and batch.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--text-light);">No exam records found in the database for this Batch. Ensure teachers have uploaded marks.</td></tr>`;
                 resetStats();
                 return;
             }
@@ -352,6 +373,9 @@
             let passCount = 0;
             let failCount = 0;
             let validStudentCount = 0;
+
+            // Sorting data by Date (latest first) tentatively if needed, 
+            // but relying on backend order is usually fine.
 
             data.forEach((student) => {
                 let marksObt = Number(student.marksObtained) || 0;
@@ -375,10 +399,17 @@
 
                 html += `
                     <tr>
+                        <td style="color: var(--text-light); font-weight: 500;">
+                            <i class='bx bx-calendar-event' style="vertical-align: middle;"></i> ${student.examDate}
+                        </td>
+                        <td>
+                            <div class="exam-tag">${student.examName}</div>
+                            <div style="font-weight: 600; font-size: 13px; margin-top: 5px;">${student.subject}</div>
+                            <div class="teacher-name"><i class='bx bxs-user-badge'></i> ${student.teacherName}</div>
+                        </td>
                         <td><b>${student.rollNo || 'N/A'}</b></td>
-                        <td>${student.studentName || 'N/A'}</td>
-                        <td style="color: var(--primary); font-weight: 500;">${student.subject}</td>
-                        <td>${marksObt} / ${maxMarks}</td>
+                        <td style="font-weight: 500;">${student.studentName || 'N/A'}</td>
+                        <td><b>${marksObt}</b> <span style="color: #94a3b8; font-size: 11px;">/ ${maxMarks}</span></td>
                         <td><span style="color: ${isPass ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${percentage.toFixed(1)}%</span></td>
                         <td><b>${grade}</b></td>
                         <td><span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span></td>
@@ -392,7 +423,7 @@
             if(validStudentCount > 0) {
                 document.getElementById('avgPercentage').innerText = (totalPerc / validStudentCount).toFixed(1) + "%";
                 document.getElementById('passPercentage').innerText = Math.round((passCount / validStudentCount) * 100) + "%";
-                document.getElementById('failCount').innerText = failCount + (failCount === 1 ? " Student" : " Students");
+                document.getElementById('failCount').innerText = failCount + (failCount === 1 ? " Case" : " Cases");
             } else {
                 resetStats();
             }
@@ -402,7 +433,7 @@
         function resetStats() {
             document.getElementById('avgPercentage').innerText = "0%";
             document.getElementById('passPercentage').innerText = "0%";
-            document.getElementById('failCount').innerText = "0 Students";
+            document.getElementById('failCount').innerText = "0 Cases";
         }
     </script>
 </body>
