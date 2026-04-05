@@ -332,12 +332,22 @@
                 uniqueTimeSlots.forEach(slot => {
                     let td = document.createElement("td");
 
-                    // Check if teacher has class at this exact time and day (Match DB dayOfWeek with Current Day Name)
-                    const classesAtThisTime = teacherRoutines.filter(r => 
-                        r.dayOfWeek.toLowerCase() === dayName.toLowerCase() && 
-                        r.startTime === slot.start &&
-                        r.endTime === slot.end
-                    );
+                    // 🔴 MAIN FIX: Match by specific DATE first, and fallback to DAY only if no Date is set.
+                    const classesAtThisTime = teacherRoutines.filter(r => {
+                        let isDateMatch = false;
+
+                        // Check if backend provides a specific date (e.g. '2026-04-07')
+                        if (r.date) {
+                            let routineDate = new Date(r.date);
+                            isDateMatch = (routineDate.toDateString() === dateObj.toDateString());
+                        } else if (r.dayOfWeek) {
+                            // Agar date nahi hai backend mein, tab jaake purane tarike se (Day wise) match karega
+                            isDateMatch = (r.dayOfWeek.toLowerCase() === dayName.toLowerCase());
+                        }
+
+                        // Time slot match hona chahiye
+                        return isDateMatch && r.startTime === slot.start && r.endTime === slot.end;
+                    });
 
                     if (classesAtThisTime.length > 0) {
                         let cellHTML = "";
