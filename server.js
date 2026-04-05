@@ -807,6 +807,40 @@ app.delete('/api/staff/:id', async (req, res) => {
 
 // NOTES (STUDY MATERIAL) APIs
 
+// 3. GET STUDENT MARKS (FOR HOD PANEL)
+app.get('/api/marks', async (req, res) => {
+    try {
+        const { course, sessionBatch, semester } = req.query;
+
+        // Validation check
+        if (!course || !sessionBatch || !semester) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Course, Batch, and Semester parameters are required!" 
+            });
+        }
+
+        // Database se marks nikalna aur Teacher ka naam (populate) sath lana
+        const marksRecords = await Mark.find({ 
+            course: course, 
+            sessionBatch: sessionBatch, 
+            semester: semester 
+        })
+        .populate('teacherId', 'name') 
+        .sort({ examDate: -1, createdAt: -1 });
+
+        // Data frontend ko bhejna
+        res.status(200).json({ 
+            success: true, 
+            data: marksRecords || [] 
+        });
+
+    } catch (error) {
+        console.error("❌ Marks Fetch Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 1. POST API (Note Upload)
 app.post('/api/notes', uploadNote.single('file'), async (req, res) => {
     try {
