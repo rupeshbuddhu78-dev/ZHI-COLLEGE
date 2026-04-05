@@ -16,12 +16,15 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #14b8a6; /* Teal color for Teacher Panel */
+            --primary: #14b8a6; /* Teal Theme */
+            --primary-dark: #0f766e;
             --primary-light: #ccfbf1;
             --success: #10b981; 
+            --success-light: #d1fae5;
             --warning: #f59e0b; 
+            --warning-light: #fef3c7;
             --danger: #ef4444; 
-            --purple: #8b5cf6;
+            --danger-light: #fee2e2;
             --bg: #f8fafc;
             --text-dark: #1e293b;
             --text-light: #64748b;
@@ -33,19 +36,20 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
 
-        /* ------------------ SIDEBAR (FIXED - ALL MENUS ARE BACK) ------------------ */
-        .logo-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); padding: 2px; display: flex; align-items: center; justify-content: center; }
+        /* ------------------ SIDEBAR (ORIGINAL FULL MENU RESTORED) ------------------ */
+        .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .menu-section { margin: 25px 24px 10px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px; }
-        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
-        .logout-btn { color: #ef4444 !important; }
-        .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; border-left: 4px solid #ef4444 !important; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); padding-left: 28px;}
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
@@ -53,8 +57,10 @@
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px; transition: 0.2s;}
-        .user-profile img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
 
         .content { padding: 25px 30px; flex: 1; width: 100%; max-width: 1200px; margin: 0 auto;}
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -109,29 +115,49 @@
             .sidebar { position: fixed; left: -260px; height: 100vh; } 
             .sidebar.active { transform: translateX(260px); } 
             .menu-btn { display: block; } 
+            .sidebar-overlay.active { display: block; }
             .content { padding: 15px; }
         }
     </style>
 </head>
 <body>
 
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
                 <div>
-                    <h2>ZHI Faculty</h2>
+                    <h2>ZHI Academics</h2>
                     <p>TEACHER PANEL</p>
                 </div>
             </div>
+            <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
+
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
+            <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
+            
+            <li class="menu-section">My Classes</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
             <li class="active"><a href="mark.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
-            <li><a href="manage_leave.html"><i class='bx bx-calendar-x'></i> Leave Management</a></li>
-            <li><a href="notice_board.html"><i class='bx bx-bell'></i> Notice Board</a></li>
-            <li><a href="#" class="logout-btn" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout</a></li>
+            
+            <li class="menu-section">Academics</li>
+            <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
+            <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
+            <li><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
+            
+            <li class="menu-section">Personal</li>
+            <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
+            <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
+            
+            <li style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutTeacher()" style="color: #ef4444; padding-top: 15px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -142,7 +168,7 @@
                 <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Classroom Management</div>
             </div>
             <div class="user-profile">
-                <div>
+                <div style="text-align: right;">
                     <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
                     <span style="font-size: 11px; color: var(--text-light);">Faculty Member</span>
                 </div>
@@ -250,8 +276,16 @@
         let activeRoutine = null;
         let isEditModeActive = false;
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-        function logoutTeacher() { sessionStorage.clear(); localStorage.clear(); window.location.href = "index.html"; }
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+            document.getElementById('overlay').classList.toggle('active');
+        }
+        
+        function logoutTeacher() { 
+            sessionStorage.clear(); 
+            localStorage.clear(); 
+            window.location.href = "index.html"; 
+        }
 
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
@@ -272,13 +306,12 @@
                 staffId = currentUser.staffId || currentUser._id;
                 staffName = currentUser.name || "Faculty";
                 document.getElementById("teacherNameTxt").innerText = staffName;
+                document.getElementById("teacherImg").src = currentUser.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
             }
 
             if (!staffId) { alert("Please login first!"); window.location.href = "index.html"; return; }
             
-            // ============================================================
-            // 🚀 PERFECT LOCAL DATE FIX (NEVER SHOWS WRONG DATE)
-            // ============================================================
+            // EXACT CURRENT DATE (IST COMPATIBLE)
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -369,6 +402,7 @@
             const timeSlotFormatted = `${formatToAMPM(activeRoutine.startTime)} - ${formatToAMPM(activeRoutine.endTime)}`;
 
             try {
+                // Ye API backend me honi zaroori hai tabhi Database error nahi aayega!
                 const checkRes = await fetch(`${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlotFormatted}`);
                 const checkResult = await checkRes.json();
                 
@@ -433,7 +467,7 @@
 
             } catch (error) {
                 console.error("Fetch Error:", error);
-                alert("Database connection error! Check if server is running.");
+                alert("Database connection error! (Make sure Attendance APIs are added to server.js and deployed)");
             } finally {
                 btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Students";
             }
