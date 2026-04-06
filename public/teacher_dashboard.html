@@ -108,9 +108,10 @@
         .notice-item { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: 0.2s;}
         .notice-item:hover { background: #f8fafc; }
         .notice-item:last-child { border-bottom: none; }
-        .notice-date { font-size: 11px; color: var(--primary); font-weight: 600;}
+        .notice-date { font-size: 11px; color: var(--text-light); font-weight: 600;}
         .notice-title { font-size: 13px; color: var(--text-dark); font-weight: 600;}
         .notice-desc { font-size: 12px; color: var(--text-light); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .notice-sender { font-size: 10px; color: var(--primary); font-weight: 700; background: var(--primary-light); padding: 2px 6px; border-radius: 4px; display: inline-block; width: fit-content; }
 
         /* MODAL CSS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(4px); overflow-y: auto;}
@@ -163,7 +164,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img">
+                <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
                 <div>
                     <h2>ZHI Academics</h2>
                     <p>TEACHER PANEL</p>
@@ -178,7 +179,7 @@
             
             <li class="menu-section">My Classes</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
-            <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
+            <li><a href="mark.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
             
             <li class="menu-section">Academics</li>
             <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
@@ -190,7 +191,7 @@
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
             
             <li style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
-                <a href="#" onclick="logoutUser()" style="color: #ef4444; padding-top: 15px;">
+                <a href="#" onclick="logoutTeacher()" style="color: #ef4444; padding-top: 15px;">
                     <i class='bx bx-log-out'></i> Secure Logout
                 </a>
             </li>
@@ -217,7 +218,7 @@
                 <div>👋 Good Morning, <span id="welcomeName">Teacher</span>!</div>
                 <div class="page-title-actions">
                     <button class="btn-outline" onclick="openLeaveModal()"><i class='bx bx-calendar-minus'></i> Apply Leave</button>
-                    <button class="btn-primary" onclick="window.location.href='mark_attendance.html'"><i class='bx bx-user-check'></i> Take Attendance</button>
+                    <button class="btn-primary" onclick="window.location.href='mark.html'"><i class='bx bx-user-check'></i> Take Attendance</button>
                 </div>
             </div>
 
@@ -246,14 +247,13 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class='bx bx-check-shield'></i></div>
                     <div class="stat-info">
-                        <h4 id="myAttendanceStat">95%</h4>
-                        <p>My Attendance</p>
+                        <h4 id="myAttendanceStat">...</h4> <p>My Attendance</p>
                     </div>
                 </div>
             </div>
 
             <div class="quick-actions">
-                <a href="mark_attendance.html" class="action-btn">
+                <a href="mark.html" class="action-btn">
                     <i class='bx bx-user-check'></i> Mark Class Attendance
                 </a>
                 <a href="upload_notes.html" class="action-btn">
@@ -349,8 +349,7 @@
     <script>
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com";
         
-        // 🔴 currentUser USE KIYA HAI (from security.js sessionStorage)
-        let currentStaffId = currentUser ? currentUser.staffId : null; 
+        let currentStaffId = currentUser ? (currentUser.staffId || currentUser._id) : null; 
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -358,11 +357,17 @@
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         }
-
+        
         function checkMobileClose() {
             if (window.innerWidth <= 768) {
                 toggleSidebar();
             }
+        }
+        
+        function logoutTeacher() {
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = "index.html";
         }
 
         // Format time properly
@@ -378,16 +383,12 @@
         }
 
         window.onload = () => {
-            // 🔴 Yaha dynamic data setup hoga, currentUser Object se (sessionStorage)
             const userName = currentUser ? currentUser.name : "Teacher";
             const userPhoto = currentUser && currentUser.profilePicUrl ? currentUser.profilePicUrl : `https://ui-avatars.com/api/?name=${userName}&background=14b8a6&color=fff`;
 
             if(userName) {
-                // Topbar Update
                 document.getElementById('adminName').innerText = userName;
                 document.getElementById('profileImage').src = userPhoto;
-                
-                // Welcome message Update
                 document.getElementById('welcomeName').innerText = userName.split(" ")[0]; 
             }
 
@@ -396,15 +397,15 @@
             fetchNotices();
             fetchNotesCount();
             fetchAssignmentsCount();
+            fetchMyAttendanceStats(); // 🔴 NEW LIVE ATTENDANCE FETCH
         };
 
-        // 1. Fetch Live Schedule for Teacher (Only for logged in Teacher ID)
+        // 1. Fetch Live Schedule for Teacher
         async function fetchTodaySchedule() {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const todayName = days[new Date().getDay()]; 
             
             try {
-                // Fetch schedule strictly for the currentStaffId
                 const url = currentStaffId ? 
                     `${API_BASE_URL}/api/routines?teacherId=${currentStaffId}&dayOfWeek=${todayName}` : 
                     `${API_BASE_URL}/api/routines?dayOfWeek=${todayName}`;
@@ -419,7 +420,6 @@
                     document.getElementById('todayClassesCount').innerText = json.data.length;
                     document.getElementById('pendingClassesBadge').innerText = `${json.data.length} Classes Today`;
 
-                    // Sort by time
                     let sortedRoutines = json.data.sort((a, b) => {
                         if(!a.startTime || !b.startTime) return 0;
                         return a.startTime.localeCompare(b.startTime);
@@ -434,7 +434,7 @@
                             <td>${routine.course} <span style="color:var(--text-light);font-size:11px;">(Sem ${routine.semester})</span></td>
                             <td>${routine.subject}</td>
                             <td><span class="badge bg-teal">${routine.roomNumber || 'TBA'}</span></td>
-                            <td><button class="btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="window.location.href='mark_attendance.html'">Attendance</button></td>
+                            <td><button class="btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="window.location.href='mark.html'">Attendance</button></td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -449,7 +449,7 @@
             }
         }
 
-        // 2. Fetch Live Notices
+        // 2. Fetch Live Notices with SENDER NAME (🔴 NEW LOGIC)
         async function fetchNotices() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/notices`);
@@ -459,7 +459,6 @@
                 list.innerHTML = "";
 
                 if (json.success && json.data.length > 0) {
-                    // Filter out notices that are NOT for Faculty/Staff (If your backend doesn't filter)
                     let facultyNotices = json.data.filter(n => n.audience && (n.audience.includes('Faculty') || n.audience.includes('Staff') || n.audience.length === 3));
 
                     if (facultyNotices.length === 0) {
@@ -467,18 +466,31 @@
                         return;
                     }
 
-                    facultyNotices.slice(0, 5).forEach(notice => { 
+                    facultyNotices.slice(0, 6).forEach(notice => { 
                         let dateText = "New";
                         try {
                             const d = new Date(notice.createdAt);
                             dateText = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                         } catch(e) {}
+                        
+                        // 🔴 SENDER NAME EXTRACTION LOGIC
+                        let senderName = "Admin";
+                        if (notice.createdBy && notice.createdBy.name) {
+                            senderName = notice.createdBy.name;
+                        } else if (notice.postedBy) {
+                            senderName = notice.postedBy;
+                        } else if (notice.author) {
+                            senderName = notice.author;
+                        }
 
                         const div = document.createElement('div');
                         div.className = "notice-item";
                         div.innerHTML = `
-                            <span class="notice-date">${dateText}</span>
-                            <span class="notice-title">${notice.title}</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="notice-date">${dateText}</span>
+                                <span class="notice-sender">By: ${senderName}</span>
+                            </div>
+                            <span class="notice-title" style="margin-top:2px;">${notice.title}</span>
                             <span class="notice-desc">${notice.message}</span>
                         `;
                         
@@ -501,11 +513,9 @@
         // 3. Fetch Total Uploaded Notes
         async function fetchNotesCount() {
             try {
-                // If you have an endpoint that accepts teacherId, use it here. E.g. /api/notes?teacherId=${currentStaffId}
                 const response = await fetch(`${API_BASE_URL}/api/notes`);
                 const json = await response.json();
                 if(json.success) {
-                    // Filter notes uploaded by this specific teacher
                     let myNotes = json.data;
                     if(currentStaffId) {
                         myNotes = json.data.filter(n => n.teacherId === currentStaffId || (n.teacherId && n.teacherId._id === currentStaffId));
@@ -521,7 +531,42 @@
 
         // 4. Fetch Assignments Count
         async function fetchAssignmentsCount() {
-            document.getElementById('activeAssignmentsCount').innerText = "0"; // Update with real API when ready
+            document.getElementById('activeAssignmentsCount').innerText = "0"; 
+        }
+        
+        // 5. Fetch Live Teacher Attendance Percentage (🔴 NEW API LOGIC)
+        async function fetchMyAttendanceStats() {
+            try {
+                if(!currentStaffId) {
+                    document.getElementById('myAttendanceStat').innerText = "N/A";
+                    return;
+                }
+                
+                // Requesting from teacher attendance endpoint
+                const response = await fetch(`${API_BASE_URL}/api/teacher-attendance?staffId=${currentStaffId}`);
+                const json = await response.json();
+                
+                if(json.success && json.data) {
+                    const records = json.data;
+                    if(records.length === 0) {
+                        document.getElementById('myAttendanceStat').innerText = "N/A";
+                        return;
+                    }
+                    
+                    // Count how many times the teacher was present
+                    const presentDays = records.filter(r => r.status === 'Present' || r.status === 'P').length;
+                    const totalDays = records.length;
+                    
+                    // Calculate Percentage
+                    const percent = Math.round((presentDays / totalDays) * 100);
+                    document.getElementById('myAttendanceStat').innerText = percent + "%";
+                } else {
+                    document.getElementById('myAttendanceStat').innerText = "N/A";
+                }
+            } catch(e) {
+                console.error("Error fetching teacher attendance:", e);
+                document.getElementById('myAttendanceStat').innerText = "N/A";
+            }
         }
 
         // Leave Modal Logic
