@@ -82,11 +82,11 @@
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); margin-right: 15px;}
         .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center;}
         
-        .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 5px; border-radius: 8px;}
-        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+    .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
-        .user-profile b { font-size: 15px; color: var(--text-dark); }
-        .user-profile span { font-size: 13px; color: var(--text-light); }
+        .user-profile b { font-size: 13px; color: var(--text-dark); }
+        .user-profile span { font-size: 11px; color: var(--text-light); }
 
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -115,26 +115,6 @@
         td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; color: var(--text-dark); font-weight: 500;}
         tr { transition: background 0.2s; }
         tr:hover { background: #f1f5f9; }
-
-        /* SKELETON LOADER ANIMATION */
-        .skeleton {
-            background: #e2e8f0;
-            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-            border-radius: 4px;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Specific Skeleton Sizes */
-        .sk-date { width: 80px; height: 16px; }
-        .sk-title { width: 150px; height: 18px; margin-bottom: 6px;}
-        .sk-subtitle { width: 100px; height: 12px; }
-        .sk-btn { width: 35px; height: 35px; border-radius: 6px; }
 
         /* Mobile Responsiveness */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
@@ -260,7 +240,12 @@
                         <table>
                             <thead><tr><th>Date</th><th>Topic/Title</th><th>Semester & Subject</th><th>Action</th></tr></thead>
                             <tbody id="notesTable">
-                                </tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-light); padding: 30px;">
+                                        <i class='bx bx-loader-alt bx-spin'></i> Loading your notes...
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -320,8 +305,6 @@
             
             document.getElementById('nDate').valueAsDate = new Date();
             
-            // Show Skeleton and Fetch Notes
-            showSkeletonLoader();
             fetchNotes(); 
         }
 
@@ -343,29 +326,6 @@
 
         const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api/notes"; 
 
-        // Skeleton UI injection
-        function showSkeletonLoader() {
-            const tbody = document.getElementById('notesTable');
-            let skeletonRows = "";
-            for(let i=0; i<3; i++) { // Generate 3 shimmer rows
-                skeletonRows += `
-                    <tr>
-                        <td><div class="skeleton sk-date"></div></td>
-                        <td>
-                            <div class="skeleton sk-title"></div>
-                            <div class="skeleton sk-subtitle"></div>
-                        </td>
-                        <td>
-                            <div class="skeleton sk-title"></div>
-                            <div class="skeleton sk-subtitle"></div>
-                        </td>
-                        <td><div class="skeleton sk-btn"></div></td>
-                    </tr>
-                `;
-            }
-            tbody.innerHTML = skeletonRows;
-        }
-
         // 1. Upload Logic
         async function handleUpload(e) {
             e.preventDefault();
@@ -383,6 +343,7 @@
             formData.append('title', document.getElementById('nTitle').value);
             formData.append('file', fileInput.files[0]);
             
+            // Ye ekdum sahi hai, yahan se form me staffId ja raha hai
             formData.append('teacherId', staffId);
 
             try {
@@ -398,7 +359,6 @@
                     document.getElementById('noteForm').reset();
                     document.getElementById('nDate').valueAsDate = new Date(); 
                     updateSubjects(); 
-                    showSkeletonLoader(); // Show skeleton again while reloading list
                     fetchNotes(); 
                 } else {
                     alert("Failed to upload: " + data.message);
@@ -412,14 +372,18 @@
             }
         }
 
-        // 2. Fetch Notes Logic
+        // 2. Fetch Notes Logic (Updated to send teacherId in URL)
         async function fetchNotes() {
             try {
+                // 🔴 Yahan query parameters me teacherId bhej rahe hain taaki DB filter kare
                 const fetchUrl = staffId ? `${API_BASE_URL}?teacherId=${staffId}` : API_BASE_URL;
+                
                 const response = await fetch(fetchUrl);
                 const resData = await response.json();
                 
+                // Ab filter karne ki extra zarurat nahi, API sirf hamare hi notes bhej rahi hai
                 let notes = resData.data || []; 
+                
                 const tbody = document.getElementById('notesTable');
                 tbody.innerHTML = ""; 
 
@@ -466,7 +430,6 @@
                     
                     if(response.ok) {
                         alert("Note deleted successfully!");
-                        showSkeletonLoader(); // Show skeleton visually while refetching
                         fetchNotes(); 
                     } else {
                         alert("Failed to delete note!");
