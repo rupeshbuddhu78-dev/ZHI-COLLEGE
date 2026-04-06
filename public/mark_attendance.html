@@ -282,7 +282,6 @@
         let staffName = "Faculty";
         let isEditModeActive = false;
         
-        // Official Routine Data Store
         let teacherOfficialTimetable = [];
 
         function toggleSidebar() { 
@@ -298,7 +297,6 @@
             }
         }
 
-        // Time Formatting helper
         function formatToAMPM(timeStr) {
             if(!timeStr) return "";
             let [hours, minutes] = timeStr.split(':');
@@ -331,7 +329,6 @@
             await fetchTeacherSubjects();
             await fetchTeacherTimetable(); 
             
-            // Smart Time Selector Triggers
             document.getElementById('attDate').addEventListener('change', autoSelectTimeSlot);
             document.getElementById('courseSelect').addEventListener('change', autoSelectTimeSlot);
             document.getElementById('semSelect').addEventListener('change', autoSelectTimeSlot);
@@ -363,7 +360,6 @@
             }
         }
 
-        // Fetches official routines
         async function fetchTeacherTimetable() {
             try {
                 const response = await fetch(`${API_BASE_URL}/routines?teacherId=${staffId}`);
@@ -376,13 +372,11 @@
             }
         }
 
-        // TIME SELECTOR AUTO-LOCK LOGIC
         function autoSelectTimeSlot() {
             const dateVal = document.getElementById('attDate').value;
             const timeSelect = document.getElementById('timeSelect');
             const hint = document.getElementById('timeHint');
 
-            // Purane options clear karo
             timeSelect.innerHTML = ""; 
 
             if(!dateVal || teacherOfficialTimetable.length === 0) {
@@ -398,7 +392,6 @@
             const sem = document.getElementById('semSelect').value;
             const subject = document.getElementById('subjectSelect').value;
 
-            // Database routine se filter karke exact time nikalna
             const schedules = teacherOfficialTimetable.filter(t => {
                 let isDateMatch = false;
 
@@ -437,7 +430,7 @@
             }
         }
 
-        // FETCH STUDENTS LOGIC
+        // ORIGINAL FETCH LOGIC (100% WORKING ONE FROM test2.html)
         async function loadStudentsForAttendance() {
             const course = document.getElementById('courseSelect').value;
             const batch = document.getElementById('batchSelect').value; 
@@ -462,7 +455,7 @@
             document.getElementById('summaryBox').style.display = 'none';
 
             try {
-                // PURANA WORKING FETCH API LOGIC
+                // Exact same fetch line that was working in test2.html
                 const checkRes = await fetch(`${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlot}`);
                 const checkResult = await checkRes.json();
                 
@@ -479,13 +472,14 @@
                     }
                 }
 
+                // Exact same fetch line for getting students
                 const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`);
                 const studentResult = await studentRes.json();
 
                 const tbody = document.getElementById('studentTableBody');
                 tbody.innerHTML = "";
 
-                if(studentResult.success && studentResult.students.length > 0) {
+                if(studentResult.success && studentResult.students && studentResult.students.length > 0) {
                     document.getElementById('tableTitle').innerHTML = `<i class='bx bx-edit' style="color: var(--primary);"></i> Marking Attendance: ${course} - Sem ${sem} (${timeSlot})`;
                     
                     studentResult.students.forEach((student, index) => {
@@ -500,7 +494,7 @@
                         tr.dataset.studentid = student._id;
                         tr.innerHTML = `
                             <td>${index + 1}</td>
-                            <td><b>${student.roll}</b></td>
+                            <td><b>${student.roll || student.rollNo || 'N/A'}</b></td>
                             <td>${student.name}</td>
                             <td>
                                 <div class="attendance-toggle">
@@ -590,6 +584,7 @@
             };
 
             try {
+                // Exact same submit logic from test2.html
                 const response = await fetch(`${API_BASE_URL}/attendance/mark`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
