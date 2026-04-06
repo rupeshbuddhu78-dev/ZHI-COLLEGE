@@ -16,15 +16,12 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #14b8a6; /* Teal Theme */
-            --primary-dark: #0f766e;
+            --primary: #14b8a6; /* Teal color for Teacher Panel */
             --primary-light: #ccfbf1;
             --success: #10b981; 
-            --success-light: #d1fae5;
             --warning: #f59e0b; 
-            --warning-light: #fef3c7;
             --danger: #ef4444; 
-            --danger-light: #fee2e2;
+            --purple: #8b5cf6;
             --bg: #f8fafc;
             --text-dark: #1e293b;
             --text-light: #64748b;
@@ -32,101 +29,107 @@
             --border: #e2e8f0;
             --card-curve: 12px;
         }
-        
+
+        /* FIXED HORIZONTAL SCROLL ISSUE */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); display: flex; height: 100vh; }
+        html, body { width: 100%; max-width: 100vw; overflow-x: hidden; background-color: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; display: flex; height: 100vh; }
 
         /* ------------------ SIDEBAR ------------------ */
-        .logo-img { 
-            width: 42px; 
-            height: 42px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            background: var(--white); 
-            box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); 
-            padding: 2px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
+        .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
+        
+        .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .menu-section { margin: 25px 24px 10px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+
+        .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px; }
-        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
-        
-        .logout-btn { color: #ef4444 !important; }
-        .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; border-left: 4px solid #ef4444 !important; }
+        .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); padding-left: 28px;}
+        .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); }
 
         /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative;}
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 8px;}
-        .user-profile img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);}
         .user-profile div { display: flex; flex-direction: column; text-align: right;}
         .user-profile b { font-size: 13px; color: var(--text-dark); }
         .user-profile span { font-size: 11px; color: var(--text-light); }
 
-        .content { padding: 25px 30px; flex: 1; width: 100%; max-width: 1200px; margin: 0 auto;}
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); }
+        /* ------------------ PAGE SPECIFIC CONTENT ------------------ */
+        .content { padding: 25px; flex: 1; width: 100%; max-width: 100vw;}
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px;}
 
-        /* FILTER CARD */
-        .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;}
+        /* FILTERS */
+        .filter-card { background: var(--white); padding: 20px; border-radius: var(--card-curve); border: 1px solid var(--border); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;}
         .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px;}
         .form-group label { font-size: 13px; font-weight: 600; color: var(--text-light); }
         .form-control { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; background: var(--bg); width: 100%; transition: 0.2s;}
-        .form-control:focus { border-color: var(--primary); background: #fff;}
-        .form-control:disabled { background: #e2e8f0; color: #475569; font-weight: 600; cursor: not-allowed; } 
+        .form-control:focus { border-color: var(--primary); background: #fff; }
         
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;}
-        .btn-primary:hover { background: var(--primary-dark); }
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; width: 100%;}
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-primary:hover { background: #0d9488; transform: translateY(-1px); }
+        .btn-warning { background: var(--warning); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-warning:hover { background: #d97706; transform: translateY(-1px); }
+        .btn-outline { background: var(--bg); color: var(--text-dark); border: 1px solid var(--border); padding: 11px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.2s;}
+        .btn-outline:hover { background: #e2e8f0; }
 
-        /* ATTENDANCE TABLE CARD */
-        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; display: none;}
+        /* ATTENDANCE TABLE */
+        .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px; display: none;}
         .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
         
+        .table-res { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;}
-        th { padding: 12px 20px; background: #f1f5f9; font-size: 13px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
+        th { padding: 15px 20px; background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--text-light); font-weight: 600; border-bottom: 1px solid var(--border);}
         td { padding: 15px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle;}
         
-        .attendance-toggle { display: flex; align-items: center; gap: 10px;}
-        .radio-btn { display: none; }
-        .radio-label { padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: 0.2s; background: #f1f5f9; color: var(--text-light);}
-        
-        .radio-btn:checked + .radio-label.present { background: #dcfce7; color: #16a34a; border-color: #16a34a; }
-        .radio-btn:checked + .radio-label.absent { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
+        .att-options { display: flex; gap: 15px; }
+        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; font-size: 13px;}
+        .radio-label input { accent-color: var(--primary); cursor: pointer; width: 16px; height: 16px;}
+        .text-p { color: var(--success); }
+        .text-a { color: var(--danger); }
 
         .btn-success { background: var(--success); color: white; border: none; padding: 14px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; font-size: 15px; transition: 0.2s;}
         .btn-success:hover { background: #059669; }
 
-        .summary-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; text-align: center; margin-top: 20px; display: none; }
-        .summary-box h3 { color: #1e3a8a; margin-bottom: 10px; font-size: 18px;}
-        .stat-grid { display: flex; justify-content: center; gap: 30px; margin-top: 15px;}
-        .stat-item { display: flex; flex-direction: column; gap: 5px;}
-        .stat-item span { font-size: 24px; font-weight: 700; color: var(--primary);}
-        .stat-item label { font-size: 12px; color: var(--text-light); text-transform: uppercase; font-weight: 600;}
+        /* SUMMARY BOX */
+        .summary-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: var(--card-curve); padding: 25px; margin-top: 20px; display: none; text-align: center; }
+        .summary-box h3 { color: #065f46; margin-bottom: 15px; font-size: 20px;}
+        .stats-grid { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;}
+        .stat-item { background: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 120px;}
+        .stat-item span { display: block; font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; margin-bottom: 5px;}
+        .stat-item strong { font-size: 24px; color: var(--text-dark); }
+
+        /* Edit Mode Badge */
+        .edit-badge { background: var(--warning); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-left: 10px; display: none; }
+
+        /* Loader */
+        .loader { text-align: center; padding: 20px; font-size: 16px; font-weight: 600; color: var(--primary); display: none; }
 
         /* Mobile Responsiveness */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
-        @media (max-width: 768px) { 
-            .sidebar { position: fixed; left: -260px; height: 100vh; } 
-            .sidebar.active { transform: translateX(260px); } 
-            .menu-btn { display: block; } 
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.active { transform: translateX(260px); }
+            .menu-btn { display: block; }
             .sidebar-overlay.active { display: block; }
             .topbar { padding: 0 15px; }
-            .user-profile div { display: none; }
+            .user-profile b, .user-profile span { display: none; }
             .content { padding: 15px; }
+            .card-header { flex-direction: column; gap: 15px; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
@@ -134,31 +137,35 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="zhi_logo.png" alt="ZHI Logo" class="logo-img" onerror="this.src='https://ui-avatars.com/api/?name=ZHI&background=fff&color=14b8a6'">
                 <div>
-                    <h2>ZHI Faculty</h2>
+                    <h2>ZHI Academics</h2>
                     <p>TEACHER PANEL</p>
                 </div>
             </div>
             <button class="menu-btn close-btn" onclick="toggleSidebar()" style="color:white; display:none;"><i class='bx bx-x'></i></button>
         </div>
-        
+
         <ul class="sidebar-menu">
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">My Classes</li>
+            <li class="menu-section">My Classes</li>
             <li><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
             <li class="active"><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li class="menu-section">Academics</li>
             <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
             <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
             <li><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
             
-            <li style="margin: 15px 0 5px 20px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
+            <li class="menu-section">Personal</li>
             <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
             
-            <li style="margin-top: 20px;"><a href="#" class="logout-btn" onclick="logoutTeacher()"><i class='bx bx-log-out'></i> Logout</a></li>
+            <li style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="logoutTeacher()" style="color: #ef4444; padding-top: 15px;">
+                    <i class='bx bx-log-out'></i> Secure Logout
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -166,91 +173,109 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Classroom Management</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-dark);">Faculty Portal</div>
             </div>
             
             <div class="user-profile">
-                <div>
-                    <b id="teacherNameTxt" style="font-size: 13px; color: var(--text-dark);">Loading...</b>
-                    <span style="font-size: 11px; color: var(--text-light);">Faculty Member</span>
+                <div style="text-align: right;">
+                    <b id="adminName">Loading...</b>
+                    <span id="adminDept">Faculty Member</span>
                 </div>
-                <img id="teacherImg" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Teacher">
+                <img id="profileImage" src="https://ui-avatars.com/api/?name=Teacher&background=14b8a6&color=fff" alt="Admin">
             </div>
         </header>
 
         <div class="content">
-            <div class="page-header"><div class="page-title">Mark Student Attendance</div></div>
+            <div class="page-header">
+                <div class="page-title">Daily Class Attendance</div>
+            </div>
 
             <div class="filter-card">
                 <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" class="form-control" id="attDate">
+                </div>
+                
+                <div class="form-group">
                     <label>Course</label>
-                    <select id="courseSelect" class="form-control">
-                        <option value="BCA">BCA</option>
-                        <option value="BBA">BBA</option>
-                        <option value="MCA">MCA</option>
-                        <option value="MBA">MBA</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Batch</label>
-                    <select id="batchSelect" class="form-control">
-                        <option value="2023-2026">2023-2026</option>
-                        <option value="2024-2027">2024-2027</option>
-                        <option value="2025-2028">2025-2028</option>
-                        <option value="2026-2029">2026-2029</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Semester</label>
-                    <select id="semSelect" class="form-control">
-                        <option value="1">Sem 1</option>
-                        <option value="2">Sem 2</option>
-                        <option value="3">Sem 3</option>
-                        <option value="4">Sem 4</option>
-                        <option value="5">Sem 5</option>
-                        <option value="6">Sem 6</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Subject</label>
-                    <select id="subjectSelect" class="form-control">
+                    <select class="form-control" id="attCourse" onchange="fetchDynamicBatches()">
                         <option value="">Loading...</option>
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="attDate" class="form-control">
-                </div>
-                <div class="form-group" style="min-width: 150px;">
-                    <label>Time Slot (Auto Locked)</label>
-                    <select id="timeSelect" class="form-control" disabled>
-                        <option value="">Fetching routine...</option>
+                    <label>Batch</label>
+                    <select class="form-control" id="attBatch">
+                        <option value="">Select Course First</option>
                     </select>
-                    <span id="timeHint" style="font-size: 11px; font-weight: 600; margin-top: 4px; display: block;"></span>
                 </div>
-                <div class="form-group" style="min-width: 120px;">
-                    <button type="button" class="btn-primary" onclick="loadStudentsForAttendance()" id="fetchBtn" style="height: 42px; margin-top: 22px;">
-                        <i class='bx bx-list-ul'></i> Fetch Class
-                    </button>
+
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select class="form-control" id="attSem">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                    </select>
                 </div>
+                
+                <div class="form-group">
+                    <label>Your Subjects (Skills)</label>
+                    <select class="form-control" id="attSubject">
+                        <option>Loading subjects...</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="min-width: 220px;">
+                    <label>Time Slot / Period</label>
+                    <select class="form-control" id="attTime">
+                        <option value="09:00 AM - 10:00 AM">Period 1 (09:00 AM - 10:00 AM)</option>
+                        <option value="10:00 AM - 11:00 AM">Period 2 (10:00 AM - 11:00 AM)</option>
+                        <option value="11:00 AM - 12:00 PM">Period 3 (11:00 AM - 12:00 PM)</option>
+                        <option value="12:00 PM - 12:30 PM">Break (12:00 PM - 12:30 PM)</option>
+                        <option value="12:30 PM - 01:30 PM">Period 4 (12:30 PM - 01:30 PM)</option>
+                        <option value="01:30 PM - 02:30 PM">Period 5 (01:30 PM - 02:30 PM)</option>
+                        <option value="02:30 PM - 03:30 PM">Period 6 (02:30 PM - 03:30 PM)</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="fetchStudents(false)"><i class='bx bx-search'></i> Take New</button>
+                    <button class="btn-warning" onclick="fetchStudents(true)"><i class='bx bx-edit-alt'></i> Edit Existing</button>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="loader">
+                <i class='bx bx-loader-alt bx-spin'></i> Fetching Data...
             </div>
 
             <div class="card" id="attendanceCard">
                 <div class="card-header">
-                    <span id="tableTitle"><i class='bx bx-edit' style="color: var(--primary);"></i> Marking Attendance</span>
                     <div>
-                        <button type="button" onclick="markAll('Present')" style="background: #dcfce7; color: #16a34a; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 5px;">Mark All Present</button>
-                        <button type="button" onclick="markAll('Absent')" style="background: #fee2e2; color: #dc2626; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">Mark All Absent</button>
+                        <span id="listTitle"><i class='bx bx-list-check' style="color: var(--primary);"></i> Students List</span>
+                        <span class="edit-badge" id="editBadge">EDIT MODE</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-outline" onclick="markAll('P')">
+                            <i class='bx bx-check-double' style="color: var(--success);"></i> Mark All Present
+                        </button>
+                        <button type="button" class="btn-outline" onclick="markAll('A')">
+                            <i class='bx bx-x' style="color: var(--danger);"></i> Mark All Absent
+                        </button>
                     </div>
                 </div>
-                <form onsubmit="submitAttendance(event)">
-                    <div style="overflow-x: auto;">
-                        <table id="attendanceTable">
+                
+                <form id="attendanceForm" onsubmit="submitAttendance(event)">
+                    <div class="table-res">
+                        <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 80px;">S.No</th>
-                                    <th>Roll No</th>
+                                    <th>Roll Number</th>
                                     <th>Student Name</th>
+                                    <th>Previous %</th>
                                     <th>Attendance Status</th>
                                 </tr>
                             </thead>
@@ -266,329 +291,299 @@
 
             <div class="summary-box" id="summaryBox">
                 <h3 id="summaryTitle"><i class='bx bx-check-circle'></i> Attendance Saved Successfully!</h3>
-                <div class="stat-grid">
-                    <div class="stat-item"><span id="sumTotal">0</span><label>Total</label></div>
-                    <div class="stat-item"><span id="sumPresent" style="color: #16a34a;">0</span><label>Present</label></div>
-                    <div class="stat-item"><span id="sumAbsent" style="color: #dc2626;">0</span><label>Absent</label></div>
-                    <div class="stat-item"><span id="sumPercent" style="color: var(--warning);">0%</span><label>Attendance %</label></div>
+                <div class="stats-grid">
+                    <div class="stat-item"><span>Total Students</span><strong id="sumTotal">0</strong></div>
+                    <div class="stat-item"><span>Present</span><strong id="sumPresent" style="color: var(--success);">0</strong></div>
+                    <div class="stat-item"><span>Absent</span><strong id="sumAbsent" style="color: var(--danger);">0</strong></div>
+                    <div class="stat-item"><span>Class Avg %</span><strong id="sumPercent">0%</strong></div>
                 </div>
+                <button class="btn-outline" style="margin: 20px auto 0;" onclick="location.reload()">Back to Dashboard</button>
             </div>
+
         </div>
     </main>
 
     <script>
-        const API_BASE_URL = "https://zhi-college-rtya.onrender.com/api";
-        let staffId = null;
-        let staffName = "Faculty";
-        let isEditModeActive = false;
-        
-        let teacherOfficialTimetable = [];
+        const API_BASE = 'https://zhi-college-rtya.onrender.com/api';
 
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('active'); 
             document.getElementById('overlay').classList.toggle('active');
         }
 
+        // Secure Logout using sessionStorage
         function logoutTeacher() {
-            if(confirm("Are you sure you want to securely logout?")) {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.href = "index.html"; 
+            if(confirm("Are you sure you want to logout?")) {
+                sessionStorage.clear(); 
+                localStorage.clear(); 
+                window.location.href = "login.html"; 
             }
         }
 
-        function formatToAMPM(timeStr) {
-            if(!timeStr) return "";
-            let [hours, minutes] = timeStr.split(':');
-            let h = parseInt(hours, 10);
-            let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12; 
-            let hStr = h < 10 ? '0' + h : h;
-            return `${hStr}:${minutes} ${ampm}`;
-        }
+        let isEditModeActive = false;
+        let loadedStudentsData = []; 
 
-        window.onload = async function() {
-            if (typeof currentUser !== 'undefined' && currentUser) {
-                staffId = currentUser.staffId || currentUser._id;
-                staffName = currentUser.name || "Faculty";
-                const userPhoto = currentUser.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
-
-                document.getElementById("teacherNameTxt").innerText = staffName;
-                document.getElementById("teacherImg").src = userPhoto;
-            }
-
+        window.onload = function() {
+            // --- SECURITY AND PROFILE SETUP (USING SESSION STORAGE) ---
+            const staffId = typeof currentUser !== 'undefined' && currentUser ? currentUser.staffId || currentUser._id : sessionStorage.getItem("staffId");
+            
             if (!staffId) {
                 alert("Security Alert: Please login first!");
-                logoutTeacher();
+                window.location.href = "login.html";
                 return;
             }
+
+            const staffName = typeof currentUser !== 'undefined' && currentUser ? currentUser.name : (sessionStorage.getItem("staffName") || "Faculty");
+            const profilePicUrl = typeof currentUser !== 'undefined' && currentUser && currentUser.profilePicUrl ? currentUser.profilePicUrl : sessionStorage.getItem("profilePicUrl");
+
+            // Update user details in Topbar
+            const adminNameEl = document.getElementById("adminName");
+            const profileImageEl = document.getElementById("profileImage");
             
+            if (adminNameEl) adminNameEl.innerText = staffName;
+            if (profileImageEl) profileImageEl.src = profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
+
+            // Set current date
             document.getElementById('attDate').valueAsDate = new Date();
-            
-            await fetchTeacherSubjects();
-            await fetchTeacherTimetable(); 
-            
-            document.getElementById('attDate').addEventListener('change', autoSelectTimeSlot);
-            document.getElementById('courseSelect').addEventListener('change', autoSelectTimeSlot);
-            document.getElementById('semSelect').addEventListener('change', autoSelectTimeSlot);
-            document.getElementById('batchSelect').addEventListener('change', autoSelectTimeSlot);
-            document.getElementById('subjectSelect').addEventListener('change', autoSelectTimeSlot);
 
-            autoSelectTimeSlot(); 
-        }
+            // --- FETCH INITIAL DATA ---
+            fetchDynamicCourses();
+            fetchTeacherSubjects(staffId);
+        };
 
-        async function fetchTeacherSubjects() {
+        async function fetchDynamicCourses() {
             try {
-                const subSelect = document.getElementById('subjectSelect');
-                const response = await fetch(`${API_BASE_URL}/get-teacher-skills?staffId=${staffId}`);
-                const result = await response.json();
-
-                subSelect.innerHTML = "";
-                if (result.success && result.skills.length > 0) {
-                    result.skills.forEach(sub => {
-                        let opt = document.createElement("option");
-                        opt.value = sub;
-                        opt.innerText = sub;
-                        subSelect.appendChild(opt);
+                const response = await fetch(`${API_BASE}/get-courses`);
+                const data = await response.json();
+                const courseSelect = document.getElementById('attCourse');
+                courseSelect.innerHTML = '';
+                
+                if(data.success && data.courses.length > 0) {
+                    data.courses.forEach(c => {
+                        let opt = document.createElement('option');
+                        opt.value = c;
+                        opt.innerHTML = c;
+                        courseSelect.appendChild(opt);
                     });
+                    fetchDynamicBatches();
                 } else {
-                    subSelect.innerHTML = "<option value=''>No subjects assigned</option>";
+                    courseSelect.innerHTML = '<option value="">No Courses Found</option>';
                 }
             } catch (error) {
-                console.error("Error fetching skills", error);
+                console.error("Error fetching courses:", error);
+                const courseSelect = document.getElementById('attCourse');
+                courseSelect.innerHTML = '<option value="BCA">BCA</option><option value="MCA">MCA</option><option value="BBA">BBA</option>';
+                fetchDynamicBatches();
             }
         }
 
-        async function fetchTeacherTimetable() {
+        async function fetchDynamicBatches() {
+            const course = document.getElementById('attCourse').value;
+            const batchSelect = document.getElementById('attBatch');
+            batchSelect.innerHTML = '<option value="">Fetching...</option>';
+
+            if(!course) return;
+
             try {
-                const response = await fetch(`${API_BASE_URL}/routines?teacherId=${staffId}`);
-                const result = await response.json();
-                if(result.success) {
-                    teacherOfficialTimetable = result.data || [];
+                const response = await fetch(`${API_BASE}/get-batches?course=${course}`);
+                const data = await response.json();
+                batchSelect.innerHTML = '';
+
+                if(data.success && data.batches.length > 0) {
+                    data.batches.forEach(b => {
+                        let opt = document.createElement('option');
+                        opt.value = b;
+                        opt.innerHTML = b;
+                        batchSelect.appendChild(opt);
+                    });
+                } else {
+                    batchSelect.innerHTML = '<option value="">No Batches in Database</option>';
                 }
-            } catch(e) {
-                console.error("Failed to load routine data for automation.", e);
+            } catch (error) {
+                console.error("Error fetching batches:", error);
+                batchSelect.innerHTML = '<option value="2023-2026">2023-2026</option><option value="2024-2027">2024-2027</option>';
             }
         }
 
-        function autoSelectTimeSlot() {
-            const dateVal = document.getElementById('attDate').value;
-            const timeSelect = document.getElementById('timeSelect');
-            const hint = document.getElementById('timeHint');
+        async function fetchTeacherSubjects(staffIdStr) {
+            try {
+                const url = staffIdStr ? `${API_BASE}/get-teacher-skills?staffId=${staffIdStr}` : `${API_BASE}/get-teacher-skills`;
+                
+                const response = await fetch(url); 
+                const data = await response.json();
+                const subjectSelect = document.getElementById('attSubject');
+                subjectSelect.innerHTML = ''; 
+                
+                if(data.success && data.skills && data.skills.length > 0) {
+                    data.skills.forEach(sub => {
+                        let opt = document.createElement('option');
+                        opt.value = sub;
+                        opt.innerHTML = sub;
+                        subjectSelect.appendChild(opt);
+                    });
+                } else {
+                    subjectSelect.innerHTML = '<option value="">No subjects found</option>';
+                }
+            } catch (error) {
+                console.error("Error fetching subjects:", error);
+                document.getElementById('attSubject').innerHTML = '<option value="Default Subject">Default Subject</option>';
+            }
+        }
 
-            timeSelect.innerHTML = ""; 
-
-            if(!dateVal || teacherOfficialTimetable.length === 0) {
-                timeSelect.innerHTML = "<option value=''>No routine found</option>";
-                if(hint) { hint.innerText = ""; }
+        async function fetchStudents(isEdit) {
+            isEditModeActive = isEdit;
+            
+            const course = document.getElementById('attCourse').value;
+            const batch = document.getElementById('attBatch').value;
+            const sem = document.getElementById('attSem').value;
+            const date = document.getElementById('attDate').value;
+            const subject = document.getElementById('attSubject').value;
+            
+            if(!batch) {
+                alert("Please wait or select a valid batch first!");
                 return;
             }
 
-            const dateObj = new Date(dateVal);
-            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }); 
+            document.getElementById('listTitle').innerHTML = `<i class='bx bx-list-check' style="color: var(--primary);"></i> ${course} ${sem}`;
+            document.getElementById('editBadge').style.display = isEdit ? 'inline-block' : 'none';
+            document.getElementById('submitBtn').innerHTML = isEdit ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
+            
+            document.getElementById('attendanceCard').style.display = 'none';
+            document.getElementById('summaryBox').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'block';
 
-            const course = document.getElementById('courseSelect').value;
-            const sem = document.getElementById('semSelect').value;
-            const subject = document.getElementById('subjectSelect').value;
-
-            const schedules = teacherOfficialTimetable.filter(t => {
-                let isDateMatch = false;
-
-                if (t.date) {
-                    let routineDate = new Date(t.date);
-                    isDateMatch = (routineDate.toDateString() === dateObj.toDateString());
-                } else if (t.dayOfWeek) {
-                    isDateMatch = (t.dayOfWeek.toLowerCase() === dayName.toLowerCase());
+            try {
+                const queryStr = `?course=${course}&batch=${batch}&semester=${sem}&date=${date}&isEdit=${isEdit}&subject=${subject}`;
+                const response = await fetch(`${API_BASE}/get-students${queryStr}`); 
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadedStudentsData = data.students; 
+                    renderStudentTable(data.students, isEdit);
+                } else {
+                    alert("No students found for this selection!");
                 }
+            } catch (error) {
+                console.error("Error fetching students:", error);
+                alert("Failed to fetch data from database. Check console.");
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
 
-                return isDateMatch && 
-                       t.course === course && 
-                       t.semester === sem && 
-                       t.subject === subject;
+        function renderStudentTable(students, isEdit) {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = ''; 
+
+            if(students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No students found matching these filters.</td></tr>';
+                document.getElementById('attendanceCard').style.display = 'block';
+                return;
+            }
+
+            students.forEach((student) => {
+                let colorClass = student.prevAtt >= 75 ? 'var(--success)' : (student.prevAtt > 65 ? 'var(--warning)' : 'var(--danger)');
+                
+                let pChecked = (isEdit && student.recordedStatus === 'P') ? "checked" : "";
+                let aChecked = (isEdit && student.recordedStatus === 'A') ? "checked" : "";
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${student.roll}</b></td>
+                    <td>${student.name}</td>
+                    <td><span style="color: ${colorClass}; font-weight: 600;">${student.prevAtt || 0}%</span></td>
+                    <td>
+                        <div class="att-options">
+                            <label class="radio-label text-p">
+                                <input type="radio" name="att_${student._id || student.id}" value="P" required ${pChecked}> Present
+                            </label>
+                            <label class="radio-label text-a">
+                                <input type="radio" name="att_${student._id || student.id}" value="A" required ${aChecked}> Absent
+                            </label>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            if (schedules.length > 0) {
-                schedules.forEach(sch => {
-                    let timeVal = `${formatToAMPM(sch.startTime)} - ${formatToAMPM(sch.endTime)}`;
-                    let newOpt = document.createElement('option');
-                    newOpt.value = timeVal;
-                    newOpt.text = timeVal;
-                    timeSelect.appendChild(newOpt);
-                });
-
-                if(hint) {
-                    hint.innerText = "✓ Time auto-locked from Database";
-                    hint.style.color = "var(--success)";
-                }
-            } else {
-                timeSelect.innerHTML = "<option value=''>No class scheduled</option>";
-                if(hint) {
-                    hint.innerText = "⚠️ No routine found for this selection";
-                    hint.style.color = "var(--danger)";
-                }
-            }
-        }
-
-        // ORIGINAL FETCH LOGIC (100% WORKING ONE FROM test2.html)
-        async function loadStudentsForAttendance() {
-            const course = document.getElementById('courseSelect').value;
-            const batch = document.getElementById('batchSelect').value; 
-            const sem = document.getElementById('semSelect').value;
-            const subject = document.getElementById('subjectSelect').value;
-            const date = document.getElementById('attDate').value;
-            const timeSlot = document.getElementById('timeSelect').value;
-            
-            if(!subject) {
-                alert("Please select a subject first!");
-                return;
-            }
-            
-            if(!timeSlot) {
-                alert("No scheduled time slot found for this selection. Please check the routine!");
-                return;
-            }
-
-            const btn = document.getElementById('fetchBtn');
-            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Fetching...";
-
-            document.getElementById('summaryBox').style.display = 'none';
-
-            try {
-                // Exact same fetch line that was working in test2.html
-                const checkRes = await fetch(`${API_BASE_URL}/attendance/check?course=${course}&sessionBatch=${batch}&semester=${sem}&subject=${subject}&date=${date}&timeSlot=${timeSlot}`);
-                const checkResult = await checkRes.json();
-                
-                let existingData = null;
-                isEditModeActive = false;
-
-                if(checkResult.exists) {
-                    if(confirm("Attendance for this Date, Subject & Time Slot already exists! Do you want to edit it?")) {
-                        existingData = checkResult.data.attendanceList;
-                        isEditModeActive = true;
-                    } else {
-                        btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Class";
-                        return;
-                    }
-                }
-
-                // Exact same fetch line for getting students
-                const studentRes = await fetch(`${API_BASE_URL}/get-students?course=${course}&sessionBatch=${batch}&semester=${sem}`);
-                const studentResult = await studentRes.json();
-
-                const tbody = document.getElementById('studentTableBody');
-                tbody.innerHTML = "";
-
-                if(studentResult.success && studentResult.students && studentResult.students.length > 0) {
-                    document.getElementById('tableTitle').innerHTML = `<i class='bx bx-edit' style="color: var(--primary);"></i> Marking Attendance: ${course} - Sem ${sem} (${timeSlot})`;
-                    
-                    studentResult.students.forEach((student, index) => {
-                        let isPresent = true; 
-                        
-                        if(existingData) {
-                            const found = existingData.find(a => a.studentId === student._id);
-                            if(found && found.status === 'Absent') isPresent = false;
-                        }
-
-                        let tr = document.createElement('tr');
-                        tr.dataset.studentid = student._id;
-                        tr.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td><b>${student.roll || student.rollNo || 'N/A'}</b></td>
-                            <td>${student.name}</td>
-                            <td>
-                                <div class="attendance-toggle">
-                                    <input type="radio" name="att_${student._id}" id="p_${student._id}" value="Present" class="radio-btn" ${isPresent ? 'checked' : ''}>
-                                    <label for="p_${student._id}" class="radio-label present">Present</label>
-                                    
-                                    <input type="radio" name="att_${student._id}" id="a_${student._id}" value="Absent" class="radio-btn" ${!isPresent ? 'checked' : ''}>
-                                    <label for="a_${student._id}" class="radio-label absent">Absent</label>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-
-                    document.getElementById('attendanceCard').style.display = 'block';
-                    
-                    const submitBtn = document.getElementById('submitBtn');
-                    submitBtn.innerHTML = isEditModeActive ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
-                    submitBtn.className = "btn-success";
-
-                } else {
-                    alert("No students found in this Course, Batch & Semester combination.");
-                    document.getElementById('attendanceCard').style.display = 'none';
-                }
-
-            } catch (error) {
-                alert("Server error connecting to database!");
-                console.error(error);
-            } finally {
-                btn.innerHTML = "<i class='bx bx-list-ul'></i> Fetch Class";
-            }
+            document.getElementById('attendanceCard').style.display = 'block';
         }
 
         function markAll(status) {
-            const tbody = document.getElementById('studentTableBody');
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const studentId = row.dataset.studentid;
-                if(status === 'Present') {
-                    document.getElementById(`p_${studentId}`).checked = true;
-                } else {
-                    document.getElementById(`a_${studentId}`).checked = true;
-                }
-            });
+            const radios = document.querySelectorAll(`input[type="radio"][value="${status}"]`);
+            radios.forEach(radio => radio.checked = true);
         }
 
         async function submitAttendance(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Submitting...";
-            btn.disabled = true;
+            
+            const formData = new FormData(document.getElementById('attendanceForm'));
+            let presentCount = 0; let absentCount = 0; let totalStudents = 0;
 
-            const attData = [];
-            let presentCount = 0;
-            let absentCount = 0;
+            for (let [name, value] of formData.entries()) {
+                if (name.startsWith('att_')) {
+                    totalStudents++;
+                    if (value === 'P') presentCount++;
+                    if (value === 'A') absentCount++;
+                }
+            }
+            
+            let percentage = totalStudents === 0 ? 0 : ((presentCount / totalStudents) * 100).toFixed(1);
 
-            const rows = document.querySelectorAll('#studentTableBody tr');
-            rows.forEach(row => {
-                const studentId = row.dataset.studentid;
-                const roll = row.children[1].innerText;
-                const name = row.children[2].innerText;
-                const isPresent = document.getElementById(`p_${studentId}`).checked;
+            const dateInput = document.getElementById('attDate').value;
+            const dateObj = new Date(dateInput);
+            const day = dateObj.getDate();
+            const month = dateObj.toLocaleString('default', { month: 'long' });
+            const year = dateObj.getFullYear();
 
-                if(isPresent) presentCount++;
-                else absentCount++;
-
-                attData.push({
-                    studentId: studentId,
-                    rollNo: roll,
-                    studentName: name,
-                    status: isPresent ? "Present" : "Absent"
-                });
+            const timeSlotValue = document.getElementById('attTime').value;
+            const timeParts = timeSlotValue.split(" - ");
+            
+            const studentRecords = [];
+            loadedStudentsData.forEach(student => {
+                const studentId = student._id || student.id;
+                const selectedRadio = document.querySelector(`input[name="att_${studentId}"]:checked`);
+                
+                if(selectedRadio) {
+                    studentRecords.push({
+                        studentId: studentId,
+                        rollNumber: student.roll,
+                        studentName: student.name,
+                        status: selectedRadio.value
+                    });
+                }
             });
 
-            const totalStudents = presentCount + absentCount;
-            const percentage = totalStudents === 0 ? 0 : Math.round((presentCount / totalStudents) * 100);
-
-            const finalPayload = {
-                teacherId: staffId,
-                course: document.getElementById('courseSelect').value,
-                sessionBatch: document.getElementById('batchSelect').value,
-                semester: document.getElementById('semSelect').value,
-                subject: document.getElementById('subjectSelect').value,
-                date: document.getElementById('attDate').value,
-                timeSlot: document.getElementById('timeSelect').value,
-                attendanceList: attData
+            const payloadData = {
+                mode: isEditModeActive ? "UPDATE" : "CREATE",
+                fullDate: dateInput,
+                day: day,
+                month: month,
+                year: year,
+                batch: document.getElementById('attBatch').value,
+                course: document.getElementById('attCourse').value,
+                semester: document.getElementById('attSem').value,
+                subject: document.getElementById('attSubject').value,
+                startTime: timeParts[0], 
+                endTime: timeParts[1],     
+                records: studentRecords,
+                summary: {
+                    totalStudents: totalStudents,
+                    presentCount: presentCount,
+                    absentCount: absentCount,
+                    attendancePercentage: parseFloat(percentage)
+                }
             };
 
             try {
-                // Exact same submit logic from test2.html
-                const response = await fetch(`${API_BASE_URL}/attendance/mark`, {
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = "<i class='bx bx-loader bx-spin'></i> Submitting...";
+                btn.disabled = true;
+
+                const response = await fetch(`${API_BASE}/save-attendance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finalPayload)
+                    body: JSON.stringify(payloadData)
                 });
 
                 const result = await response.json();
@@ -609,6 +604,7 @@
                 console.error("Submission Error:", error);
                 alert("Failed to submit to server. Check your connection / API.");
             } finally {
+                const btn = document.getElementById('submitBtn');
                 btn.innerHTML = isEditModeActive ? "<i class='bx bx-refresh'></i> Update Attendance" : "<i class='bx bx-cloud-upload'></i> Submit Record";
                 btn.disabled = false;
             }
