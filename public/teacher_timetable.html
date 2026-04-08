@@ -30,11 +30,10 @@
             --card-curve: 12px;
         }
 
-        /* 🔴 FIXED HORIZONTAL SCROLL ISSUE 🔴 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* ------------------ SIDEBAR (Same as Dashboard) ------------------ */
+        /* ------------------ SIDEBAR ------------------ */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         
@@ -180,7 +179,7 @@
         </div>
     </main>
 
-   <script>
+    <script>
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('active'); 
             document.getElementById('overlay').classList.toggle('active'); 
@@ -332,20 +331,17 @@
                 uniqueTimeSlots.forEach(slot => {
                     let td = document.createElement("td");
 
-                    // 🔴 MAIN FIX: Weekly Timetable ke liye hamesha pehle 'dayOfWeek' match karna chahiye.
+                    // 🔴 THE ULTIMATE FIX: Date aur Day ka jhanjhat khtam.
+                    // Sirf ye check hoga ki jo din ka naam render ho raha hai ('Wednesday')
+                    // kya HOD ne usi din (dayOfWeek='Wednesday') koi class allot ki hai?
                     const classesAtThisTime = teacherRoutines.filter(r => {
                         let isDayMatch = false;
 
-                        // Pehle check karo ki backend se koi Day (Monday, Tuesday) aaya hai kya
+                        // Priority 1: Match by Day Name (Because routine is a weekly repeating cycle)
                         if (r.dayOfWeek) {
                             isDayMatch = (String(r.dayOfWeek).trim().toLowerCase() === dayName.toLowerCase());
                         } 
-                        // Agar Day nahi hai, tabhi Date check karo (kisi extra class ke liye)
-                        else if (r.date) {
-                            let routineDate = new Date(r.date);
-                            isDayMatch = (routineDate.toDateString() === dateObj.toDateString());
-                        }
-
+                        
                         // Time slot exactly match hona chahiye
                         return isDayMatch && r.startTime === slot.start && r.endTime === slot.end;
                     });
