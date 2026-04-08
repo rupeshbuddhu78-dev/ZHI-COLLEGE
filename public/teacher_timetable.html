@@ -180,7 +180,7 @@
         </div>
     </main>
 
-    <script>
+   <script>
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('active'); 
             document.getElementById('overlay').classList.toggle('active'); 
@@ -332,21 +332,22 @@
                 uniqueTimeSlots.forEach(slot => {
                     let td = document.createElement("td");
 
-                    // 🔴 MAIN FIX: Match by specific DATE first, and fallback to DAY only if no Date is set.
+                    // 🔴 MAIN FIX: Weekly Timetable ke liye hamesha pehle 'dayOfWeek' match karna chahiye.
                     const classesAtThisTime = teacherRoutines.filter(r => {
-                        let isDateMatch = false;
+                        let isDayMatch = false;
 
-                        // Check if backend provides a specific date (e.g. '2026-04-07')
-                        if (r.date) {
+                        // Pehle check karo ki backend se koi Day (Monday, Tuesday) aaya hai kya
+                        if (r.dayOfWeek) {
+                            isDayMatch = (String(r.dayOfWeek).trim().toLowerCase() === dayName.toLowerCase());
+                        } 
+                        // Agar Day nahi hai, tabhi Date check karo (kisi extra class ke liye)
+                        else if (r.date) {
                             let routineDate = new Date(r.date);
-                            isDateMatch = (routineDate.toDateString() === dateObj.toDateString());
-                        } else if (r.dayOfWeek) {
-                            // Agar date nahi hai backend mein, tab jaake purane tarike se (Day wise) match karega
-                            isDateMatch = (r.dayOfWeek.toLowerCase() === dayName.toLowerCase());
+                            isDayMatch = (routineDate.toDateString() === dateObj.toDateString());
                         }
 
-                        // Time slot match hona chahiye
-                        return isDateMatch && r.startTime === slot.start && r.endTime === slot.end;
+                        // Time slot exactly match hona chahiye
+                        return isDayMatch && r.startTime === slot.start && r.endTime === slot.end;
                     });
 
                     if (classesAtThisTime.length > 0) {
