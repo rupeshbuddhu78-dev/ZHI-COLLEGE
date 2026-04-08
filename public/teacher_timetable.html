@@ -16,11 +16,12 @@
     <style>
         :root {
             --sidebar-bg: #0f172a; 
-            --primary: #14b8a6; 
+            --primary: #14b8a6; /* Teal color for Teacher Panel */
             --primary-light: #ccfbf1;
             --success: #10b981; 
             --warning: #f59e0b; 
             --danger: #ef4444; 
+            --purple: #8b5cf6;
             --bg: #f8fafc;
             --text-dark: #1e293b;
             --text-light: #64748b;
@@ -32,18 +33,24 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
+        /* ------------------ SIDEBAR ------------------ */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        
         .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--white); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
+        
         .sidebar-header h2 { font-size: 16px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-top: 2px;}
 
         .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; overflow-y: auto; }
+        .menu-section { margin: 25px 24px 10px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+
         .sidebar-menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent;}
         .sidebar-menu li a i { font-size: 20px; }
         .sidebar-menu li.active a, .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); padding-left: 28px;}
         .sidebar-menu li.active a i, .sidebar-menu li a:hover i { color: var(--primary); }
 
+        /* ------------------ MAIN CONTENT & TOPBAR ------------------ */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 2px rgba(0,0,0,0.02); flex-shrink: 0;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
@@ -58,20 +65,27 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-title { font-size: 22px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; flex-wrap: wrap; gap: 10px;}
 
+        /* TIMETABLE CARD */
         .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 25px;}
         .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; color: var(--text-dark);}
         
         .table-res { overflow-x: auto; padding: 20px;}
-        table { width: 100%; border-collapse: collapse; text-align: center; min-width: 600px;}
+        table { width: 100%; border-collapse: collapse; text-align: center; min-width: 800px;}
         th { padding: 15px; background: var(--primary); color: white; font-weight: 600; border: 1px solid #0d9488; font-size: 14px;} 
         td { padding: 15px; border: 1px solid var(--border); vertical-align: middle; height: 80px;}
         
-        .class-block { background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 6px; padding: 8px; display: inline-block; width: 100%; margin-bottom: 5px; transition: 0.2s;}
-        .class-block:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .class-block b { display: block; font-size: 13px; color: var(--text-dark); margin-bottom: 4px;}
-        .class-block span { font-size: 11px; color: var(--text-light); background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; display: block; margin-top: 3px;}
-        .room-badge { display: inline-block; margin-top: 5px; font-size: 11px; color: var(--primary); font-weight: bold; }
+        /* Highlight Today's Row heavily */
+        .today-row { background-color: #f0fdf4 !important; outline: 3px solid var(--success); }
+        .today-badge { font-size:11px; font-weight: bold; color:var(--white); background: var(--success); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);}
 
+        /* Class Blocks */
+        .class-block { background: var(--white); border: 2px solid var(--primary); border-radius: 6px; padding: 10px; display: inline-block; width: 100%; margin-bottom: 5px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.04);}
+        .class-block:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(20, 184, 166, 0.15); }
+        .class-block b { display: block; font-size: 14px; color: var(--text-dark); margin-bottom: 4px;}
+        .class-block span { font-size: 12px; color: var(--text-light); background: var(--bg); padding: 3px 6px; border-radius: 4px; border: 1px solid #e2e8f0; display: block; margin-top: 3px; font-weight: 500;}
+        .room-badge { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--primary); font-weight: bold; }
+
+        /* Mobile Responsiveness */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999; }
         @media (max-width: 768px) { 
             .sidebar { position: fixed; left: -260px; height: 100vh; } 
@@ -105,16 +119,16 @@
             <li><a href="teacher_dashboard.html"><i class='bx bx-grid-alt'></i> Dashboard Home</a></li>
             <li><a href="teacher_self_attendance.html"><i class='bx bx-fingerprint'></i> My Attendance</a></li>
             
-            <li style="margin: 15px 0 5px 24px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">My Classes</li>
+            <li class="menu-section">My Classes</li>
             <li class="active"><a href="teacher_timetable.html"><i class='bx bx-calendar'></i> My Timetable</a></li>
             <li><a href="mark_attendance.html"><i class='bx bx-user-check'></i> Mark Student Attendance</a></li>
             
-            <li style="margin: 15px 0 5px 24px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Academics</li>
+            <li class="menu-section">Academics</li>
             <li><a href="upload_notes.html"><i class='bx bx-book-content'></i> Upload Notes</a></li>
             <li><a href="manage_assignments.html"><i class='bx bx-task'></i> Assignments</a></li>
             <li><a href="upload_marks.html"><i class='bx bx-edit'></i> Enter Marks</a></li>
             
-            <li style="margin: 15px 0 5px 24px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Personal</li>
+            <li class="menu-section">Personal</li>
             <li><a href="apply_leave.html"><i class='bx bx-calendar-minus'></i> Apply Leave</a></li>
             <li><a href="teacher_profile.html"><i class='bx bx-user-circle'></i> My Profile</a></li>
             
@@ -148,7 +162,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <span><i class='bx bx-calendar-event' style="color: var(--primary);"></i> Today's Schedule (<span id="displayDateText">...</span>)</span>
+                    <span><i class='bx bx-calendar-week' style="color: var(--primary);"></i> Current Week's Schedule</span>
                     <button style="background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;" onclick="window.print()">
                         <i class='bx bx-printer'></i> Print
                     </button>
@@ -157,12 +171,11 @@
                     <table>
                         <thead>
                             <tr id="ttHeadRow">
-                                <th>Time / Period</th>
-                                <th>Class Details</th>
+                                <th>Date & Day</th>
                             </tr>
                         </thead>
                         <tbody id="ttBody">
-                            <tr><td colspan="2" style="padding: 30px; text-align: center;"><b>Connecting to Server... Loading your routine ⏳</b></td></tr>
+                            <tr><td colspan="10" style="padding: 30px; text-align: center;"><b>Connecting to Server... Loading your exact routine ⏳</b></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -178,8 +191,8 @@
 
         function logoutTeacher() {
             if(confirm("Are you sure you want to logout?")) {
-                sessionStorage.clear(); 
-                localStorage.clear();   
+                sessionStorage.clear(); // Clear Secure Session
+                localStorage.clear();   // Clear Cache
                 window.location.href = "index.html"; 
             }
         }
@@ -189,112 +202,170 @@
             let [hours, minutes] = timeStr.split(':');
             let h = parseInt(hours, 10);
             let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12; h = h ? h : 12; 
-            return `${h < 10 ? '0' + h : h}:${minutes} ${ampm}`;
+            h = h % 12;
+            h = h ? h : 12; 
+            let hStr = h < 10 ? '0' + h : h;
+            return `${hStr}:${minutes} ${ampm}`;
+        }
+
+        // PERFECTED: Generate Monday to Saturday exactly based on today's real date.
+        function getCurrentWeekDates() {
+            let curr = new Date(); 
+            let day = curr.getDay(); // 0 (Sun) to 6 (Sat)
+            let firstDayOffset = day === 0 ? -6 : 1 - day; // Go back to Monday properly
+            
+            let monday = new Date(curr);
+            monday.setDate(curr.getDate() + firstDayOffset);
+            
+            let weekDates = [];
+            for (let i = 0; i < 6; i++) { // Generate Mon to Sat
+                let nextDay = new Date(monday);
+                nextDay.setDate(monday.getDate() + i);
+                weekDates.push(nextDay);
+            }
+            return weekDates;
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
             
-            let staffId = null;
-            let staffName = "Faculty";
-            let userPhoto = "https://ui-avatars.com/api/?name=Faculty&background=14b8a6&color=fff";
+            // 🔴 SECURE SESSION DATA FETCH (From security.js / sessionStorage)
+            const staffId = currentUser ? currentUser.staffId || currentUser._id : null;
+            const staffName = currentUser ? currentUser.name : "Faculty";
+            const userPhoto = currentUser && currentUser.profilePicUrl ? currentUser.profilePicUrl : `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
 
-            if (typeof currentUser !== 'undefined' && currentUser) {
-                staffId = currentUser.staffId || currentUser._id;
-                staffName = currentUser.name || "Faculty";
-                if(currentUser.profilePicUrl) userPhoto = currentUser.profilePicUrl;
-            } else {
-                staffId = sessionStorage.getItem("staffId");
-                staffName = sessionStorage.getItem("staffName") || "Faculty";
-                if(sessionStorage.getItem("profilePicUrl")) userPhoto = sessionStorage.getItem("profilePicUrl");
-            }
-            
-            if(!userPhoto || userPhoto === "null") {
-                userPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(staffName)}&background=14b8a6&color=fff`;
-            }
-
+            // Update Name in UI
             document.getElementById("teacherNameTxt").innerText = staffName;
             document.getElementById("headerTeacherName").innerText = staffName;
             document.getElementById("teacherImg").src = userPhoto;
 
-            // Set current Date text in Card Header
-            const todayDate = new Date();
-            const dayNameStr = todayDate.toLocaleDateString('en-US', { weekday: 'long' });
-            const dateStr = todayDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            document.getElementById("displayDateText").innerText = `${dayNameStr}, ${dateStr}`;
-
             if (!staffId) {
-                document.getElementById("ttBody").innerHTML = `<tr><td colspan="2" style="color: red; padding: 20px;">Unauthorized! Please login to view timetable.</td></tr>`;
+                document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 20px;">Unauthorized! Please login to view timetable.</td></tr>`;
                 return;
             }
 
             try {
-                // FETCH ONLY THIS TEACHER'S CLASSES
-                const teacherRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines?teacherId=${staffId}`);
-                const teacherRoutinesResult = await teacherRoutinesRes.json();
+                // FETCH ONLY ONCE: Get all routines to map standard time slots, and then filter locally.
+                const allRoutinesRes = await fetch(`https://zhi-college-rtya.onrender.com/api/routines`);
+                const allRoutinesResult = await allRoutinesRes.json();
 
-                if (teacherRoutinesResult.success) {
+                if (allRoutinesResult.success) {
                     
-                    const strictTeacherRoutines = teacherRoutinesResult.data.filter(r => {
+                    // 🔥 FOOLPROOF FILTERING: Ensure the routine belongs exactly to logged-in teacher
+                    const teacherRoutines = allRoutinesResult.data.filter(r => {
                         if (!r.teacherId) return false;
-                        const idFromDB = r.teacherId._id ? r.teacherId._id.toString() : r.teacherId.toString();
-                        return idFromDB === staffId; 
+                        
+                        // Handle both populated object (_id) or plain string ID scenarios from MongoDB
+                        let dbId = typeof r.teacherId === 'object' ? (r.teacherId._id || r.teacherId.id) : r.teacherId;
+                        return String(dbId) === String(staffId); 
                     });
 
-                    renderTodayRoutine(strictTeacherRoutines, dayNameStr);
+                    renderTeacherRoutine(allRoutinesResult.data, teacherRoutines);
                 } else {
-                    document.getElementById("ttBody").innerHTML = `<tr><td colspan="2" style="color: red; padding: 30px;">Failed to load data!</td></tr>`;
+                    document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Failed to load data!</td></tr>`;
                 }
             } catch (error) {
                 console.error("API Error:", error);
-                document.getElementById("ttBody").innerHTML = `<tr><td colspan="2" style="color: red; padding: 30px;">Server is offline or unreachable.</td></tr>`;
+                document.getElementById("ttBody").innerHTML = `<tr><td style="color: red; padding: 30px;">Server is offline or unreachable.</td></tr>`;
             }
         });
 
-        function renderTodayRoutine(teacherRoutines, todayDayName) {
+        // Dynamic Render Logic with Exact Date Matching
+        function renderTeacherRoutine(allRoutines, teacherRoutines) {
+            const theadRow = document.getElementById("ttHeadRow");
             const tbody = document.getElementById("ttBody");
+            
             tbody.innerHTML = ""; 
+            theadRow.innerHTML = "<th>Date & Day</th>";
 
-            // 🔴 MAIN FIX: Sirf aaj ke din (jaise 'Wednesday') ki classes filter kar rahe hain.
-            const todaysClasses = teacherRoutines.filter(r => {
-                if (r.dayOfWeek) {
-                    return String(r.dayOfWeek).trim().toLowerCase() === todayDayName.toLowerCase();
+            // STEP 1: Extract all standard unique time slots from entire college data (for columns)
+            const timeSlotsMap = new Map();
+            allRoutines.forEach(r => {
+                if(!r.startTime || !r.endTime) return; // Skip if corrupt data
+                const key = `${r.startTime}-${r.endTime}`;
+                if(!timeSlotsMap.has(key)) {
+                    let [h, m] = r.startTime.split(':').map(Number);
+                    if (h >= 1 && h <= 7) h += 12; // PM adjustment for correct AM/PM sorting
+                    const sortValue = (h * 60) + (m || 0);
+                    timeSlotsMap.set(key, { start: r.startTime, end: r.endTime, sortValue });
                 }
-                return false;
             });
 
-            if (todaysClasses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="2" style="padding: 30px; font-size: 15px; color: var(--text-light);">No classes scheduled for today. Have a great day! 🎉</td></tr>`;
-                return;
-            }
+            // Sort periods from morning to evening sequentially
+            const uniqueTimeSlots = Array.from(timeSlotsMap.values()).sort((a, b) => a.sortValue - b.sortValue);
 
-            // Sort classes by time (Morning to Evening)
-            todaysClasses.sort((a, b) => {
-                let [h1, m1] = a.startTime.split(':').map(Number);
-                let [h2, m2] = b.startTime.split(':').map(Number);
-                if (h1 >= 1 && h1 <= 7) h1 += 12; // PM adjustment
-                if (h2 >= 1 && h2 <= 7) h2 += 12; // PM adjustment
-                return (h1 * 60 + m1) - (h2 * 60 + m2);
+            // Create standard Columns dynamically based on time
+            uniqueTimeSlots.forEach(slot => {
+                let th = document.createElement("th");
+                th.innerText = `${formatToAMPM(slot.start)} - ${formatToAMPM(slot.end)}`;
+                theadRow.appendChild(th);
             });
 
-            // Render each class row vertically
-            todaysClasses.forEach(cls => {
+            // STEP 2: Render Rows for Current Week (Mon-Sat properly aligned)
+            const currentWeekDates = getCurrentWeekDates();
+            
+            // To find "Today" exactly:
+            let todayObj = new Date();
+            const todayStr = todayObj.toDateString();
+
+            currentWeekDates.forEach(dateObj => {
                 let tr = document.createElement("tr");
 
-                let timeStr = `${formatToAMPM(cls.startTime)} - ${formatToAMPM(cls.endTime)}`;
+                // Get Day Name (Monday, Tuesday...) and Date string (08 Apr...)
+                let dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                let dateDisplay = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year:'numeric' });
+                
+                let isToday = (dateObj.toDateString() === todayStr);
+                
+                if (isToday) {
+                    tr.classList.add('today-row'); // Apply bright highlight to row
+                }
 
-                let cellHTML = `
-                    <td style="font-weight: 600; color: var(--primary); background: #f8fafc; border-right: none; width: 30%;">${timeStr}</td>
-                    <td style="border-left: none; text-align: left; padding-left: 25px;">
-                        <div class="class-block" style="background: #fff; border-color: var(--primary); max-width: 400px; text-align: left;">
-                            <b style="font-size: 15px;">${cls.subject}</b>
-                            <span style="font-size: 12px; display: inline-block;">${cls.course} - Semester ${cls.semester}</span>
-                            <span class="room-badge" style="font-size: 12px; margin-left: 10px;"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
-                        </div>
-                    </td>
-                `;
+                // Date & Day Cell
+                let tdDay = document.createElement("td");
+                tdDay.style.background = isToday ? "#d1fae5" : "var(--bg)"; // Darker green background for today cell
+                
+                if (isToday) {
+                    tdDay.innerHTML = `<b style="font-size: 15px; color: var(--text-dark);">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span><br><span class="today-badge">TODAY</span>`;
+                } else {
+                    tdDay.innerHTML = `<b style="font-size: 14px;">${dayName}</b><br><span style="font-size: 13px; color: #475569;">${dateDisplay}</span>`;
+                }
+                tr.appendChild(tdDay);
 
-                tr.innerHTML = cellHTML;
+                // Fill class blocks per time slot
+                uniqueTimeSlots.forEach(slot => {
+                    let td = document.createElement("td");
+
+                    // 🔴 EXCLUSIVELY MATCH THIS TEACHER'S CLASS FOR THIS EXACT DAY & TIME
+                    const classesAtThisTime = teacherRoutines.filter(r => {
+                        let isDayMatch = false;
+                        if (r.dayOfWeek) {
+                            // Ensure "Wednesday" matches "wednesday" correctly
+                            isDayMatch = (String(r.dayOfWeek).trim().toLowerCase() === dayName.toLowerCase());
+                        } 
+                        return isDayMatch && r.startTime === slot.start && r.endTime === slot.end;
+                    });
+
+                    if (classesAtThisTime.length > 0) {
+                        let cellHTML = "";
+                        classesAtThisTime.forEach(cls => {
+                            // Ye direct aapke database me jo assign kiya gaya h (Python ya C aur Semester) wahi uthayega
+                            cellHTML += `
+                                <div class="class-block">
+                                    <b>${cls.subject}</b>
+                                    <span>${cls.course} - Sem ${cls.semester}</span>
+                                    <span class="room-badge"><i class='bx bx-map'></i> ${cls.roomNumber || 'Room TBA'}</span>
+                                </div>
+                            `;
+                        });
+                        td.innerHTML = cellHTML;
+                    } else {
+                        // Agar teacher ka class iss waqt nahi hai
+                        td.innerHTML = `<span style="color: #cbd5e1; font-size: 13px;">- Free -</span>`;
+                    }
+
+                    tr.appendChild(td);
+                });
+
                 tbody.appendChild(tr);
             });
         }
