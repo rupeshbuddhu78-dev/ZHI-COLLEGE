@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+const resend = new Resend('re_dTpjNUsG_DVyHBwP34zVBAWnXgygcksT3');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
@@ -511,9 +513,7 @@ app.delete('/api/students/:id', async (req, res) => {
 // ==========================================
 // 1. FORGOT PASSWORD API (Supports App & Web)
 // ==========================================
-// ==========================================
-// 1. FORGOT PASSWORD API (Old Email + Fixed Logic)
-// ==========================================
+// --- 1. UPDATED FORGOT PASSWORD API (RESEND + TEACHER INCLUDED) ---
 app.post('/api/forgot-password', async (req, res) => {
     let { email } = req.body; 
 
@@ -524,61 +524,73 @@ app.post('/api/forgot-password', async (req, res) => {
     }
 
     try {
-        // MAGIC FIX: Case-insensitive search (Email chhota ho ya bada, match kar lega)
         const emailRegex = new RegExp('^' + email.trim() + '$', 'i');
 
-        // Sabhi tables (Student, Staff, Admin) mein dhoondhega
+        // Sabhi models mein dhoondhega (Student, Staff, User, aur ab TEACHER bhi)
         let user = await Student.findOne({ email: emailRegex }) 
                 || await User.findOne({ email: emailRegex }) 
-                || await Staff.findOne({ email: emailRegex });
+                || await Staff.findOne({ email: emailRegex })
+                || await Teacher.findOne({ email: emailRegex }); // 👈 Teacher ko bhi add kar diya
 
         if (!user) {
             console.log("❌ [DEBUG] Email DB mein nahi mila!");
             return res.status(404).json({ success: false, message: "Email not found in database!" });
         }
 
-        console.log("✅ [DEBUG] User mil gaya:", user.name);
+        console.log("✅ [DEBUG] User mil gaya:", user.name || user.email);
 
-        // 6-digit OTP Generate
+        // OTP Generate
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetOtp = otp;
         user.otpExpiry = Date.now() + 10 * 60 * 1000; 
         await user.save();
 
-        // Email Bhejne ka Code (Purane Email se)
-        await transporter.sendMail({
-            from: '8651142739rupesh@gmail.com',
-            to: user.email,
+        // --- RESEND SE EMAIL BHEJNA ---
+        const { data, error } = await resend.emails.send({
+            from: 'onboarding@resend.dev', // Trial ke liye yahi rahega
+            to: user.email, 
             subject: 'ZHI College - Password Reset OTP',
-            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid hai.`
+            html: `<h3>ZHI College Portal</h3>
+                   <p>Hello,</p>
+                   <p>Aapka Password Reset OTP hai: <strong>${otp}</strong></p>
+                   <p>Yeh 10 mins tak valid hai. Kripya ise kisi ke saath share na karein.</p>`
         });
 
-        console.log("✅ [DEBUG] OTP Email bhej diya gaya!");
+        if (error) {
+            console.error("❌ [RESEND ERROR]:", error);
+            return res.status(500).json({ success: false, message: "Email API error!" });
+        }
+
+        console.log("✅ [RESEND SUCCESS] OTP bhej diya gaya!");
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
 
     } catch (err) {
-        console.log("❌ [DEBUG] Error:", err);
-        res.status(500).json({ success: false, message: "Error sending email!" });
+        console.log("❌ [DEBUG] Server Error:", err);
+        res.status(500).json({ success: false, message: "Internal server error!" });
     }
 });
 
 // ==========================================
 // 2. RESET PASSWORD API
 // ==========================================
+// --- 2. UPDATED RESET PASSWORD API (TEACHER INCLUDED) ---
 app.post('/api/reset-password', async (req, res) => {
     let { email, otp, newPassword } = req.body;
 
     try {
         const emailRegex = new RegExp('^' + email.trim() + '$', 'i');
 
+        // Yahan bhi Teacher ko line mein laga diya
         let user = await Student.findOne({ email: emailRegex }) 
                 || await User.findOne({ email: emailRegex }) 
-                || await Staff.findOne({ email: emailRegex });
+                || await Staff.findOne({ email: emailRegex })
+                || await Teacher.findOne({ email: emailRegex }); // 👈 Teacher check
 
         if (!user || user.resetOtp !== otp || user.otpExpiry < Date.now()) {
             return res.status(400).json({ success: false, message: "Invalid or Expired OTP!" });
         }
 
+        // Password update
         user.password = newPassword;
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
@@ -589,7 +601,6 @@ app.post('/api/reset-password', async (req, res) => {
         res.status(500).json({ success: false, message: "Server error!" }); 
     }
 });
-
 // FINANCE API ROUTES
 app.get('/api/finance/search-student', async (req, res) => {
     try {
