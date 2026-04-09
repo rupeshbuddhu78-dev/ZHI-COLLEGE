@@ -506,84 +506,81 @@ app.delete('/api/students/:id', async (req, res) => {
 // 1. FORGOT PASSWORD API (Supports App & Web)
 // ==========================================
 // ==========================================
-// 1. FORGOT PASSWORD API (Super Fixed)
+// 1. FORGOT PASSWORD API (Old Email + Fixed Logic)
 // ==========================================
 app.post('/api/forgot-password', async (req, res) => {
-    let { email } = req.body; // Role ki zaroorat hata di, email unique hota hai
+    let { email } = req.body; 
+
+    console.log("👉 [DEBUG] Request aayi! Email:", email);
 
     if (!email) {
         return res.status(400).json({ success: false, message: "Email is required!" });
     }
 
     try {
-        // 🔴 MAGIC FIX: Case-Insensitive Search (Capital ya Small sab pakad lega)
+        // MAGIC FIX: Case-insensitive search (Email chhota ho ya bada, match kar lega)
         const emailRegex = new RegExp('^' + email.trim() + '$', 'i');
 
-        // Teeno collections mein sirf email check karega
+        // Sabhi tables (Student, Staff, Admin) mein dhoondhega
         let user = await Student.findOne({ email: emailRegex }) 
                 || await User.findOne({ email: emailRegex }) 
                 || await Staff.findOne({ email: emailRegex });
 
         if (!user) {
+            console.log("❌ [DEBUG] Email DB mein nahi mila!");
             return res.status(404).json({ success: false, message: "Email not found in database!" });
         }
+
+        console.log("✅ [DEBUG] User mil gaya:", user.name);
 
         // 6-digit OTP Generate
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetOtp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins expiry
+        user.otpExpiry = Date.now() + 10 * 60 * 1000; 
         await user.save();
 
-        // Email Bhejne ka Code
+        // Email Bhejne ka Code (Purane Email se)
         await transporter.sendMail({
             from: 'rupesh.c.0828@zhi.org.in',
             to: user.email,
             subject: 'ZHI College - Password Reset OTP',
-            text: `Hello ${user.name || 'User'},\n\nAapka Password Reset OTP hai: ${otp}\n\nYeh OTP 10 minutes tak valid hai.`
+            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid hai.`
         });
 
+        console.log("✅ [DEBUG] OTP Email bhej diya gaya!");
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
 
     } catch (err) {
-        console.log("❌ OTP Error:", err);
-        res.status(500).json({ success: false, message: "Server error sending email!" });
+        console.log("❌ [DEBUG] Error:", err);
+        res.status(500).json({ success: false, message: "Error sending email!" });
     }
 });
 
 // ==========================================
-// 2. RESET PASSWORD API (Super Fixed)
+// 2. RESET PASSWORD API
 // ==========================================
 app.post('/api/reset-password', async (req, res) => {
     let { email, otp, newPassword } = req.body;
 
-    if (!email || !otp || !newPassword) {
-        return res.status(400).json({ success: false, message: "All fields are required!" });
-    }
-
     try {
-        // 🔴 Case-Insensitive Search
         const emailRegex = new RegExp('^' + email.trim() + '$', 'i');
 
         let user = await Student.findOne({ email: emailRegex }) 
                 || await User.findOne({ email: emailRegex }) 
                 || await Staff.findOne({ email: emailRegex });
 
-        // User check & OTP verification
         if (!user || user.resetOtp !== otp || user.otpExpiry < Date.now()) {
             return res.status(400).json({ success: false, message: "Invalid or Expired OTP!" });
         }
 
-        // Password update
         user.password = newPassword;
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
         await user.save();
 
         res.status(200).json({ success: true, message: "Password updated successfully!" });
-
     } catch (err) { 
-        console.log("❌ Reset Password Error:", err);
-        res.status(500).json({ success: false, message: "Server error updating password!" }); 
+        res.status(500).json({ success: false, message: "Server error!" }); 
     }
 });
 
