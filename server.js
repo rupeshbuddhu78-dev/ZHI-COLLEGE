@@ -82,13 +82,21 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
     .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
 // --- 4. EMAIL SETUP ---
+// --- NODEMAILER SECURE CONFIGURATION ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 465,               // 🔴 Port 465 secure hota hai
+    secure: true,            // 🔴 Secure SSL/TLS use karega
     auth: {
         user: 'rupesh.c.0828@zhi.org.in',
-        pass: 'lsyj elwc buki kcdk'
+        pass: 'lsyj elwc buki kcdk' // Apna App Password yahan daalna
+    },
+    // 🔴 CONNECTION TIMEOUT FIX (Main Bimari ka Ilaaj)
+    connectionTimeout: 60000, // 60 seconds tak connect karne ki koshish karega
+    greetingTimeout: 30000,   // Server ke response ka wait karega
+    socketTimeout: 60000,
+    tls: {
+        rejectUnauthorized: false // Local/Free servers ke liye DNS errors rokti hai
     }
 });
 
