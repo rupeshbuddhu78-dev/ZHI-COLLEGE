@@ -548,7 +548,7 @@ app.post('/api/forgot-password', async (req, res) => {
         await axios.post(GOOGLE_SCRIPT_URL, {
             to: user.email,
             subject: 'ZHI College - Password Reset OTP',
-            body: `Hello ${user.name || 'User'},\n\nAapka Password Reset OTP hai: ${otp}\n\nYeh 10 mins tak valid hai. Kripya ise share na karein.`
+            body: `Hello ${user.name || 'User'},\n\nYour Password Reset OTP is: ${otp}\n\nThis OTP is valid for 10 minutes. Please do not share it with anyone.`
         });
 
         console.log("✅ [SUCCESS] Google Script ne OTP bhej diya!");
