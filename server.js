@@ -88,7 +88,7 @@ const transporter = nodemailer.createTransport({
     secure: true,
     auth: {
         user: 'rupesh.c.0828@zhi.org.in',
-        pass: 'dyju pxba misf qfuk'
+        pass: 'lsyj elwc buki kcdk'
     }
 });
 
