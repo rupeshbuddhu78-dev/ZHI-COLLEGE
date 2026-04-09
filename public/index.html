@@ -56,8 +56,41 @@
         .login-btn:disabled { background: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .footer { margin-top: 25px; font-size: 12px; }
-        .footer a { color: #94a3b8; text-decoration: none; margin: 0 10px; transition: color 0.3s; }
+        .footer a { color: #94a3b8; text-decoration: none; margin: 0 10px; transition: color 0.3s; cursor: pointer;}
         .footer a:hover { color: #ffffff; }
+
+        /* ---------------- MODAL / POPUP CSS ---------------- */
+        .modal-overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(5px);
+            z-index: 2000; 
+            justify-content: center; 
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            position: relative;
+            padding: 30px;
+            max-width: 400px;
+            animation: slideUp 0.4s ease forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 24px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .close-btn:hover { color: #fff; }
 
         @media (max-width: 480px) {
             .glass-panel { padding: 30px 20px; }
@@ -102,11 +135,55 @@
         </form>
 
         <div class="footer">
-            <a href="#">Forgot Password?</a> | <a href="#">IT Support</a>
+            <a onclick="openForgotModal()">Forgot Password?</a> | <a href="#">IT Support</a>
+        </div>
+    </div>
+
+    <div id="forgotModal" class="modal-overlay">
+        <div class="glass-panel modal-content">
+            <span class="close-btn" onclick="closeForgotModal()">&times;</span>
+            <div class="logo-area" style="margin-bottom: 20px;">
+                <h2 style="font-size: 20px; color: #fff; margin-bottom: 5px;">Reset Password</h2>
+                <p id="forgotSubtitle">OTP will be sent to your Email</p>
+            </div>
+
+            <form id="otpRequestForm" onsubmit="sendOtp(event)">
+                <div class="input-group">
+                    <label>Select Role</label>
+                    <select id="forgotRole" required>
+                        <option value="" disabled selected>Select your role...</option>
+                        <option value="director">Director</option>
+                        <option value="accountant">Accountant</option>
+                        <option value="hod">Academic HOD</option>
+                        <option value="staff">Staff</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Registered Email</label>
+                    <input type="email" id="forgotEmail" placeholder="email@zhi.edu.in" required>
+                </div>
+                <button type="submit" class="login-btn" id="btnSendOtp">Send OTP</button>
+            </form>
+
+            <form id="passwordResetForm" onsubmit="resetPassword(event)" style="display: none;">
+                <div class="input-group">
+                    <label>Enter 6-Digit OTP</label>
+                    <input type="number" id="resetOtp" placeholder="123456" maxlength="6" required>
+                </div>
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="resetNewPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="login-btn" id="btnResetPass" style="background: #10b981;">Update Password</button>
+            </form>
         </div>
     </div>
 
     <script>
+        // ==========================================
+        // 1. LOGIN LOGIC
+        // ==========================================
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
 
@@ -130,7 +207,6 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // 🌟 NAYA LOGIC: Pura data ek object mein banakar sessionStorage mein daalo
                     const userData = {
                         role: loginData.role,
                         name: result.staffName || result.name || result.data?.name || "User",
@@ -140,21 +216,13 @@
                         profilePicUrl: result.data?.profilePicUrl || ""
                     };
 
-                    // LocalStorage ki jagah SessionStorage
                     sessionStorage.setItem('loggedInUser', JSON.stringify(userData));
                     
-                    // 🔴 File routing exactly wahi hai jo aapne di thi 🔴
-                    if (loginData.role === 'director') {
-                        window.location.href = 'admin_dashboard.html'; 
-                    } else if (loginData.role === 'accountant') {
-                        window.location.href = 'accountant_dashboard.html'; 
-                    } else if (loginData.role === 'hod') {
-                        window.location.href = 'academic_dashboard.html'; 
-                    } else if (loginData.role === 'staff') {
-                        window.location.href = 'staff_dashboard.html'; 
-                    } else if (loginData.role === 'teacher') {
-                        window.location.href = 'teacher_dashboard.html';
-                    }
+                    if (loginData.role === 'director') window.location.href = 'admin_dashboard.html'; 
+                    else if (loginData.role === 'accountant') window.location.href = 'accountant_dashboard.html'; 
+                    else if (loginData.role === 'hod') window.location.href = 'academic_dashboard.html'; 
+                    else if (loginData.role === 'staff') window.location.href = 'staff_dashboard.html'; 
+                    else if (loginData.role === 'teacher') window.location.href = 'teacher_dashboard.html';
                 } else {
                     alert("❌ Access Denied: " + result.message);
                     btn.innerHTML = "Authenticate";
@@ -167,6 +235,108 @@
                 btn.disabled = false;
             }
         };
+
+        // ==========================================
+        // 2. FORGOT PASSWORD LOGIC
+        // ==========================================
+        const BASE_URL = 'https://zhi-college-rtya.onrender.com'; // Backend URL
+        let savedResetEmail = ""; // Email save karne ke liye
+
+        function openForgotModal() {
+            document.getElementById('forgotModal').style.display = 'flex';
+            // Reset forms if opened again
+            document.getElementById('otpRequestForm').style.display = 'block';
+            document.getElementById('passwordResetForm').style.display = 'none';
+            document.getElementById('otpRequestForm').reset();
+            document.getElementById('passwordResetForm').reset();
+            document.getElementById('forgotSubtitle').innerText = "OTP will be sent to your Email";
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').style.display = 'none';
+        }
+
+        // STEP 1: Send OTP Request
+        async function sendOtp(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSendOtp');
+            const email = document.getElementById('forgotEmail').value.trim();
+            const role = document.getElementById('forgotRole').value;
+
+            btn.innerHTML = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, role: role })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert("✅ OTP Sent Successfully to " + email);
+                    savedResetEmail = email; // Save email for next step
+
+                    // Switch UI
+                    document.getElementById('otpRequestForm').style.display = 'none';
+                    document.getElementById('passwordResetForm').style.display = 'block';
+                    document.getElementById('forgotSubtitle').innerText = "Check your email for 6-digit OTP";
+                } else {
+                    alert("❌ Error: " + (result.message || "Email not found!"));
+                }
+            } catch (error) {
+                console.error("OTP Error:", error);
+                alert("⚠️ Server Connection Error!");
+            } finally {
+                btn.innerHTML = "Send OTP";
+                btn.disabled = false;
+            }
+        }
+
+        // STEP 2: Verify OTP and Save New Password
+        async function resetPassword(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnResetPass');
+            const otp = document.getElementById('resetOtp').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value.trim();
+
+            if (otp.length < 6) {
+                alert("Please enter a valid 6-digit OTP");
+                return;
+            }
+
+            btn.innerHTML = "Updating...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: savedResetEmail, 
+                        otp: otp, 
+                        newPassword: newPassword 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert("🎉 Password Changed Successfully! You can login now.");
+                    closeForgotModal(); // Popup band kardo
+                } else {
+                    alert("❌ Error: " + (result.message || "Invalid OTP"));
+                }
+            } catch (error) {
+                console.error("Reset Error:", error);
+                alert("⚠️ Server Connection Error!");
+            } finally {
+                btn.innerHTML = "Update Password";
+                btn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>
