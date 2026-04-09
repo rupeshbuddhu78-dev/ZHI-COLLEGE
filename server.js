@@ -502,44 +502,99 @@ app.delete('/api/students/:id', async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, message: 'Server error!' }); }
 });
 
+// ==========================================
+// 1. FORGOT PASSWORD API (Supports App & Web)
+// ==========================================
 app.post('/api/forgot-password', async (req, res) => {
-    const { email } = req.body;
-    try {
-        let user = await Student.findOne({ email }) || await User.findOne({ email });
-        if (!user) return res.status(404).json({ success: false, message: "Email not found!" });
+    let { email, role } = req.body; // Web se 'role' aayega, App se nahi aayega
 
+    if (!email) {
+        return res.status(400).json({ success: false, message: "Email is required!" });
+    }
+    
+    // Email ko hamesha lowercase aur trim karna zaroori hai
+    email = email.trim().toLowerCase();
+
+    try {
+        let user = null;
+
+        // Agar Web Portal se 'role' bheja gaya hai:
+        if (role) {
+            if (['director', 'accountant', 'hod'].includes(role)) {
+                user = await User.findOne({ email, role });
+            } else if (['staff', 'teacher'].includes(role)) {
+                user = await Staff.findOne({ email, role });
+            }
+        } 
+        // Agar Android App se aaya hai (jahan role nahi hota):
+        else {
+            user = await Student.findOne({ email }) 
+                || await User.findOne({ email }) 
+                || await Staff.findOne({ email });
+        }
+
+        // Agar user nahi mila
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Email or Role not found in database!" });
+        }
+
+        // 6-digit ka random OTP generate karo
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetOtp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000;
+        user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins ki expiry
         await user.save();
 
+        // Email bhejne ka code
         await transporter.sendMail({
             from: 'rupesh.c.0828@zhi.org.in',
             to: user.email,
-            subject: 'ZHI App - OTP',
-            text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid valid hai.`
+            subject: 'ZHI College - Password Reset OTP',
+            text: `Hello ${user.name || 'User'},\n\nAapka Password Reset OTP hai: ${otp}\n\nYeh OTP 10 minutes tak valid hai. Agar aapne password reset ki request nahi ki hai, toh is email ko ignore karein.`
         });
 
         res.status(200).json({ success: true, message: "OTP sent to your email!" });
+
     } catch (err) {
         console.log("❌ OTP Bhejney mein error aya:", err);
-        res.status(500).json({ success: false, message: "Error sending email!" });
+        res.status(500).json({ success: false, message: "Error sending email! Check backend logs." });
     }
 });
 
+// ==========================================
+// 2. RESET PASSWORD API (Supports App & Web)
+// ==========================================
 app.post('/api/reset-password', async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+    let { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({ success: false, message: "All fields are required!" });
+    }
+
+    email = email.trim().toLowerCase();
+
     try {
-        let user = await Student.findOne({ email }) || await User.findOne({ email });
+        // Teeno models me email match karke dekho
+        let user = await Student.findOne({ email }) 
+                || await User.findOne({ email }) 
+                || await Staff.findOne({ email });
+
+        // Agar user na mile, OTP match na ho, ya OTP expire ho gaya ho
         if (!user || user.resetOtp !== otp || user.otpExpiry < Date.now()) {
             return res.status(400).json({ success: false, message: "Invalid or Expired OTP!" });
         }
+
+        // Naya password save karo aur OTP delete kar do
         user.password = newPassword;
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
         await user.save();
+
         res.status(200).json({ success: true, message: "Password updated successfully!" });
-    } catch (err) { res.status(500).json({ success: false, message: "Server error!" }); }
+
+    } catch (err) { 
+        console.log("❌ Password Reset error:", err);
+        res.status(500).json({ success: false, message: "Server error updating password!" }); 
+    }
 });
 
 // FINANCE API ROUTES
