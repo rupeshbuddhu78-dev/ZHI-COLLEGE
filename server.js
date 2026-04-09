@@ -85,18 +85,14 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshku
 // --- NODEMAILER SECURE CONFIGURATION ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,               // 🔴 Port 465 secure hota hai
-    secure: true,            // 🔴 Secure SSL/TLS use karega
+    port: 465,
+    secure: true,
     auth: {
-        user: 'rupesh.c.0828@zhi.org.in',
-        pass: 'lsyj elwc buki kcdk' // Apna App Password yahan daalna
+        user: 'rupesh.c.0828@zhi.org.in',      // 🔴 Apna email yahan daalo
+        pass: 'lsyj elwc buki kcdk'      // 🔴 16-digit app password (bina space)
     },
-    // 🔴 CONNECTION TIMEOUT FIX (Main Bimari ka Ilaaj)
-    connectionTimeout: 60000, // 60 seconds tak connect karne ki koshish karega
-    greetingTimeout: 30000,   // Server ke response ka wait karega
-    socketTimeout: 60000,
     tls: {
-        rejectUnauthorized: false // Local/Free servers ke liye DNS errors rokti hai
+        rejectUnauthorized: false   // 🔴 YE LINE IS NAYE ERROR KO 100% KHATAM KAR DEGI
     }
 });
 
