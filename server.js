@@ -88,11 +88,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: 'rupesh.c.0828@zhi.org.in',      // 🔴 Apna email yahan daalo
-        pass: 'lsyj elwc buki kcdk'      // 🔴 16-digit app password (bina space)
-    },
-    tls: {
-        rejectUnauthorized: false   // 🔴 YE LINE IS NAYE ERROR KO 100% KHATAM KAR DEGI
+        user: '8651142739rupesh@gmail.com',
+        pass: 'qkyl mbcm xnux iteb'
     }
 });
 
@@ -545,7 +542,7 @@ app.post('/api/forgot-password', async (req, res) => {
 
         // Email Bhejne ka Code (Purane Email se)
         await transporter.sendMail({
-            from: 'rupesh.c.0828@zhi.org.in',
+            from: '8651142739rupesh@gmail.com',
             to: user.email,
             subject: 'ZHI College - Password Reset OTP',
             text: `Aapka Password Reset OTP hai: ${otp}. Yeh 10 mins tak valid hai.`
