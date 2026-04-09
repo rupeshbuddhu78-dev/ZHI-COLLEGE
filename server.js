@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
-const resend = new Resend('re_dTpjNUsG_DVyHBwP34zVBAWnXgygcksT3');
+
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
