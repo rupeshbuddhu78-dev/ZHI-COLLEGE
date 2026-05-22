@@ -79,7 +79,7 @@ const uploadNote = multer({ storage: noteStorage });
 
 
 // --- 3. DATABASE CONNECTION ---
-mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshdatabase:rupeshkumar9091@cluster0.2zu9ek1.mongodb.net/zhi_college?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshbuddhu78_db_user:f8QYIBn6KNt6xfzK@cluster0.fn6fpn1.mongodb.net/zhi_college?retryWrites=true&w=majority&appName=Cluster0")
     .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
     .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
