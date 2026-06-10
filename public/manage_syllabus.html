@@ -212,8 +212,15 @@
     </main>
 
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        // Toggle Sidebar Logic for Mobile View
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) {
+                sidebar.classList.toggle('active');
+            }
+        }
         
+        // Add Subject Logic
         function addSubject(e) {
             e.preventDefault();
             const name = document.getElementById('subName').value;
