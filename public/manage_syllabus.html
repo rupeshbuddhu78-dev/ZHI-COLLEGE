@@ -17,10 +17,10 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); position: relative; }
 
         /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1002; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
@@ -32,9 +32,12 @@
         .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
 
-        /* MAIN WRAPPER & NEW TOPBAR */
+        /* MOBILE OVERLAY BACKGROUND */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); z-index: 1001; transition: 0.3s ease; }
+        .sidebar-overlay.active { display: block; }
+
+        /* MAIN WRAPPER & TOPBAR */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
-        
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
         
@@ -81,11 +84,18 @@
         .progress-container { width: 100%; background: #e2e8f0; border-radius: 10px; height: 8px; margin-top: 5px;}
         .progress-bar { height: 100%; background: var(--success); border-radius: 10px; }
 
+        /* RESPONSIVE QUERIES */
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
+        @media (max-width: 768px) { 
+            .sidebar { position: fixed; left: -260px; height: 100vh; } 
+            .sidebar.active { transform: translateX(260px); } 
+            .menu-btn { display: block; } 
+        }
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -144,9 +154,10 @@
                     <form id="syllabusForm" class="card-body" onsubmit="addSubject(event)">
                         <div class="form-group">
                             <label>Course & Sem</label>
-                            <select class="form-control" required>
-                                <option value="BCA-Sem1">BCA - Semester 1</option>
-                                <option value="BCA-Sem2">BCA - Semester 2</option>
+                            <select class="form-control" id="courseSem" required>
+                                <option value="BCA Sem 1">BCA - Semester 1</option>
+                                <option value="BCA Sem 2">BCA - Semester 2</option>
+                                <option value="BCA Sem 3">BCA - Semester 3</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -212,26 +223,32 @@
     </main>
 
     <script>
-        // Toggle Sidebar Logic for Mobile View
+        // Smooth Toggle Sidebar with Backdrop Overlay support
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            if(sidebar) {
+            const overlay = document.getElementById('sidebarOverlay');
+            if(sidebar && overlay) {
                 sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
             }
         }
         
-        // Add Subject Logic
+        // Fixed Dynamic Subject Registration
         function addSubject(e) {
             e.preventDefault();
             const name = document.getElementById('subName').value;
             const code = document.getElementById('subCode').value;
             const credits = document.getElementById('credits').value;
             
+            // Fixed: Fetching the exact option text selected by the user
+            const courseSelect = document.getElementById('courseSem');
+            const selectedCourse = courseSelect.options[courseSelect.selectedIndex].value;
+            
             const tbody = document.getElementById('syllabusTable');
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${name}</b><br><small style="color: var(--text-light);">${code}</small></td>
-                <td>BCA Sem 1</td>
+                <td>${selectedCourse}</td>
                 <td>${credits}</td>
                 <td><a href="#" class="btn-download"><i class='bx bxs-file-pdf'></i> View PDF</a></td>
                 <td>
