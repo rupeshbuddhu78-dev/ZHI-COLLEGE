@@ -17,10 +17,10 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); position: relative; }
+        body { background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1002; transition: transform 0.3s ease; }
+        /* SIDEBAR & TOPBAR */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1001; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
         .sidebar-header h2 { font-size: 18px; color: #fff; font-weight: 700;}
         .sidebar-header p { font-size: 11px; color: var(--warning); font-weight: 700; letter-spacing: 1px;}
@@ -32,34 +32,15 @@
         .sidebar-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); padding-left: 25px;}
         .sidebar-menu li.active a { background: rgba(255,255,255,0.05); color: #fff; border-left: 4px solid var(--primary); }
 
-        /* MOBILE OVERLAY BACKGROUND */
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); z-index: 1001; transition: 0.3s ease; }
-        .sidebar-overlay.active { display: block; }
-
-        /* MAIN WRAPPER & TOPBAR */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative;}
         .topbar { height: 70px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; position: sticky; top: 0; z-index: 1000;}
         .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-dark); }
-        
-        /* Dashboard Styled Topbar Right Components */
-        .topbar-right { display: flex; align-items: center; gap: 10px; }
-        .nav-icon-btn { position: relative; font-size: 22px; color: var(--text-light); cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; }
-        .nav-icon-btn:hover { background: var(--bg); color: var(--primary); }
-        .nav-icon-btn .badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid var(--white); }
-        .divider { width: 1px; height: 28px; background: var(--border); margin: 0 12px; }
-        
-        .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: 0.2s; }
-        .user-profile:hover { background: var(--bg); }
-        .profile-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
-        .user-info { display: flex; flex-direction: column; }
-        .user-info h4 { font-size: 14px; font-weight: 600; color: var(--text-dark); line-height: 1.2; }
-        .user-info p { font-size: 11px; color: var(--text-light); font-weight: 500; margin-top: 2px; }
 
-        /* CONTENT GRID & CARDS */
         .content { padding: 30px; flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
 
+        /* GRID & CARDS */
         .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; align-items: start;}
         .card { background: var(--white); border-radius: var(--card-curve); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; }
         .card-header { padding: 18px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text-dark);}
@@ -84,19 +65,11 @@
         .progress-container { width: 100%; background: #e2e8f0; border-radius: 10px; height: 8px; margin-top: 5px;}
         .progress-bar { height: 100%; background: var(--success); border-radius: 10px; }
 
-        /* RESPONSIVE QUERIES */
         @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { 
-            .sidebar { position: fixed; left: -260px; height: 100vh; } 
-            .sidebar.active { transform: translateX(260px); } 
-            .menu-btn { display: block; } 
-        }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; height: 100vh; } .sidebar.active { transform: translateX(260px); } .menu-btn { display: block; } }
     </style>
 </head>
 <body>
-
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-img"><i class='bx bx-book-reader'></i></div>
@@ -117,29 +90,10 @@
     </aside>
 
     <main class="main-wrapper">
-        
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
-                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                    <span>Academics</span>
-                    <span style="color: var(--text-light); font-size: 14px; font-weight: 400;">/ Manage Syllabus</span>
-                </div>
-            </div>
-            
-            <div class="topbar-right">
-                <div class="nav-icon-btn">
-                    <i class='bx bx-bell'></i>
-                    <span class="badge"></span>
-                </div>
-                <div class="divider"></div>
-                <div class="user-profile">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="HOD Profile" class="profile-img">
-                    <div class="user-info">
-                        <h4>Rupesh Kumar</h4>
-                        <p>HOD - Computer App.</p>
-                    </div>
-                </div>
+                <div style="font-size: 18px; font-weight: 600; color: var(--text-dark);">Academics</div>
             </div>
         </header>
 
@@ -154,10 +108,9 @@
                     <form id="syllabusForm" class="card-body" onsubmit="addSubject(event)">
                         <div class="form-group">
                             <label>Course & Sem</label>
-                            <select class="form-control" id="courseSem" required>
-                                <option value="BCA Sem 1">BCA - Semester 1</option>
-                                <option value="BCA Sem 2">BCA - Semester 2</option>
-                                <option value="BCA Sem 3">BCA - Semester 3</option>
+                            <select class="form-control" required>
+                                <option value="BCA-Sem1">BCA - Semester 1</option>
+                                <option value="BCA-Sem2">BCA - Semester 2</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -223,32 +176,19 @@
     </main>
 
     <script>
-        // Smooth Toggle Sidebar with Backdrop Overlay support
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if(sidebar && overlay) {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            }
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         
-        // Fixed Dynamic Subject Registration
         function addSubject(e) {
             e.preventDefault();
             const name = document.getElementById('subName').value;
             const code = document.getElementById('subCode').value;
             const credits = document.getElementById('credits').value;
             
-            // Fixed: Fetching the exact option text selected by the user
-            const courseSelect = document.getElementById('courseSem');
-            const selectedCourse = courseSelect.options[courseSelect.selectedIndex].value;
-            
             const tbody = document.getElementById('syllabusTable');
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${name}</b><br><small style="color: var(--text-light);">${code}</small></td>
-                <td>${selectedCourse}</td>
+                <td>BCA Sem 1</td>
                 <td>${credits}</td>
                 <td><a href="#" class="btn-download"><i class='bx bxs-file-pdf'></i> View PDF</a></td>
                 <td>
