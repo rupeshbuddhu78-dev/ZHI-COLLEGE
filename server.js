@@ -57,26 +57,7 @@ const feeHeadSchema = new mongoose.Schema({
     fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 },
     due: Number, status: { type: String, default: "Due" }
 });
-const studentFeeSchema = new mongoose.Schema({
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
-    totalAmount: Number, totalDiscount: Number, totalPaid: Number, totalDue: Number,
-    feeHeads: [feeHeadSchema]
-});
-const StudentFee = mongoose.model('StudentFee', studentFeeSchema);
 
-const transactionSchema = new mongoose.Schema({
-    receiptNo: { type: String, unique: true },
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
-    date: Date, mode: String, amount: Number, feeHeadName: String, remarks: String,
-    payerMobile: String
-}, { timestamps: true });
-const Transaction = mongoose.model('Transaction', transactionSchema);
-
-const expenseSchema = new mongoose.Schema({
-    voucherNo: { type: String, unique: true }, category: String, date: Date,
-    mode: String, amount: Number, description: String
-}, { timestamps: true });
-const Expense = mongoose.model('Expense', expenseSchema);
 
 
 
