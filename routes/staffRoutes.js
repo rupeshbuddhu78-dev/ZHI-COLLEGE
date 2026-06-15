@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
-const upload = require('../config/multer'); // Tumhara multer import
 
-router.post('/', upload.fields([
+// 🔥 FIX: Curly braces {} laga kar specific function import kiya
+const { uploadProfile } = require('../config/multer'); 
+
+// 🔥 FIX: Yahan bhi 'upload' ki jagah 'uploadProfile' use kiya
+router.post('/', uploadProfile.fields([
     { name: 'profilePic', maxCount: 1 }, 
     { name: 'resume', maxCount: 1 }, 
     { name: 'cert', maxCount: 1 }
