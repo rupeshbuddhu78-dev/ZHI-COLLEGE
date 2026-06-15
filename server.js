@@ -1,4 +1,4 @@
-require('dotenv').config(); // Sabse upar taaki .env file read ho sake
+require('dotenv').config({ override: true }); // 🔥 Force override taaki Render purana link na uthaye
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
