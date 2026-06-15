@@ -315,7 +315,7 @@
         }
 
         // ----------------------------------------------------
-        // ASLI SERVER CONNECTION LOGIC (2 Step Process)
+        // ASLI SERVER CONNECTION LOGIC (Bina Token Ke)
         // ----------------------------------------------------
         document.getElementById('studentForm').onsubmit = async function(e) {
             e.preventDefault(); 
@@ -326,22 +326,17 @@
 
             const formData = new FormData(this);
             
-            // FIX 1: JSON payload mein file nahi jani chahiye, usse JSON save hone mein dikkat aati hai. 
-            // Isliye hum profileImage ko delete kar rahe hain temporarily, usko STEP 2 me bhejenge.
+            // Photo ko Step 2 me bhejne ke liye temporarily delete kiya
             formData.delete('profileImage'); 
 
             const studentData = Object.fromEntries(formData.entries());
 
-            // 🛡️ LocalStorage se JWT Token uthaya (Kyunki backend protect middleware use kar raha hai)
-            const token = localStorage.getItem('token');
-
             try {
-                // STEP 1: Pehle Student ka text data bhejo (Fix URL: Added '/students')
+                // STEP 1: Pehle Student ka text data bhejo
                 const response = await fetch('https://zhi-college-f67p.onrender.com/api/students/add-student', {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Guard bypass karne ke liye token bheja
+                        'Content-Type': 'application/json' // ⚙️ Authorization header hata diya hai yahan se
                     },
                     body: JSON.stringify(studentData) 
                 });
@@ -349,22 +344,19 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    const studentId = result.studentId; // DB se student ki ID mil gayi
+                    const studentId = result.studentId; 
                     
-                    // STEP 2: Agar Admin ne photo select ki hai, toh photo upload karo
+                    // STEP 2: Agar Admin ne photo select ki hai, toh bina token ke photo upload karo
                     const photoInput = document.getElementById('profileImage');
                     if (photoInput.files.length > 0) {
                         submitBtn.innerText = "⏳ Uploading Photo...";
                         const photoData = new FormData();
                         photoData.append('profileImage', photoInput.files[0]);
 
-                        // FIX 2: Route updated to '/api/students/upload-photo/:id' and added Token
                         const photoResponse = await fetch(`https://zhi-college-f67p.onrender.com/api/students/upload-photo/${studentId}`, {
                             method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}` // Photo route ke liye bhi security token lagaya
-                            },
-                            body: photoData // FormData bhej rahe hain file upload ke liye
+                            // ⚙️ Photo upload route se bhi headers aur token completely hata diya hai
+                            body: photoData 
                         });
 
                         const photoResult = await photoResponse.json();
