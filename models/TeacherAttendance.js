@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 // 🟢 TEACHER ATTENDANCE SCHEMA 🟢
 const teacherAttendanceSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
