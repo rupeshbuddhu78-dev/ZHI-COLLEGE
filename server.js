@@ -23,13 +23,6 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshbuddhu78_db_user:
     .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
     .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-
-
-// --- 5. SCHEMAS & MODELS ---
-
-
-
-
 // FINANCE SCHEMAS
 const feeHeadSchema = new mongoose.Schema({
     headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 },
@@ -38,62 +31,6 @@ const feeHeadSchema = new mongoose.Schema({
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 🔥 LEAVE SCHEMA (Isko Mark model ke niche paste karein) 🔥
-const leaveSchema = new mongoose.Schema({
-    applicantId: { type: String, required: true },
-    applicantName: { type: String, required: true },
-    applicantRole: { type: String, required: true },
-    course: { type: String, default: "" },
-    semester: { type: String, default: "" }, 
-    leaveType: { type: String, default: "General" }, 
-    startDate: { type: String, required: true }, 
-    endDate: { type: String, required: true },
-    totalDays: { type: Number, required: true },
-    reason: { type: String, required: true },
-    documentUrl: { type: String, default: "" }, 
-    status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
-    hodRemark: { type: String, default: "" }
-}, { timestamps: true });
-
-const Leave = mongoose.model('Leave', leaveSchema);
-
-// 🟢 NEW: EXAM MARKS SCHEMA 🟢
-const markSchema = new mongoose.Schema({
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
-    course: { type: String, required: true },
-    sessionBatch: { type: String, required: true },
-    semester: { type: String, required: true },
-    subject: { type: String, required: true },
-    examName: { type: String, required: true },
-    examDate: { type: Date, required: true },
-    maxMarks: { type: Number, required: true },
-    studentsMarkList: [{
-        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
-        rollNo: { type: String, required: true },
-        studentName: { type: String, required: true },
-        attendanceStatus: { type: String, enum: ['Present', 'Absent', 'Debarred'], default: 'Present' },
-        marksObtained: { type: Number, default: 0 },
-        rank: { type: Number, default: 0 },
-        remarks: { type: String, default: "" }
-    }],
-    status: { type: String, enum: ['Draft', 'Published'], default: 'Published' }
-}, { timestamps: true });
-
-markSchema.index({ course: 1, sessionBatch: 1, semester: 1, subject: 1, examName: 1 }, { unique: true });
-const Mark = mongoose.model('Mark', markSchema);
 
 
 // FEE GENERATOR HELPER FUNCTION
