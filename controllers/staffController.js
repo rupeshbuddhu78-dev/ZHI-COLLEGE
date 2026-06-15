@@ -12,13 +12,16 @@ exports.addStaff = async (req, res) => {
             profilePicUrl, 
             resumeUrl, 
             certUrl,
-            password: req.body.mobile // Default password mobile number set hoga
+            // 🛡️ FIX: Agar user ne password diya hai toh wo lagega, nahi toh default mobile number lagega
+            password: req.body.password || req.body.mobile 
         });
 
         await newStaff.save();
         res.status(201).json({ success: true, message: "Staff added successfully!" });
     } catch (error) {
-        if (error.code === 11000) return res.status(400).json({ success: false, message: "Employee ID already exists!" });
+        if (error.code === 11000) {
+            return res.status(400).json({ success: false, message: "Employee ID already exists!" });
+        }
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -27,19 +30,25 @@ exports.getStaff = async (req, res) => {
     try {
         const staff = await Staff.find().sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: staff });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+    } catch (error) { 
+        res.status(500).json({ success: false, message: error.message }); 
+    }
 };
 
 exports.updateStaff = async (req, res) => {
     try {
         const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json({ success: true, message: "Staff updated!", data: updatedStaff });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+    } catch (error) { 
+        res.status(500).json({ success: false, message: error.message }); 
+    }
 };
 
 exports.deleteStaff = async (req, res) => {
     try {
         await Staff.findByIdAndDelete(req.params.id);
         res.status(200).json({ success: true, message: "Staff deleted!" });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+    } catch (error) { 
+        res.status(500).json({ success: false, message: error.message }); 
+    }
 };
