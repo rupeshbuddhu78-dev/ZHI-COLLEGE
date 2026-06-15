@@ -1,22 +1,36 @@
 const Mark = require('../models/Mark');
 
+// 🟢 1. UPLOAD MARKS (Ek sath poori class ki marksheet upload hogi)
 exports.uploadMarks = async (req, res) => {
     try {
-        const { course, semester, subject, examType, marks } = req.body;
-        for (let record of marks) {
-            await Mark.findOneAndUpdate(
-                { studentId: record.studentId, subject, examType },
-                { course, semester, studentId: record.studentId, subject, examType, marksObtained: record.marksObtained, totalMarks: record.totalMarks },
-                { upsert: true, new: true }
-            );
-        }
-        res.status(200).json({ success: true, message: "Marks uploaded successfully!" });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+        // Naye schema ke hisaab se saare fields req.body se nikal rahe hain
+        const { teacherId, course, sessionBatch, semester, subject, examName, examDate, maxMarks, studentsMarkList } = req.body;
+
+        // Loop hat gaya! Ab ek subject aur exam ke liye ek hi baar database hit hoga
+        const updatedMarkSheet = await Mark.findOneAndUpdate(
+            { course, sessionBatch, semester, subject, examName }, // Unique Check (Taki duplicate upload na ho)
+            { 
+                teacherId, course, sessionBatch, semester, subject, examName, examDate, maxMarks, studentsMarkList, status: 'Published' 
+            },
+            { upsert: true, new: true }
+        );
+
+        res.status(200).json({ success: true, message: "Marksheet uploaded successfully! 🎉", data: updatedMarkSheet });
+    } catch (error) { 
+        res.status(500).json({ success: false, message: error.message }); 
+    }
 };
 
+// 🟢 2. GET STUDENT MARKS (Array ke andar se student dhoondhna)
 exports.getStudentMarks = async (req, res) => {
     try {
-        const marks = await Mark.find({ studentId: req.params.studentId });
+        const { studentId } = req.params;
+
+        // Mongoose ko batana padega ki 'studentId' array ke andar hai
+        const marks = await Mark.find({ "studentsMarkList.studentId": studentId });
+
         res.status(200).json({ success: true, data: marks });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+    } catch (error) { 
+        res.status(500).json({ success: false, message: error.message }); 
+    }
 };
