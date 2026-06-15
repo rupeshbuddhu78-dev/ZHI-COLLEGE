@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const generateFeeStructure = (courseName) => {
     let baseTuition = (courseName && courseName.toLowerCase() === 'mca') ? 25000 : 16880;
     let heads = [
