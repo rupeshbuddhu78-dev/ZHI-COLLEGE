@@ -79,34 +79,9 @@ const routineSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Routine = mongoose.model('Routine', routineSchema);
 
-// NOTES SCHEMA 
-const noteSchema = new mongoose.Schema({
-    date: { type: String, required: true },
-    semester: { type: String, required: true },
-    subject: { type: String, required: true },
-    title: { type: String, required: true },
-    fileUrl: { type: String, required: true },
-    cloudinaryId: { type: String, required: true },
-    teacherId: { type: String, required: true }  // 🔴 YE LINE NAYI ADD HUI HAI
-}, { timestamps: true });
-const Note = mongoose.model('Note', noteSchema);
 
 
-// 🟢 TEACHER ATTENDANCE SCHEMA 🟢
-const teacherAttendanceSchema = new mongoose.Schema({
-    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
-    teacherName: { type: String, required: true },
-    dateStr: { type: String, required: true },
-    monthVal: { type: String, required: true },
-    dayName: { type: String },
-    punchIn: { type: String, default: "" },
-    punchOut: { type: String, default: "" },
-    status: { type: String, default: "Present", enum: ["Present", "Absent", "Leave", "Half Day"] },
-    remarks: { type: String, default: "On Time" }
-}, { timestamps: true });
 
-teacherAttendanceSchema.index({ teacherId: 1, dateStr: 1 }, { unique: true });
-const TeacherAttendance = mongoose.model('TeacherAttendance', teacherAttendanceSchema);
 
 
 
