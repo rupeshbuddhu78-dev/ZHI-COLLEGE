@@ -2,15 +2,17 @@ const Staff = require('../models/Staff');
 
 exports.addStaff = async (req, res) => {
     try {
+        // 🔥 FIX: HTML ke name attributes ('resumeFile', 'certFile') ke mutabik badla
         let profilePicUrl = req.files && req.files['profilePic'] ? req.files['profilePic'][0].path : "";
-        let resumeUrl = req.files && req.files['resume'] ? req.files['resume'][0].path : "";
-        let certUrl = req.files && req.files['cert'] ? req.files['cert'][0].path : "";
+        let resumeUrl = req.files && req.files['resumeFile'] ? req.files['resumeFile'][0].path : "";
+        let certUrl = req.files && req.files['certFile'] ? req.files['certFile'][0].path : "";
 
-        // Default password unka mobile number set kar rahe hain (Model automatically hash kar dega)
         const newStaff = new Staff({ 
             ...req.body, 
-            profilePicUrl, resumeUrl, certUrl,
-            password: req.body.mobile 
+            profilePicUrl, 
+            resumeUrl, 
+            certUrl,
+            password: req.body.mobile // Default password mobile number set hoga
         });
 
         await newStaff.save();
