@@ -160,8 +160,8 @@
                             <input type="email" name="email" id="studentEmail" placeholder="student@example.com" required oninput="updateCredentials()">
                         </div>
                         <div class="form-group">
-                            <label>Government ID Number *</label>
-                            <input type="text" name="aadharNumber" placeholder="[Aadhaar Redacted]" required>
+                            <label>Aadhar Number *</label>
+                            <input type="text" name="aadharNumber" placeholder="12-digit Aadhar No." required>
                         </div>
                         <div class="form-group">
                             <label>Category *</label>
@@ -251,7 +251,7 @@
                             <input type="file" name="profileImage" id="profileImage" accept="image/*">
                         </div>
                         <div class="form-group">
-                            <label>Govt ID Document</label>
+                            <label>Aadhar Card</label>
                             <input type="file" accept=".pdf, .jpg, .png">
                         </div>
                         <div class="form-group">
@@ -261,11 +261,7 @@
 
                         <div class="form-section-title">💰 Admission Fees Setup</div>
                         <div class="form-group">
-                            <label>Total Course Fee (₹) *</label>
-                            <input type="number" name="courseFee" placeholder="e.g. 50000" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Amount Collected Now (₹)</label>
+                            <label>Amount Collected (₹)</label>
                             <input type="number" name="amountCollected" placeholder="e.g. 5000">
                         </div>
                         <div class="form-group">
@@ -295,7 +291,7 @@
                     </div>
 
                     <div class="form-footer">
-                        <button type="button" class="btn-secondary" onclick="document.getElementById('studentForm').reset(); clearCredentials();">Clear Form</button>
+                        <button type="reset" class="btn-secondary" onclick="clearCredentials()">Clear Form</button>
                         <button type="submit" class="btn-success">✅ Register Student</button>
                     </div>
                 </form>
@@ -329,6 +325,11 @@
             submitBtn.disabled = true;
 
             const formData = new FormData(this);
+            
+            // FIX 1: JSON payload mein file nahi jani chahiye, usse JSON save hone mein dikkat aati hai. 
+            // Isliye hum profileImage ko delete kar rahe hain temporarily, usko STEP 2 me bhejenge.
+            formData.delete('profileImage'); 
+
             const studentData = Object.fromEntries(formData.entries());
 
             try {
@@ -351,7 +352,7 @@
                         const photoData = new FormData();
                         photoData.append('profileImage', photoInput.files[0]);
 
-                        // 🔥 FIXED: Yahan URL ko server ke actual address ke saath change kiya gaya hai
+                        // FIX 2: Yaha full Render URL lagaya hai taaki kisi bhi domain se upload kaam kare.
                         const photoResponse = await fetch(`https://zhi-college-f67p.onrender.com/api/upload-photo/${studentId}`, {
                             method: 'POST',
                             body: photoData // FormData bhej rahe hain file upload ke liye
@@ -376,7 +377,7 @@
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                alert("❌ Server connect nahi ho pa raha hai! Kripya apna internet aur backend check karein.");
+                alert("❌ Server connect nahi ho pa raha hai!");
             } finally {
                 submitBtn.innerText = "✅ Register Student";
                 submitBtn.disabled = false;
