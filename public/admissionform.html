@@ -331,7 +331,7 @@
 
             try {
                 // STEP 1: Pehle Student ka text data bhejo
-                const response = await fetch('/api/add-student', {
+                const response = await fetch('https://zhi-college-f67p.onrender.com/api/add-student', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(studentData) 
