@@ -1,4 +1,5 @@
 // NOTES SCHEMA 
+const mongoose = require('mongoose');
 const noteSchema = new mongoose.Schema({
     date: { type: String, required: true },
     semester: { type: String, required: true },
