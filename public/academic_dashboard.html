@@ -283,13 +283,11 @@
         }
 
         function logoutUser() {
-            sessionStorage.clear(); // 🔴 Clean Session Data
+            sessionStorage.clear(); 
             window.location.href = "login.html"; 
         }
 
-        // Initialize Live Data on Load
         window.onload = () => {
-            // 🔴 FIX: Content localstorage se nahi, sessionStorage se parse ho rha hai ab
             let userData = null;
             try {
                 const storedUser = sessionStorage.getItem('currentUser');
@@ -300,7 +298,6 @@
                 console.error("Session reading failed:", e);
             }
 
-            // Fallback checking agar variable exist kare
             const userName = userData && userData.name ? userData.name : (typeof currentUser !== 'undefined' ? currentUser.name : 'HOD Sir');
             
             document.getElementById('adminNameProfile').innerText = userName;
@@ -312,7 +309,8 @@
             fetchLiveHODData(todayName);
         };
 
-        const BASE_URL = 'https://zhi-college-f67p.onrender.com';
+        // 🌟 FIX: BASE_URL ko khali chhod diya hai taaki ye hamesha sahi origin se hit kare 
+        const BASE_URL = '';
         
         async function safeFetch(endpoint, fallbackData) {
             try {
@@ -368,7 +366,6 @@
 
                 classesToday.sort((a, b) => {
                     if(!a.startTime || !b.startTime) return 0;
-                    
                     return a.startTime.localeCompare(b.startTime);
                 });
                 
