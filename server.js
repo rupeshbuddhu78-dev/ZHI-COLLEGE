@@ -52,8 +52,8 @@ app.use('/api/marks', markRoutes);             // Marks: /api/marks/upload
 app.use('/api/routines', routineRoutes);       // Routines: /api/routines/
 
 // --- 4. FRONTEND CATCH-ALL ROUTE ---
-// Agar koi API URL match nahi hota, toh React/HTML frontend dikhayega
-app.get('*', (req, res) => {
+// 🔥 FIX: Naye path-to-regexp engine ke liye '*' ko '(.*)' se replace kiya hai
+app.get('(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
