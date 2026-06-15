@@ -93,7 +93,7 @@
                 <p>Staff Registration Portal</p>
             </div>
         </div>
-      
+        
     </header>
 
     <div class="form-wrapper">
@@ -300,23 +300,30 @@
             if (certFile) formData.append('certFile', certFile);
 
             try {
-                const response = await fetch('/api/staff', {
+                // Live Backend URL with robust error handling
+                const response = await fetch('https://zhi-college-f67p.onrender.com/api/staff', {
                     method: 'POST',
                     body: formData 
                 });
                 
-                const result = await response.json();
-
-                if (result.success) {
-                    alert("✅ New Staff Added Successfully!");
-                    // 🔴 SUCCESS HONE PAR WAPAS MAIN PAGE PAR BHEJ DEGA
-                    window.location.href = "users_roles.html"; 
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("✅ New Staff Added Successfully!");
+                        window.location.href = "users_roles.html"; 
+                    } else {
+                        alert("❌ Failed: " + result.message);
+                    }
                 } else {
-                    alert("❌ Failed: " + result.message);
+                    const htmlError = await response.text();
+                    console.error("Backend Error HTML:", htmlError);
+                    alert("❌ Server Crash: Backend sent an error instead of data. Check F12 Console.");
                 }
 
             } catch (error) {
-                alert("❌ Server Error: Could not save data. Please check your Node.js Backend.");
+                console.error("Network Catch Error:", error);
+                alert("❌ Error: " + error.message);
             }
 
             btn.innerHTML = "<i class='bx bx-save'></i> Save Staff Record";
