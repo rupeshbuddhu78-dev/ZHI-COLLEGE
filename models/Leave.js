@@ -1,3 +1,4 @@
+const mongoose = require('mongoose'); 
 // 🔥 LEAVE SCHEMA (Isko Mark model ke niche paste karein) 🔥
 const leaveSchema = new mongoose.Schema({
     applicantId: { type: String, required: true },
