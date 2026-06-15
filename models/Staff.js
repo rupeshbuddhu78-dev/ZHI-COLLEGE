@@ -5,7 +5,7 @@ const staffSchema = new mongoose.Schema({
     category: { type: String, required: true }, // e.g., 'Teaching', 'Non-Teaching'
     role: { type: String, required: true },     // e.g., 'Teacher', 'HOD', 'Accountant'
     empId: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Ise hum encrypt karenge
+    password: { type: String, required: true }, 
     name: { type: String, required: true },
     fatherName: String, dob: String, gender: String,
     mobile: { type: String, required: true },
@@ -21,23 +21,19 @@ const staffSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // 🔒 SECURITY HOOK: Database mein save hone se theek pehle password hash karega
-staffSchema.pre('save', async function(next) {
-    // Agar password update nahi ho raha hai, toh skip karo
+// 🔥 FIX: 'async' ke sath 'next' hataya
+staffSchema.pre('save', async function() {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
     
-    // Password ko secure hash mein convert karo
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
-// 🔑 LOGIN HELPER: User jo password daalega usko database wale hashed password se match karega
 staffSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const Staff = mongoose.model('Staff', staffSchema);
-
 module.exports = Staff;
