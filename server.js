@@ -18,42 +18,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 2. CLOUDINARY CONFIGURATION ---
-
-
-
 // --- 3. DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshbuddhu78_db_user:f8QYIBn6KNt6xfzK@cluster0.fn6fpn1.mongodb.net/zhi_college?retryWrites=true&w=majority&appName=Cluster0")
     .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
     .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// --- 4. EMAIL SETUP ---
-// --- NODEMAILER SECURE CONFIGURATION ---
-// --- FINAL NODEMAILER CONFIGURATION ---
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,                   // 🔴 Port 465 hata kar 587 kar diya (Free servers pe ye block nahi hota)
-    secure: false,               // 🔴 Port 587 ke liye isko false rakhna padta hai
-    requireTLS: true,            // 🔴 Lekin connection secure rahega is line se
-    auth: {
-        user: '8651142739rupesh@gmail.com',  // Tera naya email
-        pass: 'qkylmbcmxnuxiteb'             // Tera 16-digit password
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+
 
 // --- 5. SCHEMAS & MODELS ---
 
-const userSchema = new mongoose.Schema({
-    role: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    resetOtp: String,
-    otpExpiry: Date
-});
-const User = mongoose.model('User', userSchema);
+
 
 const studentSchema = new mongoose.Schema({
     course: String, semester: String, sessionBatch: String,
