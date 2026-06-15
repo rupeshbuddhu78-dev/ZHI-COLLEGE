@@ -34,19 +34,15 @@ const staffSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // 🔒 SECURITY HOOK: Database mein save hone se theek pehle password hash karega
-// 🔥 FIX: 'next' ko call kiya aur try-catch lagaya taaki kisi bhi situation mein server hang na ho
-staffSchema.pre('save', async function(next) {
+// 🔥 FIX: 'next' ko poori tarah hata diya hai kyunki async function khud flow handle karta hai
+staffSchema.pre('save', async function() {
     if (!this.isModified('password')) {
-        return next();
+        return; // Agar password modify nahi hua toh yahin se return ho jao
     }
     
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error); // Agar hashing mein dikkat aaye toh error aage pass ho jaye
-    }
+    // Async/Await se salt aur hash generate hoga, bina next() ke smoothly chalega
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 staffSchema.methods.matchPassword = async function(enteredPassword) {
