@@ -1,22 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
-const { uploadProfile } = require('../config/multer'); 
 
-// 🛡️ FIX: Multer ko wrap kiya taki error aane par HTML ki jagah JSON mile
-const uploadMiddleware = uploadProfile.fields([
+// 🔥 FIX: uploadProfile ki jagah uploadStaff import kiya, taaki files 'ZhiStaffFiles' folder mein jayein
+const { uploadStaff } = require('../config/multer'); 
+
+// 🛡️ FIX: uploadStaff.fields ka use karke middleware taiyar kiya
+const uploadMiddleware = uploadStaff.fields([
     { name: 'profilePic', maxCount: 1 }, 
     { name: 'resumeFile', maxCount: 1 }, 
     { name: 'certFile', maxCount: 1 }
 ]);
 
+// Staff Add karne ka route
 router.post('/', (req, res, next) => {
     uploadMiddleware(req, res, function (err) {
         if (err) {
             console.error("Multer Middleware Error:", err);
+            // Agar file upload mein koi dikkat aaye toh yahan se saaf JSON error milega
             return res.status(500).json({ success: false, message: "File Upload Error: " + err.message });
         }
-        next(); // Sab theek hai toh controller pe jao
+        next(); // Agar file sahi se upload ho gayi, toh controller (addStaff) par jao
     });
 }, staffController.addStaff);
 
