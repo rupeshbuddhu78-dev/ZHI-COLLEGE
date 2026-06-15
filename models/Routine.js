@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 // ROUTINE SCHEMA
 const routineSchema = new mongoose.Schema({
     course: { type: String, required: true },
