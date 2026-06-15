@@ -22,6 +22,7 @@
             --sidebar-active: #2a3143;
             --text-main: #1e293b;
             --text-light: #64748b;
+            --white: #white;
             --white: #ffffff;
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -33,7 +34,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styling - Bada aur Accha banaya gaya hai */
+        /* Sidebar Styling */
         .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; transition: 0.3s; border-right: 1px solid #111827; flex-shrink: 0;}
         .sidebar-header { padding: 30px 24px; background: #1b2132; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         
@@ -44,7 +45,7 @@
         .nav-menu { padding: 15px 0; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
         .nav-category { font-size: 12px; color: #64748b; margin: 25px 24px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
         
-        /* Nav Item - Thora bada kiya gaya hai taaki acha dikhe */
+        /* Nav Item */
         .nav-item { padding: 14px 24px; display: flex; align-items: center; gap: 15px; color: #cbd5e1; text-decoration: none; transition: all 0.3s ease; font-size: 15px; font-weight: 500; border-left: 4px solid transparent; }
         .nav-item:hover { background: rgba(99, 102, 241, 0.12); color: white; padding-left: 32px; border-left-color: var(--primary); }
         .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--primary); font-weight: 600;}
@@ -62,7 +63,7 @@
         .profile-section { display: flex; align-items: center; gap: 12px; text-align: right; }
         .profile-name { font-weight: 600; font-size: 14.5px; color: var(--text-main); line-height: 1.2; }
         .profile-role { font-size: 12px; color: var(--text-light); }
-        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; text-transform: uppercase; }
         
         /* Filter Section */
         .filter-card { background: var(--white); padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; gap: 20px; align-items: center; flex-shrink:0;}
@@ -114,7 +115,6 @@
         .teacher-card:active { cursor: grabbing; transform: scale(0.95); opacity: 0.8;}
         .teacher-card b { display: block; font-size: 13.5px; color: var(--primary); }
         .teacher-card span { font-size: 11.5px; color: var(--text-light); font-weight: 600; display: block; margin-top: 4px;}
-
     </style>
 </head>
 <body>
@@ -134,7 +134,6 @@
             <a href="HODtimetable_setup.html" class="nav-item active"><i class='bx bx-calendar-edit'></i> Timetable Setup</a>
             <a href="hodleave.html" class="nav-item"><i class='bx bx-calendar-exclamation'></i> Leave Approvals</a>
            
-            
             <div class="nav-category">ACADEMICS & TRACKING</div>
             <a href="manage_syllabus.html" class="nav-item"><i class='bx bx-book-open'></i> Subjects & Syllabus</a>
             <a href="attendance_overview.html" class="nav-item"><i class='bx bx-bar-chart-alt-2'></i> Monitor Attendance</a>
@@ -156,7 +155,7 @@
                         <div class="profile-name" id="adminNameProfile">Loading...</div>
                         <div class="profile-role">Head of Department</div>
                     </div>
-                    <div class="profile-avatar">HO</div>
+                    <div class="profile-avatar" id="adminAvatarProfile">--</div>
                 </div>
             </div>
         </header>
@@ -181,8 +180,7 @@
 
         <div class="grids-wrapper">
             <div class="date-display" id="displayDateText"><i class='bx bx-calendar'></i> Loading Date...</div>
-            <div id="allSemestersContainer" style="display: flex; flex-direction: column; gap: 25px;">
-                </div>
+            <div id="allSemestersContainer" style="display: flex; flex-direction: column; gap: 25px;"></div>
         </div>
 
         <div class="teacher-tray">
@@ -200,9 +198,8 @@
         const API_BASE = 'https://zhi-college-rtya.onrender.com/api';
         
         let currentDayRoutines = []; 
-        let teacherList = []; // Array to store all staff members to fetch subjects
+        let teacherList = []; 
 
-        // Debounce timer for Auto-Save Room Number
         let roomSaveTimeout;
 
         const periods = [
@@ -213,9 +210,19 @@
 
         // --- 1. INITIALIZATION & LIVE CLOCK ---
         window.addEventListener('DOMContentLoaded', () => {
-            // 🔴 SET LIVE USER NAME FROM currentUser (security.js)
-            const userName = currentUser.name || 'HOD Sir';
+            // 🔥 FIX: Check both security.js state AND localStorage for full fallback
+            let userName = 'HOD Sir';
+            if (typeof currentUser !== 'undefined' && currentUser.name) {
+                userName = currentUser.name;
+            } else if (localStorage.getItem('userName')) {
+                userName = localStorage.getItem('userName');
+            }
+            
             document.getElementById('adminNameProfile').innerText = userName;
+
+            // 🔥 FIX: Dynamic Initials Avatar Generation (e.g., Rupesh Kumar -> RK)
+            const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+            document.getElementById('adminAvatarProfile').innerText = initials || 'HO';
 
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -319,7 +326,6 @@
                     const parent = emptySlot.parentElement;
                     let roomHTML = routine.roomNumber ? `<div style="font-size: 10px; background: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 3px; border: 1px solid var(--border); color: var(--danger); font-weight: 700;">Room: ${routine.roomNumber}</div>` : '';
                     
-                    // Class box is now draggable! We attach data-routineid to identify it when dragged
                     parent.innerHTML = `
                         <div class="slot filled" draggable="true" ondragstart="dragStart(event)" 
                              data-id="${routine._id}" data-sem="${routine.semester}" data-start="${routine.startTime}" data-end="${routine.endTime}"
@@ -552,6 +558,16 @@
             } catch(e) {
                 alert("Delete Failed");
             }
+        }
+
+        // --- 8. 🔥 FIX: SECURE LOGOUT LOGIC ---
+        function logoutUser() {
+            // LocalStorage aur SessionStorage dono clear karo taaki koi track na bache
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // User ko wapas clean tarike se login.html ya landing page par bhej do
+            window.location.href = 'login.html';
         }
     </script>
 </body>
