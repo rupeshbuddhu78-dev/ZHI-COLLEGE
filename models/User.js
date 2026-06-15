@@ -10,16 +10,16 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true }); // timestamps: true add karna best practice hai (createdAt, updatedAt ke liye)
 
 // 🔒 SECURITY HOOK: User save hone se pehle password encrypt karega
-userSchema.pre('save', async function(next) {
-    // Agar password update nahi hua hai (jaise sirf role ya email update kar rahe hain), toh skip karo
+// 🔥 FIX: 'async function' ke sath 'next' hataya taaki Render par error na aaye
+userSchema.pre('save', async function() {
+    // Agar password update nahi hua hai, toh skip karo aur aage badho
     if (!this.isModified('password')) {
-        return next();
+        return; 
     }
     
     // Password ko secure hash mein convert karo
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 // 🔑 LOGIN HELPER: User ke entered password ko database wale hashed password se compare karega
