@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 // 🟢 NEW: EXAM MARKS SCHEMA 🟢
 const markSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
@@ -21,5 +22,8 @@ const markSchema = new mongoose.Schema({
     status: { type: String, enum: ['Draft', 'Published'], default: 'Published' }
 }, { timestamps: true });
 
+// Prevent duplicate marksheets for the same subject and exam
 markSchema.index({ course: 1, sessionBatch: 1, semester: 1, subject: 1, examName: 1 }, { unique: true });
-const Mark = mongoose.model('Mark', markSchema);
+
+// 🔥 FIX: Aakhiri line mein isko export kar diya!
+module.exports = mongoose.model('Mark', markSchema);
