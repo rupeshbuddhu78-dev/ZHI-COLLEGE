@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 // STUDENT ATTENDANCE SCHEMA
 const attendanceSchema = new mongoose.Schema({
     fullDate: { type: Date, required: true },
