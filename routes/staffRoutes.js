@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
-
-// 🔥 FIX: Curly braces {} laga kar specific function import kiya
 const { uploadProfile } = require('../config/multer'); 
 
-// 🔥 FIX: Yahan bhi 'upload' ki jagah 'uploadProfile' use kiya
+// 🔥 FIX: Fields ke naam HTML form wale 'resumeFile' aur 'certFile' se match kiye
 router.post('/', uploadProfile.fields([
     { name: 'profilePic', maxCount: 1 }, 
-    { name: 'resume', maxCount: 1 }, 
-    { name: 'cert', maxCount: 1 }
+    { name: 'resumeFile', maxCount: 1 }, 
+    { name: 'certFile', maxCount: 1 }
 ]), staffController.addStaff);
 
 router.get('/', staffController.getStaff);
