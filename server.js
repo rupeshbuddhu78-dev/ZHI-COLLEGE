@@ -23,14 +23,6 @@ mongoose.connect(process.env.MONGO_URI || "mongodb+srv://rupeshbuddhu78_db_user:
     .then(() => console.log("✅ Cloud MongoDB Connected Successfully! 🔥"))
     .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// FINANCE SCHEMAS
-const feeHeadSchema = new mongoose.Schema({
-    headName: String, dueDate: String, amount: Number, discount: { type: Number, default: 0 },
-    fine: { type: Number, default: 0 }, paid: { type: Number, default: 0 },
-    due: Number, status: { type: String, default: "Due" }
-});
-
-
 // --- 6. API ROUTES ---
 
 app.get('/', (req, res) => {
