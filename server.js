@@ -52,8 +52,8 @@ app.use('/api/marks', markRoutes);             // Marks: /api/marks/upload
 app.use('/api/routines', routineRoutes);       // Routines: /api/routines/
 
 // --- 4. FRONTEND CATCH-ALL ROUTE ---
-// 🔥 FIX: Naye path-to-regexp engine ke liye '*' ko '(.*)' se replace kiya hai
-app.get('(.*)', (req, res) => {
+// 🔥 FIX: Naye Express/path-to-regexp v8 update ke liye direct Regex /.*/ use kiya hai
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
