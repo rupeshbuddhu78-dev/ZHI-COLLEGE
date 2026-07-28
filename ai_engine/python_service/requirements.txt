@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # --- Core web framework ---
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
@@ -18,9 +20,9 @@ networkx==3.3
 
 # --- 3. Face Recognition (ResNet + FaceNet & Cosine Similarity) ---
 opencv-python-headless==4.10.0.82
-Pillow==10.3.0
-torch==2.3.1
-torchvision==0.18.1
+Pillow==10.2.0
+torch==2.2.2
+torchvision==0.17.2
 facenet-pytorch==2.6.0
 scipy==1.13.1
 
