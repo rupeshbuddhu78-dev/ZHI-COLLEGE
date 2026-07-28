@@ -1,15 +1,10 @@
 """
-ZHI College AI Engine — Mock Inference FastAPI Server
+ZHI College AI Engine — Real & Mock Inference FastAPI Server
 ------------------------------------------------------
-This is a stub microservice that will later host the trained models produced by
-the ML Engineer (XGBoost dropout classifier, CSP-based timetable optimiser,
-ResNet + FaceNet embedding for face verification, and an AR / LSTM time-series
-model for financial forecasting).
-
-For now every endpoint returns deterministic mock JSON in the exact shape the
-Node.js Express bridge (`src/routes/aiRoutes.js`) expects. Once the teammate
-drops `.onnx` / `.pkl` artefacts into `../saved_models/`, we swap the mock
-`_predict_*` functions with real inference.
+This is a stub microservice hosting the trained XGBoost model for dropout prediction.
+Other endpoints (CSP-based timetable optimiser, ResNet + FaceNet embedding, 
+and AR / LSTM time-series) are currently returning mock JSON until their 
+respective models are ready.
 
 Run locally:
     uvicorn main:app --host 0.0.0.0 --port 8001 --reload
@@ -19,6 +14,9 @@ from __future__ import annotations
 
 import math
 import random
+import os
+import joblib
+import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -28,8 +26,8 @@ from pydantic import BaseModel, Field
 
 app = FastAPI(
     title="ZHI College AI Engine",
-    version="0.1.0-mock",
-    description="Mock inference server for the ZHI College AI-Driven ERP."
+    version="0.2.0",
+    description="Inference server for the ZHI College AI-Driven ERP."
 )
 
 app.add_middleware(
@@ -79,27 +77,43 @@ class ForecastRequest(BaseModel):
 
 
 # ------------------------------------------------------------------ #
-#  Mock predictors — replace with real model.predict() later          #
+#  Load ML Models                                                    #
+# ------------------------------------------------------------------ #
+# Adjust path to point to saved_models directory
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "saved_models", "risk_xgb.pkl")
+try:
+    xgb_model = joblib.load(MODEL_PATH)
+    print("Real XGBoost model loaded successfully!")
+except Exception as e:
+    xgb_model = None
+    print(f"Warning: Could not load real model. Error: {e}")
+
+
+# ------------------------------------------------------------------ #
+#  Predictors (Real & Mock)                                          #
 # ------------------------------------------------------------------ #
 def _predict_risk(f: RiskFeatures) -> dict:
     """
-    Toy XGBoost stand-in.  Real model will output P(dropout) from a
-    128-tree gradient boosted ensemble trained on our historical CSV.
+    Real inference using the trained Kaggle XGBoost model.
     """
-    logit = (
-        -0.04 * f.attendancePct
-        + -0.03 * f.avgMarks
-        + 0.02 * f.feeDelayDays
-        + 0.15 * f.leaveCount
-        + 3.0
-    )
-    p = 1.0 / (1.0 + math.exp(-logit))
+    if xgb_model is None:
+        return {"error": "Model not found. Please place risk_xgb.pkl in saved_models folder."}
+
+    # Prepare the feature array exactly in the order we trained it
+    # ['attendancePct', 'avgMarks', 'feeDelayDays', 'leaveCount']
+    x_input = np.array([[f.attendancePct, f.avgMarks, f.feeDelayDays, f.leaveCount]])
+    
+    # Predict probability of dropout (class 1)
+    p = float(xgb_model.predict_proba(x_input)[0, 1])
+    
+    # Determine risk band mathematically based on our threshold logic
     if p >= 0.66:
         band = "HIGH"
     elif p >= 0.33:
         band = "MEDIUM"
     else:
         band = "LOW"
+        
     return {
         "studentId": f.studentId,
         "dropoutProbability": round(p, 4),
@@ -109,15 +123,13 @@ def _predict_risk(f: RiskFeatures) -> dict:
             {"feature": "avgMarks",      "impact": round(-0.03 * f.avgMarks,      3)},
             {"feature": "feeDelayDays",  "impact": round( 0.02 * f.feeDelayDays,  3)},
         ],
-        "model": "mock-xgboost-v0",
+        "model": "real-xgboost-v1",
     }
 
 
 def _optimize_timetable(req: TimetableRequest) -> dict:
     """
-    CSP / Graph Coloring stub.  Real version = OR-Tools CP-SAT solver on the
-    constraint graph G = (V, E) where V = classes and edges join classes that
-    share teacher, room, or student group.
+    CSP / Graph Coloring stub.
     """
     conflicts_before = 0
     seen = {}
@@ -131,7 +143,6 @@ def _optimize_timetable(req: TimetableRequest) -> dict:
                 conflicts_before += 1
             seen[k] = True
 
-    # Fake "solved" schedule = re-emit input with a synthetic tag
     optimised = []
     rooms_pool = req.rooms or ["Room 101", "Room 102", "Room 204", "Room 205",
                                "Room 301", "Lab 1", "Lab 2"]
@@ -153,7 +164,7 @@ def _optimize_timetable(req: TimetableRequest) -> dict:
 
 def _verify_face(req: FaceVerifyRequest) -> dict:
     """
-    128-d embedding stand-in.  Real model = FaceNet / dlib ResNet + cosine.
+    128-d embedding stand-in.
     """
     rnd = random.Random(req.studentId)
     similarity = 0.65 + rnd.random() * 0.34
@@ -169,8 +180,7 @@ def _verify_face(req: FaceVerifyRequest) -> dict:
 
 def _financial_forecast(req: ForecastRequest) -> dict:
     """
-    Autoregressive AR(2) toy model.  Real version = statsmodels SARIMAX or
-    an LSTM on 24 months of historical revenue / expense series.
+    Autoregressive AR(2) toy model.
     """
     base_rev = req.seedRevenue or 850000.0
     base_exp = req.seedExpense or 620000.0
@@ -200,7 +210,7 @@ def _financial_forecast(req: ForecastRequest) -> dict:
 @app.get("/")
 def root():
     return {
-        "service": "ZHI AI Engine (mock)",
+        "service": "ZHI AI Engine",
         "endpoints": [
             "/health",
             "/predict/risk",
@@ -213,7 +223,7 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "mode": "mock", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "mode": "mixed", "timestamp": datetime.utcnow().isoformat()}
 
 
 @app.post("/predict/risk")
