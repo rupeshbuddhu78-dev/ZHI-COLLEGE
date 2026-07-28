@@ -1,10 +1,11 @@
 """
 ZHI College AI Engine — Real & Mock Inference FastAPI Server
 ------------------------------------------------------
-This is a stub microservice hosting the trained XGBoost model for dropout prediction.
-Other endpoints (CSP-based timetable optimiser, ResNet + FaceNet embedding, 
-and AR / LSTM time-series) are currently returning mock JSON until their 
-respective models are ready.
+This is a microservice hosting the trained XGBoost model for dropout prediction
+and the OR-Tools CP-SAT solver for timetable optimization.
+
+Other endpoints (ResNet + FaceNet embedding, and AR / LSTM time-series) 
+are currently returning mock JSON until their respective models are ready.
 
 Run locally:
     uvicorn main:app --host 0.0.0.0 --port 8001 --reload
@@ -23,10 +24,11 @@ from typing import List, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from ortools.sat.python import cp_model  # Added OR-Tools for Timetable Optimization
 
 app = FastAPI(
     title="ZHI College AI Engine",
-    version="0.2.0",
+    version="0.3.0",
     description="Inference server for the ZHI College AI-Driven ERP."
 )
 
@@ -129,37 +131,75 @@ def _predict_risk(f: RiskFeatures) -> dict:
 
 def _optimize_timetable(req: TimetableRequest) -> dict:
     """
-    CSP / Graph Coloring stub.
+    Real Constraint Satisfaction Problem (CSP) Solver using Google OR-Tools.
+    Ensures no two classes share the same room at the same time.
     """
-    conflicts_before = 0
-    seen = {}
-    for s in req.slots:
-        keys = [
-            ("teacher", s.teacherId, s.dayOfWeek, s.startTime),
-            ("room",    s.roomNumber, s.dayOfWeek, s.startTime),
-        ]
-        for k in keys:
-            if k in seen:
-                conflicts_before += 1
-            seen[k] = True
+    model = cp_model.CpModel()
+    
+    num_slots = len(req.slots)
+    # Default rooms if frontend doesn't provide any
+    rooms_pool = req.rooms or ["Room 101", "Room 102", "Room 204", "Room 205", "Lab 1", "Lab 2"]
+    num_rooms = len(rooms_pool)
+    
+    if num_slots == 0:
+        return {"error": "No slots provided for scheduling."}
 
-    optimised = []
-    rooms_pool = req.rooms or ["Room 101", "Room 102", "Room 204", "Room 205",
-                               "Room 301", "Lab 1", "Lab 2"]
+    # Variables: x[i, j] = 1 if slot 'i' is assigned to room 'j'
+    x = {}
+    for i in range(num_slots):
+        for j in range(num_rooms):
+            x[i, j] = model.NewBoolVar(f'x_{i}_{j}')
+            
+    # Constraint 1: Each slot must be assigned to EXACTLY ONE room
+    for i in range(num_slots):
+        model.AddExactlyOne(x[i, j] for j in range(num_rooms))
+        
+    # Group slots by exact Time and Day to find overlaps
+    time_groups = {}
     for i, s in enumerate(req.slots):
-        optimised.append({
-            **s.dict(),
-            "assignedRoom": rooms_pool[i % len(rooms_pool)],
-            "colorClass": i % 5,  # χ(G) bucket
-        })
-    return {
-        "conflictsBefore": conflicts_before,
-        "conflictsAfter": 0,
-        "chromaticNumber": 5,
-        "fitness": round(1.0 - conflicts_before / max(len(req.slots), 1), 4),
-        "optimisedSchedule": optimised,
-        "solver": "mock-csp-v0",
-    }
+        key = (s.dayOfWeek, s.startTime, s.endTime)
+        if key not in time_groups:
+            time_groups[key] = []
+        time_groups[key].append(i)
+        
+    conflicts_before = 0
+    # Constraint 2: No two overlapping slots can be in the SAME room
+    for key, slot_indices in time_groups.items():
+        if len(slot_indices) > 1:
+            conflicts_before += len(slot_indices) - 1 # Just for metrics
+            for j in range(num_rooms):
+                # A room can host AT MOST ONE class during this time block
+                model.AddAtMostOne(x[i, j] for i in slot_indices)
+
+    # Call the OR-Tools CP-SAT Solver
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+    
+    optimised = []
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        for i, s in enumerate(req.slots):
+            assigned_room = rooms_pool[0] # Fallback
+            for j in range(num_rooms):
+                if solver.Value(x[i, j]) == 1:
+                    assigned_room = rooms_pool[j]
+                    break
+                    
+            optimised.append({
+                **s.dict(),
+                "assignedRoom": assigned_room,
+                "colorClass": j % 5,  # Room grouping color
+            })
+            
+        return {
+            "conflictsBefore": conflicts_before,
+            "conflictsAfter": 0,
+            "chromaticNumber": num_rooms,
+            "fitness": 1.0,
+            "optimisedSchedule": optimised,
+            "solver": "ortools-cp-sat-v1",
+        }
+    else:
+        return {"error": "Constraints are too tight. Not enough rooms to resolve conflicts."}
 
 
 def _verify_face(req: FaceVerifyRequest) -> dict:
