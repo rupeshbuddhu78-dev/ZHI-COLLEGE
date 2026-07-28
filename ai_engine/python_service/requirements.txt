@@ -2,8 +2,9 @@
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
 pydantic==2.7.1
+python-dotenv==1.0.1
 
-# --- ML / inference (added as teammate wires real models in) ---
+# --- 1. Student Risk Predictor (XGBoost) ---
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.5.0
@@ -11,12 +12,17 @@ xgboost==2.0.3
 onnxruntime==1.18.0
 joblib==1.4.2
 
-# --- Optimisation ---
+# --- 2. Timetable Optimisation (CSP & Graph) ---
 ortools==9.10.4067
+networkx==3.3
 
-# --- Face recognition stack (optional at inference time) ---
+# --- 3. Face Recognition (ResNet + FaceNet & Cosine Similarity) ---
 opencv-python-headless==4.10.0.82
 Pillow==10.3.0
+torch==2.3.1
+torchvision==0.18.1
+facenet-pytorch==2.6.0
+scipy==1.13.1
 
-# --- Time-series ---
+# --- 4. Financial Forecasting (AR / LSTM) ---
 statsmodels==0.14.2
