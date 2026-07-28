@@ -1,0 +1,22 @@
+# --- Core web framework ---
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.1
+
+# --- ML / inference (added as teammate wires real models in) ---
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.0
+xgboost==2.0.3
+onnxruntime==1.18.0
+joblib==1.4.2
+
+# --- Optimisation ---
+ortools==9.10.4067
+
+# --- Face recognition stack (optional at inference time) ---
+opencv-python-headless==4.10.0.82
+Pillow==10.3.0
+
+# --- Time-series ---
+statsmodels==0.14.2
